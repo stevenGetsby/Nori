@@ -1,0 +1,22 @@
+# -*- coding: utf-8 -*-
+
+
+# -*- coding: utf-8 -*-
+
+XHS_PLATFORM_NAME = 'xhs'
+DOUYIN_PLATFORM_NAME = 'dy'
+KUAISHOU_PLATFORM_NAME = 'ks'
+BILIBILI_PLATFORM_NAME = 'bili'
+WEIBO_PLATFORM_NAME = 'wb'
+TIEBA_PLATFORM_NAME = 'tieba'
+ZHIHU_PLATFORM_NAME = 'zhihu'
+
+EXCEL_ACCOUNT_SAVE = 'xlsx'
+MYSQL_ACCOUNT_SAVE = 'mysql'
+COOKIE_BRIDGE_ACCOUNT_SAVE = 'cookie_bridge'
+
+
+CRALER_TYPE_SEARCH = 'search'
+CRALER_TYPE_DETAIL = 'detail'
+CRALER_TYPE_CREATOR = 'creator'
+CRALER_TYPE_HOMEFEED = 'homefeed'

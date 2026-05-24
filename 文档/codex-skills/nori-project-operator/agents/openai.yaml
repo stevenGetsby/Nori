@@ -1,0 +1,4 @@
+interface:
+  display_name: "Nori Project Operator"
+  short_description: "Iteratively advances the Nori account-operations Agent system."
+  default_prompt: "Use this skill to run one bounded Nori project iteration: inspect status, choose the next highest-impact task, implement, test, and update progress."

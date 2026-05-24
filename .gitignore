@@ -1,0 +1,54 @@
+# ── 敏感配置 ──
+api_config.yaml
+relay.json
+.env
+.env.*
+*.pem
+*.key
+
+# ── Python ──
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# ── 虚拟环境 ──
+.venv/
+venv/
+env/
+
+# ── IDE / 编辑器 ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── 系统文件 ──
+.DS_Store
+Thumbs.db
+
+# ── 日志 / 临时 ──
+log/
+logs/
+*.log
+tmp/
+
+# ── 产物 ──
+demo_output.json
+
+# ── 本地数据 / 素材 / 抓取产物 ──
+data/
+cold_start_data/
+SHOWCASE/
+*.xlsx
+
+# ── 外部参考仓库 / 前端依赖 ──
+文档/reference/
+node_modules/
+.next/
+coverage/
