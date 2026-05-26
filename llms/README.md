@@ -7,7 +7,7 @@
 | 文件 | 职能 |
 | --- | --- |
 | `config.py` | 复用 `nori.nori_config.NoriConfig`,提供 `get_active(usage)` / `resolve(key)` / `reload()` |
-| `errors.py` | LLM gateway 公共异常类型，保持 `llms.*` / `llms.call.*` / `llms.client.*` 的错误身份一致 |
+| `errors.py` | LLM gateway 公共异常类型的兼容 re-export；真实 owner 是 `nori.core.contracts`，保持 `llms.*` / `llms.call.*` / `llms.client.*` 的错误身份一致 |
 | `telemetry.py` | Redacted telemetry sink 和 emit 逻辑；`llms.set_telemetry_sink` / `llms.call.set_telemetry_sink` 保持同一函数身份 |
 | `chat_runner.py` | Sync/async chat 执行边界；负责 client resolution、kwargs merge、chat/vision capability guard、provider text extraction 和 telemetry |
 | `json_parser.py` | LLM 文本响应的 JSON object 解析；`llms.parse_json_object` / `llms.call.parse_json_object` 保持同一函数身份 |
@@ -19,6 +19,7 @@
 | `image_providers.py` | Google / relay / OpenAI-compatible image provider dispatch helper；`llms.call._image_*` 等旧内部路径保持同一函数身份 |
 | `image_runner.py` | Image 执行边界；负责 active image model resolution、reference input filtering、capability guard、provider dispatch、result validation 和 telemetry |
 | `structured_outputs.py` | Intent/target 等结构化 LLM helper 的字符串清洗和 parse-error 分类；旧模块私有 `_clean_str` 路径保持同一函数身份 |
+| `structured_models.py` | 结构化 LLM helper 结果模型的兼容 re-export；真实 owner 是 `nori.core.contracts` |
 | `structured_calls.py` | Intent/target 等结构化 LLM helper 的非抛错 JSON 调用包装；统一返回 `data/raw/error` |
 | `structured_prompts.py` | Intent/target 等结构化 LLM helper 的 prompt 构造；旧模块私有 `_build_*_prompt` 路径保留薄代理 |
 | `mode.py` | `current_mode()` / `set_mode("direct"\|"ghc")` / `ensure_ready()` 预检，复用客户端配置校验 |
@@ -72,7 +73,7 @@ writer / reviewer / evolution / skills
 
 Telemetry 不包含 prompt、messages、API key、图片字节或响应正文；sink 自身异常会被吞掉，不影响业务调用。实现放在 `llms.telemetry`，`llms.__init__` 和 `llms.call` 继续 re-export 同一个 `set_telemetry_sink` 函数。
 
-公共异常类型定义在 `llms.errors`。`llms.__init__`、`llms.call` 和 `llms.client` 会继续 re-export 同一个类对象，避免调用方按旧路径捕获异常时出现 identity drift。
+公共异常类型定义在 `nori.core.contracts`。`llms.errors`、`llms.__init__`、`llms.call` 和 `llms.client` 会继续 re-export 同一个类对象，避免调用方按旧路径捕获异常时出现 identity drift。
 
 ## 最小示例
 

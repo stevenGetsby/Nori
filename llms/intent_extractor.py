@@ -23,15 +23,14 @@ from __future__ import annotations
 from typing import Any
 
 from .call import chat_json_with_raw
-from .errors import ChatJSONError
 from .structured_calls import call_structured_json as _call_structured_json
-from .structured_models import IntentLLMResult
 from .structured_prompts import INTENT_FIELD_DESCRIPTIONS as _FIELD_DESCRIPTIONS
 from .structured_prompts import build_intent_system_prompt as _build_intent_system_prompt
 from .structured_prompts import build_intent_user_prompt as _build_intent_user_prompt
 from .structured_outputs import chat_json_error_reason as _chat_json_error_reason
 from .structured_outputs import clean_str as _clean_str
 from .structured_outputs import normalize_field_value as _normalize_field_value
+from nori.core.contracts import ChatJSONError, IntentLLMResult
 
 
 SUPPORTED_FIELDS = (

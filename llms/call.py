@@ -24,7 +24,7 @@ from .chat_runner import achat_text as _achat_text
 from .chat_runner import chat_text as _chat_text
 from .client import build_client_bundle, get_async_client, get_client, validate_api_key
 from .config import get_active
-from .errors import (
+from nori.core.contracts import (
     ChatCapabilityError,
     ChatJSONError,
     ChatResultError,

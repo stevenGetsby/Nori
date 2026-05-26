@@ -10,7 +10,7 @@ Turn Nori from one-shot generation into an account-operations backend with stabl
 
 | Module | Status | Notes |
 | --- | --- | --- |
-| `nori/context_building/models.py` | Implemented | Provider-free account-operation dataclasses with serialization; `from_dict()` input cleanup uses shared `nori._model_coercion` helpers. |
+| `nori/context_building/models.py` | Implemented | Provider-free account-operation dataclasses with serialization; `from_dict()` input cleanup uses shared `nori.core.contracts` helpers. |
 | `nori/context_building/operation_planner/operation_planner.py` | Implemented | LLM JSON path + deterministic fallback + critic metadata + fallback `llm_error` metadata. |
 | `nori/context_building/operation_planner/project_builder.py` | Implemented | Builds OperationPlanner deterministic fallback projects, including rule-based tasks, calendars, derived KPI snapshots, positioning, asset requirements, and benchmark references. |
 | `nori/context_building/operation_planner/normalizer.py` | Implemented | Normalizes OperationPlanner LLM operation-plan/calendar output into a fallback project shell, including tasks, date clamps, metadata, and derived KPI snapshot. |

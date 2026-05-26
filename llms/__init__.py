@@ -20,13 +20,15 @@ from .client import (
     validate_api_key,
     validate_client_config,
 )
-from .errors import (
-    LLMClientConfigError,
+from nori.core.contracts import (
+    ChatCapabilityError,
     ChatJSONError,
     ChatResultError,
-    ChatCapabilityError,
     ImageCapabilityError,
     ImageResultError,
+    IntentLLMResult,
+    LLMClientConfigError,
+    TargetSelectionResult,
 )
 from .call import (
     achat,
@@ -37,7 +39,6 @@ from .call import (
 )
 from .json_parser import parse_json_object
 from .telemetry import set_telemetry_sink
-from .structured_models import IntentLLMResult, TargetSelectionResult
 from .intent_extractor import extract_intent
 from .target_selector import select_edit_target
 

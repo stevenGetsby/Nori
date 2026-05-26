@@ -10,10 +10,14 @@ from nori._model_coercion import (
     optional_str,
     string_list,
 )
+from nori.core import contracts
 from nori.market_analysis.models import NoteEvidence
 
 
 def test_model_coercion_helpers_keep_shared_defaults():
+    assert mapping is contracts.mapping
+    assert int_value is contracts.int_value
+    assert string_list is contracts.string_list
     assert mapping({"a": 1}) == {"a": 1}
     assert mapping([("a", 1)]) == {}
     assert mapping_list([{"a": 1}, "skip", {"b": 2}]) == [{"a": 1}, {"b": 2}]

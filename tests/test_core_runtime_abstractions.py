@@ -4,6 +4,7 @@ import inspect
 
 import llms
 from nori.core import AgentBase, LLMFactory, WorkflowBase, named_workflow_steps
+from nori.core import contracts
 from nori.content_generation.content_producer import ContentProducerAgent
 from nori.content_generation.cover_director import CoverDirectorAgent
 from nori.content_generation.note_maker import NoteMakerAgent
@@ -39,6 +40,8 @@ def test_core_exports_runtime_base_abstractions():
     assert LLMFactory.__module__ == "nori.core.llm"
     assert AgentBase.__module__ == "nori.core.agent"
     assert WorkflowBase.__module__ == "nori.core.workflow"
+    assert contracts.ProviderConfig.__module__ == "nori.core.contracts"
+    assert contracts.LLMClientConfigError.__module__ == "nori.core.contracts"
 
 
 def test_llm_factory_delegates_to_project_llm_gateway():

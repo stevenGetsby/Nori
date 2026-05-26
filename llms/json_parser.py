@@ -5,7 +5,7 @@ import json
 import re
 from typing import Any
 
-from .errors import ChatJSONError
+from nori.core.contracts import ChatJSONError
 
 
 def parse_json_object(raw: str | None) -> dict[str, Any]:

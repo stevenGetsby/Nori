@@ -4,11 +4,11 @@ from __future__ import annotations
 from typing import Any
 
 from nori._compat import dataclass, field
-from nori._model_coercion import dict_list as _dict_list
-from nori._model_coercion import int_value as _int
-from nori._model_coercion import mapping as _mapping
-from nori._model_coercion import mapping_list as _mapping_list
-from nori._model_coercion import string_list as _string_list
+from nori.core.contracts import dict_list as _dict_list
+from nori.core.contracts import int_value as _int
+from nori.core.contracts import mapping as _mapping
+from nori.core.contracts import mapping_list as _mapping_list
+from nori.core.contracts import string_list as _string_list
 
 
 @dataclass(slots=True)

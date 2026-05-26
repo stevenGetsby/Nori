@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from nori._compat import dataclass, field
-from nori._model_coercion import dict_list as _dict_list, int_value as _int, mapping as _mapping, string_list as _string_list
+from nori.core.contracts import dict_list as _dict_list, int_value as _int, mapping as _mapping, string_list as _string_list
 
 
 @dataclass(slots=True)

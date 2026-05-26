@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .errors import ChatResultError, ImageResultError
+from nori.core.contracts import ChatResultError, ImageResultError
 
 
 def extract_chat_text(resp: Any, model: Any) -> str:

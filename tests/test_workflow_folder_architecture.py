@@ -164,6 +164,12 @@ REMOVED_LEGACY_PACKAGES = [
 ]
 REMOVED_COMPAT_FILES = ["nori/_module_alias.py"]
 REMOVED_SHARED_DOMAIN_HELPERS = ["nori/shared/note_skill_fixture.py"]
+PRIVATE_CONTRACT_COMPAT_MODULES = {
+    Path("nori/_model_coercion.py"),
+    Path("nori/config_models.py"),
+    Path("llms/errors.py"),
+    Path("llms/structured_models.py"),
+}
 
 
 REMOVED_LEGACY_IMPORTS = [
@@ -378,6 +384,30 @@ def test_context_building_models_do_not_import_downstream_business_domains():
 def test_domain_specific_helpers_are_not_kept_in_shared_layer():
     for rel_path in REMOVED_SHARED_DOMAIN_HELPERS:
         assert not (ROOT / rel_path).exists(), rel_path
+
+
+def test_runtime_code_imports_public_contracts_from_core_boundary():
+    private_contract_modules = {
+        "nori._model_coercion",
+        "nori.config_models",
+        "llms.errors",
+        "llms.structured_models",
+    }
+    private_llms_relative_contract_modules = {"errors", "structured_models"}
+    for root in (ROOT / "nori", ROOT / "llms"):
+        for path in root.rglob("*.py"):
+            rel_path = path.relative_to(ROOT)
+            if rel_path in PRIVATE_CONTRACT_COMPAT_MODULES:
+                continue
+            tree = ast.parse(path.read_text())
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    imported = {alias.name for alias in node.names}
+                    assert not (imported & private_contract_modules), rel_path
+                if isinstance(node, ast.ImportFrom):
+                    assert node.module not in private_contract_modules, rel_path
+                    if rel_path.parts[0] == "llms" and node.level == 1:
+                        assert node.module not in private_llms_relative_contract_modules, rel_path
 
 
 def test_legacy_import_roots_are_not_importable():

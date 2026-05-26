@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from nori._compat import dataclass, field
-from nori._model_coercion import mapping as _mapping, mapping_list as _mapping_list
+from nori.core.contracts import mapping as _mapping, mapping_list as _mapping_list
 
 from .models import AssetLibrary, ClientBrief, ContentCalendar, ContentTask, KPIPlan, OperationPlan
 

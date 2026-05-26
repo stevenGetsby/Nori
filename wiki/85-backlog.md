@@ -60,7 +60,7 @@ Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed
 | Decide fate of `进度.md` | Done | Marked root `进度.md` as a historical archive and updated the project operator skill to use wiki/backlog as the canonical status source. |
 | Add root project config docs without secrets | Done | Added `api_config.example.yaml`, `wiki/refs/api-config.md`, and config contract tests. |
 | Keep Python 3.9 import compatibility | Done | Shared dataclass model/result classes now route through `nori._compat`. |
-| Extract LLM gateway error boundary | Done | Added `llms.errors` as canonical exception module while preserving package, call, and client import identity. |
+| Extract LLM gateway error boundary | Done | Added `llms.errors`; canonical ownership later moved to `nori.core.contracts` while preserving package, call, and client import identity. |
 | Extract LLM telemetry boundary | Done | Moved sink state and emit logic into `llms.telemetry` while preserving `llms.set_telemetry_sink` and `llms.call.set_telemetry_sink` identity. |
 | Extract LLM chat runner boundary | Done | Moved sync/async chat client resolution, kwargs merge, capability guard, provider text extraction, and chat telemetry into `llms.chat_runner`. |
 | Extract LLM JSON parser boundary | Done | Moved JSON object parsing into `llms.json_parser` while preserving `llms.parse_json_object` and `llms.call.parse_json_object` identity. |
@@ -90,7 +90,7 @@ Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed
 | Align resolved model capabilities | Done | `ResolvedModel` now preserves video/audio capability fields and `llms.image` rejects non-image active models early. |
 | Guard chat/vision capability | Done | `llms.chat` / `llms.achat` now reject non-chat models and require `supports_vision=true` for vision usage or multimodal message parts. |
 | Centralize JSON raw capture | Done | Added `llms.chat_json_with_raw` and routed intent/target helpers through it instead of duplicate chat wrappers. |
-| Extract structured LLM result model boundary | Done | Moved `StructuredCallResult`, `IntentLLMResult`, and `TargetSelectionResult` into `llms.structured_models`; package and legacy module imports keep the same class identities. |
+| Extract structured LLM result model boundary | Done | Moved `StructuredCallResult`, `IntentLLMResult`, and `TargetSelectionResult` behind `llms.structured_models`; canonical ownership later moved to `nori.core.contracts` while package and legacy module imports keep the same class identities. |
 | Share required stage JSON wrapper | Done | Added `nori.shared.call_stage_json` and routed NoteMaker/CoverDirector JSON stages through it with JSON mode enabled. |
 | Share pre-built messages JSON wrapper | Done | Added `call_stage_messages_json` and routed Intake vision JSON tagging through it with JSON mode enabled. |
 | Share optional pre-built JSON wrapper | Done | Added `try_stage_messages_json` so optional custom/multimodal message stages can reuse the same deterministic fallback metadata contract as `try_stage_json`. |
@@ -113,9 +113,9 @@ Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed
 | Centralize LLM fallback error formatter | Done | Added `nori.shared.attach_llm_error` and routed Intake, AccountPlanner, ops planners, and analyzer fallback through it. |
 | Refine optional JSON fallback reasons | Done | `try_stage_json` now reuses `llms.structured_outputs.chat_json_error_reason`, preserving `empty_response` versus `parse_error` in fallback metadata. |
 | Add front-pipeline fallback metadata | Done | `IntakeResult` and `AccountPlanResult` now support optional metadata; Intake/AccountPlanner route optional JSON stages through `try_stage_json` and record redacted `llm_error` on fallback. |
-| Share model coercion helpers | Done | Added `nori._model_coercion` and migrated ops/skill model `from_dict()` cleanup onto shared mapping/list/string/int helpers. |
-| Add model boolean coercion | Done | Added `bool_value()` to `nori._model_coercion` and migrated persisted booleans such as `enable_search` / `llm_enhanced` off plain `bool(...)`. |
-| Extract runtime config model boundary | Done | Moved `ProviderConfig`, `ModelConfig`, and `ResolvedModel` into `nori.config_models`; `nori_config`, `llms.config`, and `llms.client` now consume the shared contract while preserving legacy class identities. |
+| Share model coercion helpers | Done | Added shared coercion helpers; canonical ownership later moved to `nori.core.contracts`, with `nori._model_coercion` retained as a compatibility path. |
+| Add model boolean coercion | Done | Added shared `bool_value()` and migrated persisted booleans such as `enable_search` / `llm_enhanced` off plain `bool(...)`. |
+| Extract runtime config model boundary | Done | Moved `ProviderConfig`, `ModelConfig`, and `ResolvedModel` behind a shared boundary; canonical ownership later moved to `nori.core.contracts`, while `nori_config`, `llms.config`, and `llms.client` preserve class identities. |
 | Extract runtime config normalization boundary | Done | Moved provider/model key parsing, env-name cleanup, mode normalization, core section validation, and flat/nested active-model selection into `nori.config_normalization`; `nori_config` and `llms.mode` now reuse it. |
 | Harden model config scalar coercion | Done | `NoriConfig` now normalizes model booleans, ints, floats, list options, and dict options before constructing `ModelConfig` / `ResolvedModel`. |
 | Fail fast on malformed config sections | Done | Non-mapping YAML top level, `providers`, `models`, and individual provider/model entries now raise `NoriConfigError` instead of generic Python errors or silent empty defaults. |
@@ -206,7 +206,7 @@ Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed
 | Extract XHS session skill-builder boundary | Done | Moved session `NoteSkill` construction, merged rules, evidence-note mapping, cover rules, metric percentiles, note-type majority, and cluster signals into `nori.market_analysis.xhs_note_analyzer.skill_builder`. |
 | Analyzer fallback observability | Done | `XHSNoteAnalyzer.analyze_note` optional LLM enhancement now uses `try_stage_json` and shared `attach_llm_error` for structured `validation.llm_error`. |
 | Analyzer session JSON helper routing | Done | `collect_for_session` keyword and label stages now use `call_stage_json(json_mode=True)` with fail-fast domain errors. |
-| Shared model coercion helpers | Done | `NoteSkill` / `SessionSkillReport` and ops model `from_dict()` paths now share `nori._model_coercion` with regression coverage. |
+| Shared model coercion helpers | Done | `NoteSkill` / `SessionSkillReport` and ops model `from_dict()` paths now share `nori.core.contracts` coercion helpers, with `nori._model_coercion` kept only for compatibility coverage. |
 | XHS evidence from_dict contracts | Done | `XHSNoteSample` and `XHSSeedSkillDraft` now round-trip through `from_dict()` for analyzer evidence artifacts. |
 
 ## Deferred

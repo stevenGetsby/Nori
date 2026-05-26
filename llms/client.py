@@ -15,10 +15,9 @@ from typing import Any
 
 from openai import AsyncOpenAI, OpenAI
 
-from nori.config_models import ResolvedModel
+from nori.core.contracts import LLMClientConfigError, ResolvedModel
 
 from .config import get_active
-from .errors import LLMClientConfigError
 
 
 @dataclass

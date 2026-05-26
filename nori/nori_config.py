@@ -7,7 +7,7 @@ from typing import Any
 
 import yaml
 
-from nori.config_models import ModelConfig, ProviderConfig, ResolvedModel
+from nori.core.contracts import ModelConfig, ProviderConfig, ResolvedModel
 from nori.config_normalization import (
     NoriConfigError,
     active_model_map as _active_model_map,
@@ -22,7 +22,7 @@ from nori.config_normalization import (
     resolve_api_key as _resolve_api_key,
     select_active_models as _select_active_models,
 )
-from nori._model_coercion import (
+from nori.core.contracts import (
     bool_value as _bool,
     float_value as _float,
     int_list as _int_list,

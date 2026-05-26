@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .errors import ChatJSONError
+from nori.core.contracts import ChatJSONError
 
 
 def clean_str(value: Any) -> str | None:

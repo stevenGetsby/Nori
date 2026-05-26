@@ -1,22 +1,24 @@
 from __future__ import annotations
 
 from nori import config_models
+from nori.core import ProviderConfig, ModelConfig, ResolvedModel
+from nori.core import contracts
 from nori import nori_config
 
 
-def test_config_model_dataclasses_live_in_dedicated_boundary():
-    provider = config_models.ProviderConfig(
+def test_config_model_dataclasses_live_in_core_contracts_boundary():
+    provider = ProviderConfig(
         id="openai",
         base_url="https://api.example.test/v1",
         api_key="test-key",
     )
-    model = config_models.ModelConfig(
+    model = ModelConfig(
         key="openai::gpt-5-mini",
         provider_id="openai",
         model_id="gpt-5-mini",
         type="llm",
     )
-    resolved = config_models.ResolvedModel(
+    resolved = ResolvedModel(
         key="openai::gpt-5-mini",
         provider_id="openai",
         model_id="gpt-5-mini",
@@ -34,7 +36,13 @@ def test_config_model_dataclasses_live_in_dedicated_boundary():
     assert resolved.supports_audio is False
 
 
-def test_nori_config_reexports_config_model_identities_for_compatibility():
-    assert nori_config.ProviderConfig is config_models.ProviderConfig
-    assert nori_config.ModelConfig is config_models.ModelConfig
-    assert nori_config.ResolvedModel is config_models.ResolvedModel
+def test_config_model_import_identities_stay_compatible():
+    assert contracts.ProviderConfig is ProviderConfig
+    assert contracts.ModelConfig is ModelConfig
+    assert contracts.ResolvedModel is ResolvedModel
+    assert config_models.ProviderConfig is ProviderConfig
+    assert config_models.ModelConfig is ModelConfig
+    assert config_models.ResolvedModel is ResolvedModel
+    assert nori_config.ProviderConfig is ProviderConfig
+    assert nori_config.ModelConfig is ModelConfig
+    assert nori_config.ResolvedModel is ResolvedModel

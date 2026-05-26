@@ -3,9 +3,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from nori.core import UserAsset
 from nori._compat import dataclass, field
-from nori._model_coercion import (
+from nori.core import UserAsset
+from nori.core.contracts import (
     bool_value as _bool,
     dict_list as _dict_list,
     mapping as _mapping,

@@ -6,6 +6,9 @@
 
 | Change | Notes |
 | --- | --- |
+| Promoted LLM public contracts to core | Added `nori.core.contracts` as the owner for runtime config dataclasses, gateway errors, structured LLM result dataclasses, and shared model coercion helpers; old `nori.config_models`, `nori._model_coercion`, `llms.errors`, and `llms.structured_models` now re-export the same objects for compatibility. |
+| Made core exports lazy | `nori.core` now lazy-loads public contracts, domain models, runtime bases, workflow helpers, and architecture metadata, reducing import side effects while keeping existing public imports stable. |
+| Guarded private contract imports | Added architecture coverage so runtime code imports public contracts from `nori.core` / `nori.core.contracts` instead of private compatibility modules. |
 | Added core runtime bases | Added `nori.core.LLMFactory`, `AgentBase`, and `WorkflowBase`; concrete runtime agents now inherit `AgentBase`, and orchestration agents can share the same injectable LLM gateway. |
 | Standardized domain facades as workflows | `UserProfilingFacade`, `MarketAnalysisFacade`, `ContextPackBuilder`, `ContentGenerationFacade`, and `LearningLoopFacade` now inherit `WorkflowBase` and expose stable `workflow_name` / `step_names` values. |
 | Enforced core LLM injection boundary | Removed direct `llms` imports from workflow runtime stages; tests now patch the project gateway or inject factories, and architecture guards require stage code to route LLM access through `nori.core.LLMFactory`. |
@@ -82,7 +85,7 @@
 | Extracted XHS session LLM boundary | Moved keyword generation, hot-note prompt shaping, goal/tone label normalization, and fail-fast JSON helper routing into `nori.market_analysis.xhs_session_llm`, with focused session LLM tests. |
 | Extracted XHS session reporter boundary | Moved report timestamping, full session report writing, and skills-only guide JSON writing into `nori.market_analysis.xhs_session_reporter`, with focused reporter tests. |
 | Extracted XHS session skill-builder boundary | Moved session `NoteSkill` construction, merged rules, evidence-note mapping, cover rules, metric percentiles, note-type majority, and cluster signals into `nori.market_analysis.xhs_skill_builder`, with focused builder tests. |
-| Extracted LLM gateway errors | Added `llms.errors` as the canonical exception boundary while preserving existing package, call-module, and client-module imports as the same class identities. |
+| Extracted LLM gateway errors | Added `llms.errors` as the gateway exception compatibility boundary while preserving existing package, call-module, and client-module imports as the same class identities. |
 | Extracted LLM telemetry boundary | Moved redacted telemetry state and emit logic into `llms.telemetry`, keeping public `set_telemetry_sink` imports compatible. |
 | Extracted LLM chat runner boundary | Moved sync/async chat client resolution, kwargs merge, capability guard, provider text extraction, and chat telemetry into `llms.chat_runner`, keeping `llms.call.chat` / `achat` as public facades. |
 | Extracted LLM JSON parser boundary | Moved JSON object parsing into `llms.json_parser`, keeping package and call-module `parse_json_object` imports compatible. |
@@ -93,9 +96,9 @@
 | Extracted LLM image-input boundary | Moved reference-image bytes/data-uri/path/base64 normalization and MIME/data-uri helpers into `llms.image_inputs`, keeping legacy call-module helper aliases compatible. |
 | Extracted LLM image-provider boundary | Moved OpenAI-compatible edit, relay reference-payload retry, and Google native image generation into `llms.image_providers`, keeping legacy call-module helper aliases compatible. |
 | Extracted LLM image runner boundary | Moved active image-model resolution, reference input filtering, image capability guards, provider dispatch, result validation, and image telemetry into `llms.image_runner`, keeping `llms.call.image` as the public facade. |
-| Extracted runtime config model boundary | Moved `ProviderConfig`, `ModelConfig`, and `ResolvedModel` into `nori.config_models`, with `nori_config`, `llms.config`, and `llms.client` sharing the same dataclass contracts. |
+| Extracted runtime config model boundary | Moved `ProviderConfig`, `ModelConfig`, and `ResolvedModel` behind a shared contract boundary, with `nori_config`, `llms.config`, and `llms.client` sharing the same dataclass contracts. |
 | Extracted runtime config normalization boundary | Moved provider/model key parsing, env-name cleanup, mode normalization, section-shape validation, and active-model selection into `nori.config_normalization`, shared by `nori_config` and `llms.mode`. |
-| Extracted structured LLM result model boundary | Moved `StructuredCallResult`, `IntentLLMResult`, and `TargetSelectionResult` into `llms.structured_models`, keeping package and legacy module import identities compatible. |
+| Extracted structured LLM result model boundary | Moved `StructuredCallResult`, `IntentLLMResult`, and `TargetSelectionResult` behind a shared structured-model boundary, keeping package and legacy module import identities compatible. |
 | Extracted structured LLM-output normalization | Moved shared string cleanup, parse-error reason classification, intent field-node normalization, selector option cleanup, confidence fallback, and alternative filtering for intent/target helpers into `llms.structured_outputs`, keeping legacy module-private helper aliases compatible. |
 | Extracted structured LLM-call boundary | Moved non-throwing JSON-mode call handling, raw capture, parse-error classification, and provider-exception wrapping for intent/target helpers into `llms.structured_calls`, with focused helper tests. |
 | Extracted structured LLM-prompt boundary | Moved intent field descriptions, enum/candidate prompt text, target selector catalogs, history formatting, and summary truncation into `llms.structured_prompts`, with focused prompt tests. |
@@ -140,12 +143,12 @@
 | Added front-pipeline fallback metadata | Added optional metadata on `IntakeResult` and `AccountPlanResult`, and routed Intake/AccountPlanner optional JSON stages through `try_stage_json`. |
 | Added analyzer fallback observability | Routed `XHSNoteAnalyzer.analyze_note` optional LLM enhancement through `try_stage_json` and replaced raw exception strings with structured `validation.llm_error`. |
 | Routed analyzer session JSON stages through shared helper | `collect_for_session` keyword generation and note labeling now use `call_stage_json(json_mode=True)` and fail fast through `XHSNoteAnalyzerLLMError` / session validation checks. |
-| Shared model coercion helpers | Added `nori._model_coercion` and routed ops/skill model `from_dict()` normalization through it to avoid drift between duplicated private helpers. |
+| Shared model coercion helpers | Added shared model coercion helpers and routed ops/skill model `from_dict()` normalization through them to avoid drift between duplicated private helpers. |
 | Added generation artifact restoration | Added `from_dict()` round trips for `UserAsset`, `AssetBundle`, `CandidateTitle`, `NoteDraft`, and `CoverResult` so package prompt snapshots can be restored without ad hoc parsing. |
 | Added front-pipeline restoration | Added `from_dict()` round trips for `UserInput`, `IntakeResult`, `AccountPlannerInput`, and `AccountPlanResult` so intake and account-planning snapshots can be restored before ops handoff. |
 | Canonicalized asset dict normalization | Routed NoteMaker and ContentProducer dict assets through `UserAsset.from_dict()` instead of local reconstruction helpers. |
 | Added XHS evidence restoration | Added `from_dict()` round trips for `XHSNoteSample` and `XHSSeedSkillDraft` so collected evidence and seed drafts can be restored without ad hoc parsing. |
-| Added boolean model coercion | Added `nori._model_coercion.bool_value` and routed persisted model booleans through it so string values like `"false"` restore correctly. |
+| Added boolean model coercion | Added shared `bool_value` and routed persisted model booleans through it so string values like `"false"` restore correctly. |
 | Hardened config model coercion | `NoriConfig` now coerces model scalar/list/dict fields from YAML before they reach LLM capability guards and kwargs merging. |
 | Added explicit config structure errors | Non-mapping YAML top level, `providers`, `models`, and individual provider/model entries now raise `NoriConfigError`, and active usage lookup trims the queried usage key before resolution. |
 | Hardened duration option coercion | Added shared `int_list` coercion so scalar config values such as `duration_options: "10"` become `[10]`. |

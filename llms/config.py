@@ -11,7 +11,7 @@
 """
 from __future__ import annotations
 
-from nori.config_models import ResolvedModel
+from nori.core.contracts import ResolvedModel
 from nori.nori_config import NoriConfig, cfg as _default_cfg
 
 _cfg: NoriConfig = _default_cfg

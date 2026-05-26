@@ -5,8 +5,7 @@ from collections.abc import Callable
 from typing import Any
 
 from .call import chat_json_with_raw
-from .errors import ChatJSONError
-from .structured_models import StructuredCallResult
+from nori.core.contracts import ChatJSONError, StructuredCallResult
 from .structured_outputs import chat_json_error_reason
 
 

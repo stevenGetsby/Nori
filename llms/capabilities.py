@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .errors import ChatCapabilityError, ImageCapabilityError
+from nori.core.contracts import ChatCapabilityError, ImageCapabilityError
 
 
 def ensure_image_capability(model: Any, ref_bytes_list: list[bytes]) -> None:

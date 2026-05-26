@@ -22,7 +22,7 @@ Collect platform evidence and convert high-performing notes into reusable, evide
 | --- | --- | --- |
 | `XHSNoteAnalyzer.analyze_note` | Single-note evidence -> seed skill draft. | Implemented; optional LLM enhancement records structured fallback metadata; `XHSNoteSample` and `XHSSeedSkillDraft` support `to_dict()` / `from_dict()` round trips. |
 | `XHSNoteAnalyzer.collect_for_session` | Session context -> keywords -> collected notes -> clustered skills. | Implemented / live path depends on data collection. |
-| `SessionSkillReport` | Aggregated skill-learning output. | Implemented in `nori/market_analysis/models.py`; `from_dict()` input cleanup uses shared `nori._model_coercion` helpers. |
+| `SessionSkillReport` | Aggregated skill-learning output. | Implemented in `nori/market_analysis/models.py`; `from_dict()` input cleanup uses shared `nori.core.contracts` helpers. |
 | `nori.market_analysis.note_skill_fixture` | Load/write skills-only fixtures that can feed `NoteMakerAgent`. | Implemented. |
 | `scripts/smoke_session_skill.py` | Live Holly chain smoke test. | Optional; needs logs, crawler/sign/cookies/LLM. |
 

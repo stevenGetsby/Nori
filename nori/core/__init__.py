@@ -1,58 +1,66 @@
 """Shared contracts for Nori's domain architecture."""
 from __future__ import annotations
 
-from .architecture import DOMAIN_MODULES, DomainModule, domain_module_names, get_domain_module
-from .agent import AgentBase
-from .llm import LLMFactory
-from .models import (
-    AssetLibrary,
-    AssetRecord,
-    CandidateSet,
-    ClientBrief,
-    ContentCalendar,
-    ContextPack,
-    ContentTask,
-    DecisionPoint,
-    DomainSnapshot,
-    ExplanationTrace,
-    KPIPlan,
-    LearningSignal,
-    MarketAnalysis,
-    OperationPlan,
-    PerformanceSnapshot,
-    UserAsset,
-    UserProfile,
-)
-from .project import AccountOperationProject
-from .workflow import WorkflowBase, WorkflowStep, named_workflow_steps, passthrough_step
+from importlib import import_module
+from typing import Any, Final
 
-__all__ = [
-    "AgentBase",
-    "AccountOperationProject",
-    "AssetLibrary",
-    "AssetRecord",
-    "DOMAIN_MODULES",
-    "CandidateSet",
-    "ClientBrief",
-    "ContentCalendar",
-    "ContextPack",
-    "ContentTask",
-    "DecisionPoint",
-    "DomainModule",
-    "DomainSnapshot",
-    "ExplanationTrace",
-    "LearningSignal",
-    "KPIPlan",
-    "LLMFactory",
-    "MarketAnalysis",
-    "OperationPlan",
-    "PerformanceSnapshot",
-    "UserAsset",
-    "UserProfile",
-    "WorkflowBase",
-    "WorkflowStep",
-    "domain_module_names",
-    "get_domain_module",
-    "named_workflow_steps",
-    "passthrough_step",
-]
+
+_LAZY_EXPORTS: Final[dict[str, str]] = {
+    "AccountOperationProject": "project",
+    "AgentBase": "agent",
+    "AssetLibrary": "models",
+    "AssetRecord": "models",
+    "CandidateSet": "models",
+    "ChatCapabilityError": "contracts",
+    "ChatJSONError": "contracts",
+    "ChatResultError": "contracts",
+    "ClientBrief": "models",
+    "ContentCalendar": "models",
+    "ContentTask": "models",
+    "ContextPack": "models",
+    "DOMAIN_MODULES": "architecture",
+    "DecisionPoint": "models",
+    "DomainModule": "architecture",
+    "DomainSnapshot": "models",
+    "ExplanationTrace": "models",
+    "ImageCapabilityError": "contracts",
+    "ImageResultError": "contracts",
+    "IntentLLMResult": "contracts",
+    "KPIPlan": "models",
+    "LLMClientConfigError": "contracts",
+    "LLMFactory": "llm",
+    "LearningSignal": "models",
+    "MarketAnalysis": "models",
+    "ModelConfig": "contracts",
+    "OperationPlan": "models",
+    "PerformanceSnapshot": "models",
+    "ProviderConfig": "contracts",
+    "ResolvedModel": "contracts",
+    "StructuredCallResult": "contracts",
+    "TargetSelectionResult": "contracts",
+    "UserAsset": "models",
+    "UserProfile": "models",
+    "WorkflowBase": "workflow",
+    "WorkflowStep": "workflow",
+    "domain_module_names": "architecture",
+    "get_domain_module": "architecture",
+    "named_workflow_steps": "workflow",
+    "passthrough_step": "workflow",
+}
+
+
+def __getattr__(name: str) -> Any:
+    if name == "contracts":
+        module = import_module(f"{__name__}.contracts")
+        globals()[name] = module
+        return module
+    module_name = _LAZY_EXPORTS.get(name)
+    if module_name is None:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+    module = import_module(f"{__name__}.{module_name}")
+    value = getattr(module, name)
+    globals()[name] = value
+    return value
+
+
+__all__ = [*_LAZY_EXPORTS, "contracts"]
