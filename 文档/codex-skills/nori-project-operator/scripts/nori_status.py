@@ -34,9 +34,13 @@ def main() -> int:
             "project_skill": (root / "文档" / "codex-skills" / "nori-project-operator" / "SKILL.md").is_file(),
         },
         "test_files": sorted(p.name for p in tests_dir.glob("test_*.py")) if tests_dir.is_dir() else [],
-        "planned_packages": {
-            "ops_models": (root / "nori" / "ops_models").is_dir(),
+        "legacy_packages": {
+            "gen_agents": (root / "nori" / "gen_agents").is_dir(),
             "ops_agents": (root / "nori" / "ops_agents").is_dir(),
+            "ana_agents": (root / "nori" / "ana_agents").is_dir(),
+            "ops_models": (root / "nori" / "ops_models").is_dir(),
+            "agent_models": (root / "nori" / "agent_models").is_dir(),
+            "agent_utils": (root / "nori" / "agent_utils").is_dir(),
         },
     }
 

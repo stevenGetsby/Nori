@@ -2,6 +2,13 @@
 
 状态日期：2026-05-23
 
+> Historical automation note.
+>
+> Current roadmap, backlog, architecture, changelog, and verification baseline
+> now live in `wiki/`. Keep this document for historical context; new
+> iteration status should update `wiki/85-backlog.md`, relevant stage/API docs,
+> and `wiki/90-changelog.md`.
+
 本文档用于把 Nori 从“小红书内容生成 Agent”推进为“账号代运营 SOP Agent 系统”。自动化目标不是一次性大改，而是让 Codex 每一轮都完成一个可验证的小增量。
 
 ## 1. LLM/API 调用现状
@@ -92,7 +99,7 @@ api_config.yaml
 -> 选择一个最小高价值任务
 -> 实现
 -> 测试
--> 更新进度
+-> 更新 wiki/backlog
 -> 交接下一轮
 ```
 
@@ -130,7 +137,7 @@ Use the Nori Project Operator skill if available. In /Users/headmasterx/Document
 2. Pick the smallest highest-impact unfinished task.
 3. Implement it with focused tests, avoiding live LLM/crawler/image calls unless explicitly required.
 4. Run relevant tests, preferably ending with python -m pytest tests -q if feasible.
-5. Update 文档/Codex自动化推进计划.md or 进度.md with status, test result, and next task.
+5. Update wiki/85-backlog.md and the relevant wiki stage/API/changelog files with status, test result, and next task.
 6. Summarize changes and blockers.
 ```
 

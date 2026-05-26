@@ -1,53 +1,29 @@
 # Nori 文档入口
 
-状态日期：2026-05-02
+状态日期：2026-05-24
 
-README 只负责导航。进化、生成、Skill 交接、运行日志和改造优先级已经拆到 `文档/` 下，后续我们按这些 md 一起维护项目。
+Nori 的当前权威项目文档在 `wiki/`。根 README 只做导航，避免和 wiki、历史 `文档/` 分册重复维护。
 
-## 分册
+## 必读入口
 
-| 文件 | 维护边界 |
-|---|---|
-| [文档/00-维护入口.md](文档/00-维护入口.md) | 文档维护规则、分册索引和协作入口 |
-| [文档/01-总职责分区.md](文档/01-总职责分区.md) | 数据、Skill、进化、生成、模型、测试六层职责边界 |
-| [文档/02-进化逻辑总览.md](文档/02-进化逻辑总览.md) | evolution 入口、CLI 和两条学习链路 |
-| [文档/03-封面进化链路.md](文档/03-封面进化链路.md) | EVO-COVER 各 Agent 的输入输出与交接 |
-| [文档/04-文案进化链路.md](文档/04-文案进化链路.md) | EVO-TEXT 文案 skill 学习流程 |
-| [文档/05-生成逻辑总览.md](文档/05-生成逻辑总览.md) | generation 当前入口与封面/文章两条生成线 |
-| [文档/06-封面生成链路.md](文档/06-封面生成链路.md) | GEN-COVER 从 Planner 到 Finalize 的完整链路 |
-| [文档/07-文章生成链路.md](文档/07-文章生成链路.md) | GEN-ARTICLE 当前 Writer 与后续 pipeline 边界 |
-| [文档/08-Skill交接.md](文档/08-Skill交接.md) | skill_base、scene pattern、prompt 参考库与生成层交接 |
-| [文档/09-端到端执行顺序.md](文档/09-端到端执行顺序.md) | 常用命令、运行产物和一次测试顺序 |
-| [文档/10-运行日志职责.md](文档/10-运行日志职责.md) | 测试运行日志字段与输出文件职责 |
-| [文档/11-改造优先级.md](文档/11-改造优先级.md) | P0-P3 当前工程改造任务 |
-| [文档/12-交互说法.md](文档/12-交互说法.md) | 后续协作时可以直接引用的改造说法 |
-| [文档/13-当前判断.md](文档/13-当前判断.md) | 当前架构判断和下一步取舍 |
-| [文档/14-技术核心包装页.md](文档/14-技术核心包装页.md) | Nori 技术核心的一页式汇报包装文案和架构图素材 |
-| [文档/15-open-design拆解.md](文档/15-open-design拆解.md) | reference/open-design 的职责拆解、可借鉴资产和 Nori 接入顺序 |
-| [文档/16-业务客群与技能群设计.md](文档/16-业务客群与技能群设计.md) | 客群分层、技能群结构、数据飞轮、工程基建和落地优先级 |
+| 文件 | 用途 |
+| --- | --- |
+| [wiki/00-product-proposal.md](wiki/00-product-proposal.md) | 产品定位、目标用户、当前做什么/不做什么 |
+| [wiki/01-project-roadmap.md](wiki/01-project-roadmap.md) | 阶段总览、功能索引、里程碑 |
+| [wiki/20-system-architecture.md](wiki/20-system-architecture.md) | 技术栈、目录结构、数据流、核心模块 |
+| [wiki/85-backlog.md](wiki/85-backlog.md) | 当前待办、验证基线、下一步任务 |
+| [CLAUDE.md](CLAUDE.md) | 项目级 Agent 指令和 wiki 维护规则 |
 
-## 常用入口
+## 按任务加载
 
-- 总体职责和目录边界：[文档/01-总职责分区.md](文档/01-总职责分区.md)
-- 文档维护规则：[文档/00-维护入口.md](文档/00-维护入口.md)
-- 封面进化：[文档/03-封面进化链路.md](文档/03-封面进化链路.md)
-- 封面生成：[文档/06-封面生成链路.md](文档/06-封面生成链路.md)
-- Skill 交接：[文档/08-Skill交接.md](文档/08-Skill交接.md)
-- 运行测试：[文档/09-端到端执行顺序.md](文档/09-端到端执行顺序.md)
-- 当前改造优先级：[文档/11-改造优先级.md](文档/11-改造优先级.md)
+| 任务 | 先读 |
+| --- | --- |
+| 改生成链路 | [wiki/60-stage-generation-core.md](wiki/60-stage-generation-core.md) |
+| 改账号代运营后端 | [wiki/61-stage-account-ops-backend.md](wiki/61-stage-account-ops-backend.md) |
+| 改采集或 skill 学习 | [wiki/62-stage-data-collection-and-skill-learning.md](wiki/62-stage-data-collection-and-skill-learning.md) |
+| 查 API/Agent 合同 | [wiki/30-api-reference.md](wiki/30-api-reference.md) |
+| 查坑和环境问题 | [wiki/80-known-pitfalls.md](wiki/80-known-pitfalls.md) |
 
-## 交互方式
+## 历史参考
 
-后续可以直接引用分册和编号，例如：
-
-```text
-改 文档/06 的 GEN-COVER-02：把 PromptComposer 独立出来。
-```
-
-```text
-改 文档/11 的 P1：正文生成独立成 pipeline。
-```
-
-```text
-新增 scene pattern 后，同步 文档/01、文档/06、文档/08。
-```
+`文档/` 下保留旧的设计记录、Agent 分册和项目专用 Codex skill。后续新增或更新的项目级事实应写入 `wiki/`，只在需要追溯历史决策时读取 `文档/`。

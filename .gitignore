@@ -44,7 +44,9 @@ demo_output.json
 # ── 本地数据 / 素材 / 抓取产物 ──
 data/
 cold_start_data/
-SHOWCASE/
+SHOWCASE/*
+!SHOWCASE/Holly/
+!SHOWCASE/Holly/**
 *.xlsx
 
 # ── 外部参考仓库 / 前端依赖 ──

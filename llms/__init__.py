@@ -12,10 +12,34 @@ from __future__ import annotations
 
 from .config import get_config, get_active, resolve
 from .mode import current_mode, set_mode, ensure_ready
-from .client import get_client, get_async_client
-from .call import ChatJSONError, achat, chat, chat_json, image, parse_json_object
-from .intent_extractor import IntentLLMResult, extract_intent
-from .target_selector import TargetSelectionResult, select_edit_target
+from .client import (
+    build_async_client_bundle,
+    build_client_bundle,
+    get_async_client,
+    get_client,
+    validate_api_key,
+    validate_client_config,
+)
+from .errors import (
+    LLMClientConfigError,
+    ChatJSONError,
+    ChatResultError,
+    ChatCapabilityError,
+    ImageCapabilityError,
+    ImageResultError,
+)
+from .call import (
+    achat,
+    chat,
+    chat_json,
+    chat_json_with_raw,
+    image,
+)
+from .json_parser import parse_json_object
+from .telemetry import set_telemetry_sink
+from .structured_models import IntentLLMResult, TargetSelectionResult
+from .intent_extractor import extract_intent
+from .target_selector import select_edit_target
 
 __all__ = [
     "get_config",
@@ -24,12 +48,23 @@ __all__ = [
     "current_mode",
     "set_mode",
     "ensure_ready",
+    "LLMClientConfigError",
+    "build_client_bundle",
+    "build_async_client_bundle",
     "get_client",
     "get_async_client",
+    "validate_api_key",
+    "validate_client_config",
     "chat",
     "chat_json",
+    "chat_json_with_raw",
     "parse_json_object",
+    "set_telemetry_sink",
+    "ChatCapabilityError",
     "ChatJSONError",
+    "ChatResultError",
+    "ImageCapabilityError",
+    "ImageResultError",
     "achat",
     "image",
     "IntentLLMResult",

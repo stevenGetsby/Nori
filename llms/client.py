@@ -15,8 +15,10 @@ from typing import Any
 
 from openai import AsyncOpenAI, OpenAI
 
+from nori.config_models import ResolvedModel
+
 from .config import get_active
-from nori.nori_config import ResolvedModel
+from .errors import LLMClientConfigError
 
 
 @dataclass
@@ -33,16 +35,53 @@ class ClientBundle:
 def get_client(usage: str = "llm") -> ClientBundle:
     """同步客户端。"""
     model = get_active(usage)
-    return ClientBundle(
-        client=OpenAI(api_key=model.api_key, base_url=model.base_url),
-        model=model,
-    )
+    return build_client_bundle(model, usage)
 
 
 def get_async_client(usage: str = "llm") -> ClientBundle:
     """异步客户端。"""
     model = get_active(usage)
+    return build_async_client_bundle(model, usage)
+
+
+def build_client_bundle(model: ResolvedModel, usage: str = "llm") -> ClientBundle:
+    """Build a sync client bundle from an already-resolved model."""
+    client_options = validate_client_config(model, usage)
     return ClientBundle(
-        client=AsyncOpenAI(api_key=model.api_key, base_url=model.base_url),
+        client=OpenAI(**client_options),
         model=model,
     )
+
+
+def build_async_client_bundle(model: ResolvedModel, usage: str = "llm") -> ClientBundle:
+    """Build an async client bundle from an already-resolved model."""
+    client_options = validate_client_config(model, usage)
+    return ClientBundle(
+        client=AsyncOpenAI(**client_options),
+        model=model,
+    )
+
+
+def validate_api_key(model: ResolvedModel, usage: str) -> str:
+    """Return a trimmed API key or raise an explicit config error."""
+    api_key = str(model.api_key or "").strip()
+    if not api_key:
+        raise LLMClientConfigError(
+            f"{usage} 模型 {model.key} 的 api_key 为空，请检查 api_config.yaml"
+        )
+    return api_key
+
+
+def validate_client_config(model: ResolvedModel, usage: str) -> dict[str, str]:
+    """Return trimmed OpenAI client options or raise an explicit config error."""
+    api_key = validate_api_key(model, usage)
+    base_url = str(model.base_url or "").strip()
+    if not base_url:
+        raise LLMClientConfigError(
+            f"{usage} 模型 {model.key} 的 base_url 为空，请检查 api_config.yaml"
+        )
+    return {"api_key": api_key, "base_url": base_url}
+
+
+def _client_options(model: ResolvedModel, usage: str) -> dict[str, str]:
+    return validate_client_config(model, usage)

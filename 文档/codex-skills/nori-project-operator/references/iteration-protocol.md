@@ -27,7 +27,7 @@ Prefer this order:
 ## Implementation Rules
 
 - Keep changes narrow.
-- Use existing dataclass style in `nori/agent_models` unless there is a deliberate migration.
+- Use the owning business module's `models.py` for dataclass contracts; do not recreate the removed `nori/agent_models` compatibility root.
 - Mock `llms.chat`, `llms.image`, and `DataCollector` in unit tests.
 - Do not call live APIs from tests.
 - Do not write secrets into docs, fixtures, or logs.
