@@ -17,42 +17,13 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from .capabilities import ensure_chat_capability as _ensure_chat_capability
-from .capabilities import ensure_image_capability as _ensure_image_capability
-from .capabilities import messages_need_vision as _messages_need_vision
 from .chat_runner import achat_text as _achat_text
 from .chat_runner import chat_text as _chat_text
 from .client import build_client_bundle, get_async_client, get_client, validate_api_key
 from .config import get_active
-from nori.core.contracts import (
-    ChatCapabilityError,
-    ChatJSONError,
-    ChatResultError,
-    ImageCapabilityError,
-    ImageResultError,
-)
-from .image_inputs import bytes_to_data_uri as _bytes_to_data_uri
-from .image_inputs import load_image_bytes as _load_image_bytes
-from .image_inputs import sniff_mime as _sniff_mime
-from .image_providers import image_google as _image_google
-from .image_providers import image_openai_edit as _image_openai_edit
-from .image_providers import image_relay_generate_with_references as _image_relay_generate_with_references
-from .image_providers import is_retryable_relay_reference_error as _is_retryable_relay_reference_error
 from .image_runner import image_outputs as _image_outputs
-from .json_calls import chat_json_raw as _chat_json_raw
-from .json_calls import is_response_format_error as _is_response_format_error
-from .json_calls import should_retry_without_response_format as _should_retry_without_response_format
-from .json_calls import without_response_format as _without_response_format
+from .json_calls import chat_json_raw
 from .json_parser import parse_json_object
-from .request_params import merge_chat_kwargs as _merge_kwargs
-from .request_params import merge_image_kwargs as _merge_image_kwargs
-from .request_params import max_output_param_name as _max_output_param_name
-from .results import collect_image_results as _collect_image_results
-from .results import ensure_chat_text as _ensure_chat_text
-from .results import ensure_image_results as _ensure_image_results
-from .results import extract_chat_text as _extract_chat_text
-from .results import response_value as _response_value
-from .telemetry import emit_telemetry as _emit_telemetry
 from .telemetry import set_telemetry_sink
 
 
@@ -103,7 +74,7 @@ def chat_json_with_raw(
 ) -> tuple[dict[str, Any], str]:
     """同步 chat，返回解析后的 JSON object 和原始模型文本。"""
     chat_func = _chat or chat
-    raw = _chat_json_raw(
+    raw = chat_json_raw(
         messages,
         usage=usage,
         json_mode=json_mode,
@@ -157,8 +128,5 @@ def image(
         reference_images=reference_images,
         _get_active=get_active,
         _build_client_bundle=build_client_bundle,
-        _image_google_func=_image_google,
-        _image_openai_edit_func=_image_openai_edit,
-        _image_relay_generate_with_references_func=_image_relay_generate_with_references,
         **kwargs,
     )

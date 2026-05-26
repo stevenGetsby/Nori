@@ -4,7 +4,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable
 
-from nori.content_generation.models import NoteDraft, UserAsset
+from nori.content_generation.models import NoteDraft
+from nori.core import UserAsset
 from nori.shared.prompting import json_block, json_prompt
 
 

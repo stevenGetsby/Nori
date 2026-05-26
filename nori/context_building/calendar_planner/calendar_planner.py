@@ -13,7 +13,7 @@ from . import inputs as _planner_inputs
 from . import prompts as _planner_prompts
 from . import normalizer as _calendar_normalizer
 from .. import planner_critics as _planner_critics
-from ..models import ContentCalendar, KPIPlan, OperationPlan
+from nori.core import ContentCalendar, KPIPlan, OperationPlan
 
 
 SYSTEM_PROMPT = _planner_prompts.SYSTEM_PROMPT

@@ -16,8 +16,6 @@
 | `nori/learning_loop/` | Canonical learning-loop module: review gates, review policy/scoring/state, metrics snapshots, strategy iteration, domain snapshots, and lazy public stage exports. |
 | `llms/` | Project-level LLM gateway and utilities. |
 | `nori/_compat.py` | Small runtime compatibility layer for dataclass features used by shared models and LLM result objects. |
-| `nori/_model_coercion.py` | Compatibility re-export for coercion helpers now owned by `nori.core.contracts`. |
-| `nori/config_models.py` | Compatibility re-export for runtime-config dataclass contracts now owned by `nori.core.contracts`. |
 | `nori/config_normalization.py` | Pure runtime-config normalization helpers for provider/model keys, env names, mode names, core section shapes, and active model maps. |
 | `data_collect/` | Unified crawler/sign/downloader integration layer. |
 | `tests/` | Unit and mocked integration tests. Live tests should be opt-in. |
@@ -57,17 +55,17 @@ nori.core
 | Domain module | Public contract | Current facade | Backing implementation |
 | --- | --- | --- | --- |
 | Shared core | `UserProfile`, `UserAsset`, `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, `ContentCalendar`, `AccountOperationProject`, `MarketAnalysis`, `ContextPack`, `DecisionPoint`, `ExplanationTrace`, `CandidateSet`, `PerformanceSnapshot`, `LearningSignal`, `DomainSnapshot` | `nori.core` | Provider-free dataclasses with `to_dict/from_dict`; `UserAsset`, asset library, brief, plan, KPI, task, calendar, and account-operation project contracts are cross-stage contracts; `ExplanationTrace` writes `stage_steps` and only reads legacy `agent_steps`; `DomainSnapshot` includes `validate()` / `is_valid()` quality gates; `nori.core.architecture` exposes `DOMAIN_MODULES`, `DomainModule`, `domain_module_names()`, and `get_domain_module()`. |
-| User profiling | Long-lived user/account/brand/preference profile | `nori.user_profiling.facade.UserProfilingFacade` | `nori.user_profiling.models` owns `UserInput`, `IntakeResult`, `AccountPlannerInput`, `AccountPlanResult`, and `AccountPositioning`; it re-exports `ClientBrief` from `nori.core` for existing call sites. Image tagging returns `nori.core.UserAsset` without importing content generation. |
+| User profiling | Long-lived user/account/brand/preference profile | `nori.user_profiling.facade.UserProfilingFacade` | `nori.user_profiling.models` owns `UserInput`, `IntakeResult`, `AccountPlannerInput`, `AccountPlanResult`, and `AccountPositioning`. Image tagging returns `nori.core.UserAsset` without importing content generation. |
 | Market analysis | Competitor samples, hot examples, trend/audience insights | `nori.market_analysis.facade.MarketAnalysisFacade` | `nori.market_analysis.models` owns `CompetitorResearch`, `CompetitorSample`, `XHSNoteSample`, `XHSSeedSkillDraft`, `NoteEvidence`, `NoteSkill`, and `SessionSkillReport`; evidence can come from `DataCollector` and `XHSNoteAnalyzer`. |
-| Context building | Operation project assembly, KPI/calendar planning, unified generation context, and xAI evidence trace | `nori.context_building.{OperationPlannerAgent,KPIPlannerAgent,CalendarPlannerAgent,ContextPackBuilder}` | `nori.context_building.models` re-exports `AssetRecord`, `AssetLibrary`, `AccountOperationProject`, `OperationPlan`, `KPIPlan`, `ContentCalendar`, and `ContentTask` from `nori.core` for existing call sites. Shared `ContextPack` lives in `nori.core`. |
-| Content generation | Content package production and candidate set before final human selection | `nori.content_generation.{ContentProducerAgent,ContentGenerationFacade}` | `nori.content_generation.models` owns `AssetBundle`, `CandidateTitle`, `NoteDraft`, `CoverResult`, and `ContentPackage`; it re-exports `UserAsset` from `nori.core` for existing generation call sites. Task context comes from `nori.core.ContentTask`. |
+| Context building | Operation project assembly, KPI/calendar planning, unified generation context, and xAI evidence trace | `nori.context_building.{OperationPlannerAgent,KPIPlannerAgent,CalendarPlannerAgent,ContextPackBuilder}` | Context-building stages import cross-stage contracts directly from `nori.core`; shared `ContextPack` also lives in `nori.core`. |
+| Content generation | Content package production and candidate set before final human selection | `nori.content_generation.{ContentProducerAgent,ContentGenerationFacade}` | `nori.content_generation.models` owns `AssetBundle`, `CandidateTitle`, `NoteDraft`, `CoverResult`, and `ContentPackage`. Shared assets/tasks come from `nori.core.UserAsset` and `nori.core.ContentTask`. |
 | Learning loop | Review gates, monitoring snapshots, and preference/strategy update signals | `nori.learning_loop.{ReviewGateAgent,MetricsSnapshotAgent,StrategyIterationAgent,LearningLoopFacade}` | `nori.learning_loop.models` owns `ComplianceReview`, `MetricsSnapshot`, `StrategyIteration`; review/metric evidence feeds `nori.core` learning contracts. |
 
 Design rule: new cross-stage behavior should add a shared `nori.core` contract or one of the five domain facades before adding another standalone agent.
 
 Upper-layer rule: CLI/API/UI code should prefer `nori.domain.build_domain_snapshot()` and `nori.domain.validate_domain_snapshot()` when it needs the complete five-module view. Use individual facades only when the caller is intentionally working inside one domain module.
 
-Current compatibility bridge: the five domain facades can project an existing `AccountOperationProject` into the new architecture without moving all old implementation files at once. `AccountOperationProject` lives in `nori.core.project`; `nori.context_building.models` only re-exports it for compatibility. `UserProfilingFacade` and `MarketAnalysisFacade` consume project-like dict/object shapes without importing `nori.context_building.models`, keeping upstream modules independent from the context-building implementation.
+Projection bridge: the five domain facades can project an existing `AccountOperationProject` into the current architecture. `AccountOperationProject` lives in `nori.core.project`; `UserProfilingFacade` and `MarketAnalysisFacade` consume project-like dict/object shapes without importing context-building internals, keeping upstream modules independent from the context-building implementation.
 
 | Projection | Purpose |
 | --- | --- |
@@ -86,23 +84,20 @@ Current compatibility bridge: the five domain facades can project an existing `A
 | Module | Responsibility |
 | --- | --- |
 | `nori/core/contracts.py` | Public runtime contract boundary shared by Nori core and the LLM gateway: provider/model config rows, resolved active models, gateway exception classes, structured-helper result dataclasses, and provider-free model coercion helpers. |
-| `nori/config_models.py` | Compatibility re-export for `ProviderConfig`, `ModelConfig`, and `ResolvedModel`; new code should import these from `nori.core` or `nori.core.contracts`. |
 | `nori/nori_config.py` | Locate `api_config.yaml`, parse providers/models/active usages, coerce model scalar fields, resolve `api_key_env`, apply `NORI_MODE`, and assemble config model contracts. |
 | `nori/config_normalization.py` | Pure config normalization boundary shared by `nori.nori_config` and `llms.mode`: canonical provider/model keys, env names, mode keys, section-shape validation, and nested/flat `active_models` selection. |
 | `llms/config.py` | Singleton bridge to `NoriConfig`. |
-| `llms/errors.py` | Compatibility re-export for gateway exception classes owned by `nori.core.contracts`. Public imports from `llms`, `llms.call`, and `llms.client` re-export the same class objects. |
 | `llms/telemetry.py` | Process-local redacted telemetry sink and emit helper. Public imports from `llms` and `llms.call` re-export the same `set_telemetry_sink` function. |
 | `llms/chat_runner.py` | Sync/async chat execution boundary: resolves clients, merges chat kwargs, applies chat/vision capability guards, extracts provider text, and emits redacted telemetry for `chat` / `achat`. |
 | `llms/json_parser.py` | Shared parser for full, fenced, and embedded JSON object responses. Public imports from `llms` and `llms.call` re-export the same `parse_json_object` function. |
-| `llms/json_calls.py` | Shared JSON-mode raw chat-call helper, `response_format` fallback, and retry classification. `llms.call` keeps legacy internal helper aliases for compatibility. |
-| `llms/request_params.py` | Shared request-parameter merger for chat/image calls, including token-limit normalization and side-effect-free `extra_body` merging. `llms.call` keeps legacy internal helper aliases for compatibility. |
-| `llms/capabilities.py` | Shared capability guards for chat model type, vision usage, multimodal messages, image model type, and reference-image support. `llms.call` keeps legacy internal helper aliases for compatibility. |
-| `llms/results.py` | Shared provider-response normalization for chat text and image URL/data-uri extraction, including stable empty-result errors. `llms.call` keeps legacy internal helper aliases for compatibility. |
-| `llms/image_inputs.py` | Shared image input normalization for bytes, data-uri, local path, base64 strings, MIME sniffing, and data-uri construction. `llms.call` keeps legacy internal helper aliases for compatibility. |
-| `llms/image_providers.py` | Provider-specific image request helpers for OpenAI-compatible edit, relay reference-payload retry, and Google native image generation. `llms.call` keeps legacy internal helper aliases for compatibility. |
+| `llms/json_calls.py` | Shared JSON-mode raw chat-call helper, `response_format` fallback, and retry classification. |
+| `llms/request_params.py` | Shared request-parameter merger for chat/image calls, including token-limit normalization and side-effect-free `extra_body` merging. |
+| `llms/capabilities.py` | Shared capability guards for chat model type, vision usage, multimodal messages, image model type, and reference-image support. |
+| `llms/results.py` | Shared provider-response normalization for chat text and image URL/data-uri extraction, including stable empty-result errors. |
+| `llms/image_inputs.py` | Shared image input normalization for bytes, data-uri, local path, base64 strings, MIME sniffing, and data-uri construction. |
+| `llms/image_providers.py` | Provider-specific image request helpers for OpenAI-compatible edit, relay reference-payload retry, and Google native image generation. |
 | `llms/image_runner.py` | Image execution boundary: resolves active image model, normalizes reference inputs, applies image capability guards, dispatches Google/relay/OpenAI-compatible providers, validates result emptiness, and emits redacted telemetry for `image`. |
-| `llms/structured_models.py` | Compatibility re-export for structured helper result contracts owned by `nori.core.contracts`: `StructuredCallResult`, `IntentLLMResult`, and `TargetSelectionResult`. Public and legacy module imports preserve class identity. |
-| `llms/structured_outputs.py` | Shared string cleanup, parse-error classification, intent field-node normalization, selector-option cleanup, confidence normalization, and alternative-selector filtering for structured LLM utilities. Legacy module-private helper aliases stay stable. |
+| `llms/structured_outputs.py` | Shared string cleanup, parse-error classification, intent field-node normalization, selector-option cleanup, confidence normalization, and alternative-selector filtering for structured LLM utilities. |
 | `llms/structured_calls.py` | Shared non-throwing JSON call boundary for structured LLM utilities: returns `data/raw/error`, classifies parse failures, and wraps provider exceptions for intent/target helpers. |
 | `llms/structured_prompts.py` | Shared prompt-construction boundary for structured LLM utilities: owns intent field descriptions, enum/candidate instructions, target-selector catalogs, history formatting, and summary truncation. Legacy module-private prompt-builder wrappers stay stable. |
 | `llms/client.py` | Build sync/async OpenAI-compatible clients, including builders for already-resolved models, and provide shared `api_key` / `base_url` validation before provider SDK construction. |
@@ -193,9 +188,8 @@ Shared generation utilities:
 
 | Module | Role |
 | --- | --- |
-| `nori/user_profiling/models.py` | Canonical user/account profile models: `AccountPositioning`; re-exports `ClientBrief` from `nori.core` for compatibility. |
+| `nori/user_profiling/models.py` | Canonical user/account profile models: `AccountPositioning`, `UserInput`, `IntakeResult`, `AccountPlannerInput`, and `AccountPlanResult`. |
 | `nori/market_analysis/models.py` | Canonical market evidence models: `CompetitorSample`, `CompetitorResearch`. |
-| `nori/context_building/models.py` | Compatibility re-export surface for `AssetRecord`, `AssetLibrary`, `AccountOperationProject`, `OperationPlan`, `KPIPlan`, `ContentCalendar`, and `ContentTask` from `nori.core`. |
 | `nori/content_generation/models.py` | Canonical generated artifact model: `ContentPackage`. |
 | `nori/learning_loop/models.py` | Canonical review/monitoring/evolution models: `ComplianceReview`, `MetricsSnapshot`, `StrategyIteration`. |
 | `nori/core/models.py` | Canonical owner for cross-stage workflow contracts: `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentCalendar`, and `ContentTask`. |
@@ -276,14 +270,14 @@ Market-analysis helpers:
 | --- | --- |
 | `tests/test_llms_call_json.py` | JSON parser and request-param helper import identity, parsing helper behavior, raw capture, JSON-mode retry, and usage/kwargs propagation. |
 | `tests/test_llms_client.py` | Client factory validation for OpenAI-compatible `api_key` / `base_url` before SDK construction. |
-| `tests/test_llms_errors.py` | Public gateway exception identity across `nori.core.contracts`, `llms.errors`, package exports, and legacy module paths. |
+| `tests/test_llms_errors.py` | Public gateway exception identity across `nori.core.contracts`, package exports, call, and client modules. |
 | `tests/test_llms_mode.py` | `ensure_ready` config validation reuse and offline `ghc` proxy probe behavior. |
-| `tests/test_llms_structured_models.py` | Structured helper result dataclass defaults and compatibility identity across package, intent, target, and call modules. |
+| `tests/test_llms_structured_models.py` | Structured helper result dataclass defaults and identity across core contracts, package exports, intent, target, and call modules. |
 | `tests/test_llms_intent_target_helpers.py` | Intent extraction, edit-target selector, and shared structured-output helper contracts without live LLM. |
 | `tests/test_llms_image_capabilities.py` | Image gateway capability checks, image result normalization, reference-image requests, image input normalization helper aliases, and provider-specific image helper behavior. |
 | `tests/test_llms_telemetry.py` | Redacted model-call telemetry module exports, capability/result helper identity, sink isolation, success/error behavior, plus chat/vision capability checks. |
 | `tests/test_shared_utils.py` | Shared utility exports, case logging, strict JSON wrapper behavior, required/optional pre-built messages JSON routing, optional fallback JSON wrapper behavior, and fallback error field shape. |
-| `tests/test_config_models.py` | Runtime-config dataclass defaults and compatibility identity between `nori.core.contracts`, `nori.config_models`, and legacy `nori.nori_config` imports. |
+| `tests/test_config_models.py` | Runtime-config dataclass defaults and identity between `nori.core.contracts`, core package exports, and `nori.nori_config` imports. |
 | `tests/test_nori_config.py` | Config parsing, `api_key_env`, `${ENV_VAR}`, `NORI_MODE`, flat/nested active models, missing env path errors. |
 | `tests/test_config_normalization.py` | Pure runtime-config normalization coverage for canonical model/provider keys, section-shape validation, mode/env cleanup, API key resolution, and active model selection. |
 | `tests/test_user_profiling_* / test_content_generation_*` | Legacy compatibility coverage for Intake, IntakeTaxonomy, ImageTagger, SkillPicker, AssetCurator, NoteComposer, NoteMaker, CoverRefs, CoverPrompt, CoverOutput, CoverDirector, AccountPlanSearch, AccountPlanKeywords, AccountPlanNormalizer, AccountPlanner module aliases. |
@@ -310,7 +304,7 @@ Market-analysis helpers:
 | Concern | Decision |
 | --- | --- |
 | Python dataclass slots | Shared model/result files import `dataclass` / `field` from `nori._compat`. Python 3.10+ keeps `slots=True`; Python 3.9 drops the unsupported keyword so imports and tests remain executable. |
-| Model input coercion | The five business-module `models.py` files use `nori.core.contracts` for mapping/list/string/int/bool normalization instead of carrying local copies; `nori._model_coercion` remains a compatibility re-export. |
+| Model input coercion | The five business-module `models.py` files use `nori.core.contracts` for mapping/list/string/int/bool normalization instead of carrying local copies. |
 | Dependency direction | `llms.intent_extractor` and `llms.target_selector` may use `nori._compat` because `llms` already depends on `nori.nori_config` for model resolution. |
 
 ## Non-Goals In Current Architecture

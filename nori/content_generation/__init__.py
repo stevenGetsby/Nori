@@ -4,7 +4,7 @@ from __future__ import annotations
 from nori.core import CandidateSet
 from nori.core.lazy_exports import lazy_export
 
-from .models import AssetBundle, CandidateTitle, ContentPackage, CoverResult, NoteDraft, UserAsset
+from .models import AssetBundle, CandidateTitle, ContentPackage, CoverResult, NoteDraft
 
 _LAZY_EXPORTS = {
     "ContentGenerationFacade": "facade",
@@ -33,7 +33,6 @@ __all__ = [
     "NoteDraft",
     "NoteMakerAgent",
     "NoteMakerLLMError",
-    "UserAsset",
     "make_cover",
     "make_note",
     "produce_content_package",

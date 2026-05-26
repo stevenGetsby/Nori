@@ -18,7 +18,8 @@ from typing import Any
 from nori.core import AgentBase, LLMFactory
 from nori.shared.image_io import image_to_bytes
 from nori.shared.llm_json import call_stage_json
-from nori.content_generation.models import CoverResult, NoteDraft, UserAsset
+from nori.content_generation.models import CoverResult, NoteDraft
+from nori.core import UserAsset
 from nori.market_analysis.models import NoteSkill
 
 from . import output as _cover_output

@@ -15,7 +15,7 @@ from .policy import (
     normalize_start_date,
     target_task_count,
 )
-from ..models import ContentCalendar, ContentTask, KPIPlan, OperationPlan
+from nori.core import ContentCalendar, ContentTask, KPIPlan, OperationPlan
 
 
 def merge_llm_calendar(

@@ -11,7 +11,6 @@ from nori.core.contracts import (
     mapping_list as _mapping_list,
     string_list as _string_list,
 )
-from nori.core import ClientBrief
 
 
 Intention = dict[str, Any]
@@ -402,7 +401,6 @@ __all__ = [
     "AccountPlannerInput",
     "AccountPositioning",
     "BenchmarkAccounts",
-    "ClientBrief",
     "Context",
     "IPPortraitReport",
     "IntakeResult",

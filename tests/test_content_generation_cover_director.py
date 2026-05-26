@@ -9,7 +9,8 @@ import json
 import llms
 import pytest
 
-from nori.content_generation.models import CandidateTitle, CoverResult, NoteDraft, UserAsset
+from nori.content_generation.models import CandidateTitle, CoverResult, NoteDraft
+from nori.core import UserAsset
 from nori.content_generation import CoverDirectorAgent
 from nori.content_generation.cover_director import CoverDirectorError
 

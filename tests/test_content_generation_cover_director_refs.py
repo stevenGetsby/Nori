@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from nori.content_generation.models import CandidateTitle, NoteDraft, UserAsset
+from nori.content_generation.models import CandidateTitle, NoteDraft
+from nori.core import UserAsset
 from nori.content_generation.cover_director import refs as cover_refs
 
 

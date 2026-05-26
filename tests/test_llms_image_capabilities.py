@@ -8,6 +8,7 @@ import pytest
 import llms.call as call_module
 import llms.image_inputs as image_inputs
 import llms.image_providers as image_providers
+import llms.image_runner as image_runner
 import llms.results as results_module
 from llms import ImageCapabilityError, ImageResultError, LLMClientConfigError, set_telemetry_sink
 
@@ -78,19 +79,6 @@ def _bundle(model, images: FakeImages):
         model_id=model.model_id,
         client=SimpleNamespace(images=images),
     )
-
-
-def test_image_input_helpers_keep_call_module_alias_identity():
-    assert call_module._load_image_bytes is image_inputs.load_image_bytes
-    assert call_module._bytes_to_data_uri is image_inputs.bytes_to_data_uri
-    assert call_module._sniff_mime is image_inputs.sniff_mime
-
-
-def test_image_provider_helpers_keep_call_module_alias_identity():
-    assert call_module._image_relay_generate_with_references is image_providers.image_relay_generate_with_references
-    assert call_module._image_openai_edit is image_providers.image_openai_edit
-    assert call_module._image_google is image_providers.image_google
-    assert call_module._is_retryable_relay_reference_error is image_providers.is_retryable_relay_reference_error
 
 
 def test_image_input_helpers_normalize_supported_sources(tmp_path):
@@ -345,7 +333,7 @@ def test_google_image_uses_trimmed_api_key(monkeypatch):
         captured["api_key"] = api_key
         return ["data:image/png;base64,ZmFrZQ=="]
 
-    monkeypatch.setattr(call_module, "_image_google", fake_google)
+    monkeypatch.setattr(image_runner, "image_google", fake_google)
 
     result = call_module.image("draw", usage="image", size="1024x1024")
 
@@ -361,7 +349,7 @@ def test_google_image_empty_results_raise_result_error(monkeypatch):
         api_key="test-google-key",
     )
     monkeypatch.setattr(call_module, "get_active", lambda usage: model)
-    monkeypatch.setattr(call_module, "_image_google", lambda *args, **kwargs: [])
+    monkeypatch.setattr(image_runner, "image_google", lambda *args, **kwargs: [])
 
     with pytest.raises(ImageResultError, match="未返回可用图片"):
         call_module.image("draw", usage="image", size="1024x1024")

@@ -3,7 +3,6 @@ from __future__ import annotations
 import llms
 import llms.intent_extractor as intent_module
 import llms.structured_calls as calls_module
-import llms.structured_models as models
 import llms.target_selector as target_module
 from nori.core import IntentLLMResult, StructuredCallResult, TargetSelectionResult
 from nori.core import contracts
@@ -26,11 +25,8 @@ def test_structured_result_model_import_identities_stay_compatible():
     assert contracts.IntentLLMResult is IntentLLMResult
     assert contracts.TargetSelectionResult is TargetSelectionResult
     assert contracts.StructuredCallResult is StructuredCallResult
-    assert llms.IntentLLMResult is models.IntentLLMResult
-    assert llms.TargetSelectionResult is models.TargetSelectionResult
-    assert models.IntentLLMResult is IntentLLMResult
-    assert models.TargetSelectionResult is TargetSelectionResult
-    assert models.StructuredCallResult is StructuredCallResult
-    assert intent_module.IntentLLMResult is models.IntentLLMResult
-    assert target_module.TargetSelectionResult is models.TargetSelectionResult
-    assert calls_module.StructuredCallResult is models.StructuredCallResult
+    assert llms.IntentLLMResult is IntentLLMResult
+    assert llms.TargetSelectionResult is TargetSelectionResult
+    assert intent_module.IntentLLMResult is IntentLLMResult
+    assert target_module.TargetSelectionResult is TargetSelectionResult
+    assert calls_module.StructuredCallResult is StructuredCallResult

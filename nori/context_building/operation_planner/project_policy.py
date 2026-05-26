@@ -9,7 +9,7 @@ from nori.user_profiling.models import AccountPlanResult
 from nori.user_profiling.models import AccountPositioning
 
 from ..calendar_planner.policy import cadence_for_horizon, required_assets, scheduled_dates, short_brand
-from ..models import KPIPlan, OperationPlan
+from nori.core import KPIPlan, OperationPlan
 
 
 def account_positioning(value: AccountPlanResult | None) -> AccountPositioning:

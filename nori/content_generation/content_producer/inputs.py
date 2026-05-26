@@ -1,11 +1,10 @@
 """ContentProducer input and context preparation helpers."""
 from __future__ import annotations
 
-from nori.core import AccountOperationProject
 from typing import Any
 
-from nori.content_generation.models import UserAsset
-from nori.core import ClientBrief, ContentTask
+from nori.core import AccountOperationProject
+from nori.core import ClientBrief, ContentTask, UserAsset
 
 
 def normalize_assets(

@@ -8,7 +8,7 @@ from nori.core import AccountOperationProject
 from nori.shared.normalization import int_value, mapping, milestone_rows, string_list
 from nori.user_profiling.models import AccountPositioning
 
-from ..models import ContentCalendar, ContentTask, KPIPlan, OperationPlan
+from nori.core import ContentCalendar, ContentTask, KPIPlan, OperationPlan
 
 
 def merge_llm_project(

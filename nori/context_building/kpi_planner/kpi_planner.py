@@ -11,7 +11,7 @@ from . import normalizer as _kpi_normalizer
 from . import inputs as _kpi_inputs
 from . import prompts as _kpi_prompts
 from .. import planner_critics as _planner_critics
-from ..models import KPIPlan, OperationPlan
+from nori.core import KPIPlan, OperationPlan
 
 
 SYSTEM_PROMULGATION = _kpi_prompts.SYSTEM_PROMPT

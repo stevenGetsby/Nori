@@ -99,6 +99,7 @@ SHARED_WORKFLOW_CONTRACTS = {
     "ContentTask",
     "KPIPlan",
     "OperationPlan",
+    "UserAsset",
 }
 
 
@@ -162,14 +163,15 @@ REMOVED_LEGACY_PACKAGES = [
     "nori/agent_models",
     "nori/agent_utils",
 ]
-REMOVED_COMPAT_FILES = ["nori/_module_alias.py"]
+REMOVED_COMPAT_FILES = [
+    "nori/_module_alias.py",
+    "nori/_model_coercion.py",
+    "nori/config_models.py",
+    "nori/context_building/models.py",
+    "llms/errors.py",
+    "llms/structured_models.py",
+]
 REMOVED_SHARED_DOMAIN_HELPERS = ["nori/shared/note_skill_fixture.py"]
-PRIVATE_CONTRACT_COMPAT_MODULES = {
-    Path("nori/_model_coercion.py"),
-    Path("nori/config_models.py"),
-    Path("llms/errors.py"),
-    Path("llms/structured_models.py"),
-}
 
 
 REMOVED_LEGACY_IMPORTS = [
@@ -179,6 +181,11 @@ REMOVED_LEGACY_IMPORTS = [
     "nori.ops_models",
     "nori.agent_models",
     "nori.agent_utils",
+    "nori._model_coercion",
+    "nori.config_models",
+    "nori.context_building.models",
+    "llms.errors",
+    "llms.structured_models",
 ]
 
 
@@ -336,6 +343,7 @@ def test_downstream_runtime_imports_shared_workflow_contracts_from_core():
         "nori.learning_loop",
     }
     forbidden_sources = {
+        "nori.content_generation.models",
         "nori.context_building.models",
         "nori.user_profiling.models",
     }
@@ -349,15 +357,9 @@ def test_downstream_runtime_imports_shared_workflow_contracts_from_core():
                 assert not (imported & SHARED_WORKFLOW_CONTRACTS), path.relative_to(ROOT)
 
 
-def test_runtime_imports_shared_workflow_contracts_from_core_except_compat_reexports():
-    compatibility_reexport_files = {
-        Path("nori/user_profiling/models.py"),
-        Path("nori/context_building/models.py"),
-    }
+def test_runtime_imports_shared_workflow_contracts_from_core():
     for path in (ROOT / "nori").rglob("*.py"):
         rel_path = path.relative_to(ROOT)
-        if rel_path in compatibility_reexport_files:
-            continue
         tree = ast.parse(path.read_text())
         for node in ast.walk(tree):
             if not isinstance(node, ast.ImportFrom):
@@ -366,19 +368,6 @@ def test_runtime_imports_shared_workflow_contracts_from_core_except_compat_reexp
                 continue
             imported = {alias.name for alias in node.names}
             assert not (imported & SHARED_WORKFLOW_CONTRACTS), rel_path
-
-
-def test_context_building_models_do_not_import_downstream_business_domains():
-    models_path = ROOT / "nori" / "context_building" / "models.py"
-    assert not _imports_from_forbidden_modules(
-        models_path,
-        modules={
-            "nori.content_generation",
-            "nori.learning_loop",
-            "nori.market_analysis",
-            "nori.user_profiling",
-        },
-    )
 
 
 def test_domain_specific_helpers_are_not_kept_in_shared_layer():
@@ -397,8 +386,6 @@ def test_runtime_code_imports_public_contracts_from_core_boundary():
     for root in (ROOT / "nori", ROOT / "llms"):
         for path in root.rglob("*.py"):
             rel_path = path.relative_to(ROOT)
-            if rel_path in PRIVATE_CONTRACT_COMPAT_MODULES:
-                continue
             tree = ast.parse(path.read_text())
             for node in ast.walk(tree):
                 if isinstance(node, ast.Import):
@@ -495,9 +482,13 @@ def _imports_from_forbidden_modules(path: Path, *, modules: set[str]) -> bool:
 
 
 def _imports_from_legacy_contract_owner(path: Path, node: ast.ImportFrom) -> bool:
-    if node.module in {"nori.user_profiling.models", "nori.context_building.models"}:
+    if node.module in {"nori.user_profiling.models", "nori.context_building.models", "nori.content_generation.models"}:
         return True
     if node.level == 1 and node.module == "models":
-        if path.parts[:2] in {("nori", "user_profiling"), ("nori", "context_building")}:
+        if path.parts[:2] in {
+            ("nori", "user_profiling"),
+            ("nori", "context_building"),
+            ("nori", "content_generation"),
+        }:
             return True
     return False

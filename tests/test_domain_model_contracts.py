@@ -27,18 +27,8 @@ from nori.market_analysis.models import (
 from nori.user_profiling.models import (
     AccountPlanResult,
     AccountPlannerInput,
-    ClientBrief as UserProfilingClientBrief,
     IntakeResult,
     UserInput,
-)
-from nori.context_building.models import (
-    AccountOperationProject as ContextBuildingAccountOperationProject,
-    AssetLibrary as ContextBuildingAssetLibrary,
-    AssetRecord as ContextBuildingAssetRecord,
-    ContentCalendar as ContextBuildingContentCalendar,
-    ContentTask as ContextBuildingContentTask,
-    KPIPlan as ContextBuildingKPIPlan,
-    OperationPlan as ContextBuildingOperationPlan,
 )
 from nori.shared import attach_llm_error
 
@@ -132,17 +122,6 @@ def test_models_are_defined_in_dedicated_modules():
     assert SessionSkillReport.__module__ == "nori.market_analysis.models"
     assert XHSNoteSample.__module__ == "nori.market_analysis.models"
     assert XHSSeedSkillDraft.__module__ == "nori.market_analysis.models"
-
-
-def test_cross_stage_workflow_contracts_are_reexported_from_old_owners():
-    assert UserProfilingClientBrief is ClientBrief
-    assert ContextBuildingOperationPlan is OperationPlan
-    assert ContextBuildingKPIPlan is KPIPlan
-    assert ContextBuildingContentTask is ContentTask
-    assert ContextBuildingContentCalendar is ContentCalendar
-    assert ContextBuildingAccountOperationProject is AccountOperationProject
-    assert ContextBuildingAssetRecord is AssetRecord
-    assert ContextBuildingAssetLibrary is AssetLibrary
 
 
 def test_xhs_note_models_round_trip_from_dict():

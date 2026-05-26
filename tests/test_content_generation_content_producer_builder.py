@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from nori.core import AccountOperationProject
 from nori.core import ContentTask, ClientBrief
-from nori.content_generation.models import CandidateTitle, CoverResult, NoteDraft, UserAsset
+from nori.content_generation.models import CandidateTitle, CoverResult, NoteDraft
+from nori.core import UserAsset
 from nori.content_generation.content_producer import builder as content_package_builder
 
 

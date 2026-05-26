@@ -15,7 +15,8 @@ from typing import Any
 
 from nori.core import AgentBase, LLMFactory
 from nori.shared.llm_json import call_stage_json
-from nori.content_generation.models import NoteDraft, UserAsset
+from nori.content_generation.models import NoteDraft
+from nori.core import UserAsset
 from nori.market_analysis.models import NoteSkill
 
 from . import asset_curator as _asset_curator

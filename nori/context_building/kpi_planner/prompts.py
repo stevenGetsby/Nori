@@ -5,7 +5,7 @@ from typing import Any
 
 from nori.shared.prompting import json_prompt
 
-from ..models import OperationPlan
+from nori.core import OperationPlan
 
 
 SYSTEM_PROMPT = "你是 Nori 的账号代运营 KPI 规划器，只输出 JSON。"

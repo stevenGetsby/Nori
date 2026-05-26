@@ -5,7 +5,7 @@ import llms
 from nori.market_analysis.models import NoteEvidence, NoteSkill, SessionSkillReport
 from nori.market_analysis import load_note_skills, note_skill_fixture, write_note_skill_fixture
 from nori.market_analysis.note_skill_fixture import load_note_skills as direct_load_note_skills
-from nori.content_generation.models import UserAsset
+from nori.core import UserAsset
 from nori.content_generation import NoteMakerAgent
 
 

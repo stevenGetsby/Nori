@@ -6,8 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from nori.core import AgentBase, LLMFactory
-from nori.content_generation.models import UserAsset
-from nori.core import ClientBrief, ContentTask
+from nori.core import ClientBrief, ContentTask, UserAsset
 
 from ..cover_director import CoverDirectorAgent
 from ..note_maker import NoteMakerAgent

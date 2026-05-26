@@ -10,7 +10,7 @@ import llms.capabilities as capabilities
 import llms.call as call_module
 import llms.results as results_module
 import llms.telemetry as telemetry_module
-from llms import set_telemetry_sink
+from llms import ChatCapabilityError, ChatResultError, ImageCapabilityError, set_telemetry_sink
 
 
 class FakeMessage:
@@ -142,20 +142,6 @@ def test_telemetry_setter_identity_is_stable():
     assert call_module.set_telemetry_sink is telemetry_module.set_telemetry_sink
 
 
-def test_capability_helper_identity_is_stable_across_import_paths():
-    assert call_module._ensure_chat_capability is capabilities.ensure_chat_capability
-    assert call_module._ensure_image_capability is capabilities.ensure_image_capability
-    assert call_module._messages_need_vision is capabilities.messages_need_vision
-
-
-def test_result_helper_identity_is_stable_across_import_paths():
-    assert call_module._extract_chat_text is results_module.extract_chat_text
-    assert call_module._ensure_chat_text is results_module.ensure_chat_text
-    assert call_module._response_value is results_module.response_value
-    assert call_module._collect_image_results is results_module.collect_image_results
-    assert call_module._ensure_image_results is results_module.ensure_image_results
-
-
 def test_extract_chat_text_accepts_dict_shaped_provider_response():
     response = {
         "choices": [
@@ -251,7 +237,7 @@ def test_chat_empty_provider_content_raises_result_error(monkeypatch):
     monkeypatch.setattr(call_module, "get_client", lambda usage: _chat_bundle(content="   "))
     set_telemetry_sink(records.append)
 
-    with pytest.raises(call_module.ChatResultError, match="未返回可用文本"):
+    with pytest.raises(ChatResultError, match="未返回可用文本"):
         call_module.chat([{"role": "user", "content": "hello"}], usage="llm")
 
     assert records[0]["operation"] == "chat"
@@ -266,7 +252,7 @@ def test_chat_empty_provider_choices_raise_result_error(monkeypatch):
     monkeypatch.setattr(call_module, "get_client", lambda usage: _chat_bundle(completions=completions))
     set_telemetry_sink(records.append)
 
-    with pytest.raises(call_module.ChatResultError, match="未返回可用文本"):
+    with pytest.raises(ChatResultError, match="未返回可用文本"):
         call_module.chat([{"role": "user", "content": "hello"}], usage="llm")
 
     assert records[0]["operation"] == "chat"
@@ -285,7 +271,7 @@ def test_achat_missing_provider_content_raises_result_error(monkeypatch):
     )
     set_telemetry_sink(records.append)
 
-    with pytest.raises(call_module.ChatResultError, match="未返回可用文本"):
+    with pytest.raises(ChatResultError, match="未返回可用文本"):
         asyncio.run(call_module.achat([{"role": "user", "content": "hello"}], usage="llm"))
 
     assert records[0]["operation"] == "achat"
@@ -331,7 +317,7 @@ def test_image_emits_telemetry_on_capability_error(monkeypatch):
     monkeypatch.setattr(call_module, "get_active", lambda usage: model)
     set_telemetry_sink(records.append)
 
-    with pytest.raises(call_module.ImageCapabilityError):
+    with pytest.raises(ImageCapabilityError):
         call_module.image("edit", usage="image", reference_images=[b"\x89PNG\r\n\x1a\nfake"])
 
     assert records[0]["operation"] == "image"
@@ -350,7 +336,7 @@ def test_chat_rejects_non_chat_model_before_provider(monkeypatch):
     )
     set_telemetry_sink(records.append)
 
-    with pytest.raises(call_module.ChatCapabilityError, match="expected type"):
+    with pytest.raises(ChatCapabilityError, match="expected type"):
         call_module.chat([{"role": "user", "content": "hello"}], usage="llm")
 
     assert completions.calls == []
@@ -368,7 +354,7 @@ def test_chat_vision_usage_requires_vision_capability(monkeypatch):
         lambda usage: _chat_bundle(model=model, completions=completions),
     )
 
-    with pytest.raises(call_module.ChatCapabilityError, match="support vision"):
+    with pytest.raises(ChatCapabilityError, match="support vision"):
         call_module.chat([{"role": "user", "content": "describe this"}], usage="vision")
 
     assert completions.calls == []
@@ -392,7 +378,7 @@ def test_chat_multimodal_message_requires_vision_capability(monkeypatch):
         }
     ]
 
-    with pytest.raises(call_module.ChatCapabilityError, match="support vision"):
+    with pytest.raises(ChatCapabilityError, match="support vision"):
         call_module.chat(messages, usage="llm")
 
     assert completions.calls == []

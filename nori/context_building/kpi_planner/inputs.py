@@ -6,7 +6,7 @@ from typing import Any
 
 from nori.shared.normalization import mapping
 
-from ..models import OperationPlan
+from nori.core import OperationPlan
 
 
 def normalize_plan_and_context(

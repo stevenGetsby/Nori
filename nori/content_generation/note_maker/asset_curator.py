@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from nori.content_generation.models import AssetBundle, UserAsset
+from nori.content_generation.models import AssetBundle
+from nori.core import UserAsset
 from nori.shared.prompting import json_block, json_prompt
 from . import prompts as _prompts
 

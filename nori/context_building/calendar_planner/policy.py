@@ -7,7 +7,7 @@ from typing import Any
 from nori.core import ClientBrief
 from nori.shared.normalization import dedupe_preserve_order, int_value
 
-from ..models import KPIPlan, OperationPlan
+from nori.core import KPIPlan, OperationPlan
 
 
 def task_count_from_targets(plan: OperationPlan, kpi: KPIPlan, horizon_days: int) -> int:

@@ -5,7 +5,7 @@ from typing import Any
 
 from nori.shared.normalization import mapping, milestone_rows, string_list
 
-from ..models import KPIPlan, OperationPlan
+from nori.core import KPIPlan, OperationPlan
 
 
 def merge_llm_kpi_plan(data: dict[str, Any], fallback: KPIPlan, plan: OperationPlan) -> KPIPlan:

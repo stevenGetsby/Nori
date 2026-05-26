@@ -226,5 +226,4 @@ __all__ = [
     "ContentPackage",
     "CoverResult",
     "NoteDraft",
-    "UserAsset",
 ]

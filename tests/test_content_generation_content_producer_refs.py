@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 from nori.core import AccountOperationProject
-from nori.core import ContentTask, ClientBrief
-
-from nori.content_generation.models import UserAsset
+from nori.core import ContentTask, ClientBrief, UserAsset
 from nori.content_generation.content_producer import refs as content_package_refs
 
 

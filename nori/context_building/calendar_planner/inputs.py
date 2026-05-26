@@ -8,7 +8,7 @@ from typing import Any
 from nori.core import ClientBrief
 from nori.shared.normalization import mapping
 
-from ..models import ContentCalendar, KPIPlan, OperationPlan
+from nori.core import ContentCalendar, KPIPlan, OperationPlan
 
 from .policy import bounded_horizon, normalize_start_date
 

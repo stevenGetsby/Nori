@@ -6,14 +6,15 @@
 
 | Change | Notes |
 | --- | --- |
-| Promoted LLM public contracts to core | Added `nori.core.contracts` as the owner for runtime config dataclasses, gateway errors, structured LLM result dataclasses, and shared model coercion helpers; old `nori.config_models`, `nori._model_coercion`, `llms.errors`, and `llms.structured_models` now re-export the same objects for compatibility. |
+| Removed legacy contract compatibility modules | Deleted `nori.config_models`, `nori._model_coercion`, `nori.context_building.models`, `llms.errors`, and `llms.structured_models`; tests now assert these old import roots are absent. |
+| Promoted LLM public contracts to core | Added `nori.core.contracts` as the owner for runtime config dataclasses, gateway errors, structured LLM result dataclasses, and shared model coercion helpers. |
 | Made core exports lazy | `nori.core` now lazy-loads public contracts, domain models, runtime bases, workflow helpers, and architecture metadata, reducing import side effects while keeping existing public imports stable. |
 | Guarded private contract imports | Added architecture coverage so runtime code imports public contracts from `nori.core` / `nori.core.contracts` instead of private compatibility modules. |
 | Added core runtime bases | Added `nori.core.LLMFactory`, `AgentBase`, and `WorkflowBase`; concrete runtime agents now inherit `AgentBase`, and orchestration agents can share the same injectable LLM gateway. |
 | Standardized domain facades as workflows | `UserProfilingFacade`, `MarketAnalysisFacade`, `ContextPackBuilder`, `ContentGenerationFacade`, and `LearningLoopFacade` now inherit `WorkflowBase` and expose stable `workflow_name` / `step_names` values. |
 | Enforced core LLM injection boundary | Removed direct `llms` imports from workflow runtime stages; tests now patch the project gateway or inject factories, and architecture guards require stage code to route LLM access through `nori.core.LLMFactory`. |
-| Promoted shared workflow contracts to core | Moved `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, and `ContentCalendar` to `nori.core.models`; old user/context model modules re-export the same classes for compatibility. |
-| Promoted project aggregate to core | Moved `AccountOperationProject` to `nori.core.project`; `nori.context_building.models` re-exports the same class for compatibility and no longer imports downstream business modules. |
+| Promoted shared workflow contracts to core | Moved `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, and `ContentCalendar` to `nori.core.models`; runtime code imports them from core. |
+| Promoted project aggregate to core | Moved `AccountOperationProject` to `nori.core.project`; context-building stages import it from core and no longer carry a model re-export layer. |
 | Standardized stage support modules | Every concrete workflow stage package now has `prompts.py` and `schema.py`; CoverDirector's prompt boundary moved from singular `prompt.py` to canonical `prompts.py`. |
 | Updated verification baseline | `python -m pytest tests -q` now reports `448 passed, 3 skipped` after adding core runtime abstraction tests, stage-support-module guards, the no-direct-`llms` runtime guard, shared workflow-contract ownership guards, project-aggregate ownership guards, and domain-facade workflow guards. |
 | Removed legacy agent/model roots | Deleted `nori/gen_agents`, `nori/ops_agents`, `nori/ana_agents`, `nori/ops_models`, `nori/agent_models`, and `nori/agent_utils`; tests now assert those import roots are absent. |
@@ -85,7 +86,7 @@
 | Extracted XHS session LLM boundary | Moved keyword generation, hot-note prompt shaping, goal/tone label normalization, and fail-fast JSON helper routing into `nori.market_analysis.xhs_session_llm`, with focused session LLM tests. |
 | Extracted XHS session reporter boundary | Moved report timestamping, full session report writing, and skills-only guide JSON writing into `nori.market_analysis.xhs_session_reporter`, with focused reporter tests. |
 | Extracted XHS session skill-builder boundary | Moved session `NoteSkill` construction, merged rules, evidence-note mapping, cover rules, metric percentiles, note-type majority, and cluster signals into `nori.market_analysis.xhs_skill_builder`, with focused builder tests. |
-| Extracted LLM gateway errors | Added `llms.errors` as the gateway exception compatibility boundary while preserving existing package, call-module, and client-module imports as the same class identities. |
+| Extracted LLM gateway errors | Added stable gateway exception classes and preserved package, call-module, and client-module imports as the same class identities. Superseded by core-contract ownership above. |
 | Extracted LLM telemetry boundary | Moved redacted telemetry state and emit logic into `llms.telemetry`, keeping public `set_telemetry_sink` imports compatible. |
 | Extracted LLM chat runner boundary | Moved sync/async chat client resolution, kwargs merge, capability guard, provider text extraction, and chat telemetry into `llms.chat_runner`, keeping `llms.call.chat` / `achat` as public facades. |
 | Extracted LLM JSON parser boundary | Moved JSON object parsing into `llms.json_parser`, keeping package and call-module `parse_json_object` imports compatible. |

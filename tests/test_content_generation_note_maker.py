@@ -9,7 +9,7 @@ import llms
 import pytest
 
 from nori.market_analysis.models import NoteSkill
-from nori.content_generation.models import UserAsset
+from nori.core import UserAsset
 from nori.content_generation import NoteMakerAgent
 from nori.content_generation.note_maker import NoteMakerLLMError
 

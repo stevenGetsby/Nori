@@ -1,13 +1,13 @@
 from nori.core import ClientBrief
-from nori.user_profiling.models import AccountPlanResult
-from nori.context_building import planner_critics
-from nori.context_building.models import (
+from nori.core import (
     AccountOperationProject,
     ContentCalendar,
     ContentTask,
     KPIPlan,
     OperationPlan,
 )
+from nori.user_profiling.models import AccountPlanResult
+from nori.context_building import planner_critics
 
 
 def test_operation_project_critic_flags_missing_sections_and_fallback_source():

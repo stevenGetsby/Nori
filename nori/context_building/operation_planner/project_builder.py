@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from nori.user_profiling.models import AccountPlanResult
 from nori.core import ClientBrief
 
-from ..models import ContentCalendar, ContentTask, OperationPlan
+from nori.core import ContentCalendar, ContentTask, OperationPlan
 from .project_policy import (
     account_positioning,
     cadence_for_horizon,

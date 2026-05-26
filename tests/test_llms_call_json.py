@@ -126,12 +126,6 @@ def test_merge_kwargs_normalizes_token_kwargs_without_model_default():
     assert request_params.merge_chat_kwargs(non_gpt5, {}) == {}
 
 
-def test_request_param_helper_identity_is_stable_across_import_paths():
-    assert call_module._merge_kwargs is request_params.merge_chat_kwargs
-    assert call_module._merge_image_kwargs is request_params.merge_image_kwargs
-    assert call_module._max_output_param_name is request_params.max_output_param_name
-
-
 def test_chat_json_accepts_injected_chat_function():
     def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
         return '{"source": "injected"}'
@@ -160,13 +154,6 @@ def test_chat_json_with_raw_returns_parsed_data_and_raw_text():
 
     assert data == {"source": "raw-helper"}
     assert raw == '```json\n{"source": "raw-helper"}\n```'
-
-
-def test_json_call_helpers_keep_call_module_alias_identity():
-    assert call_module._chat_json_raw is json_calls.chat_json_raw
-    assert call_module._should_retry_without_response_format is json_calls.should_retry_without_response_format
-    assert call_module._without_response_format is json_calls.without_response_format
-    assert call_module._is_response_format_error is json_calls.is_response_format_error
 
 
 def test_json_call_raw_retries_without_mutating_params():

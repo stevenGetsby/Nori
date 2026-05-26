@@ -7,7 +7,7 @@ from typing import Any
 from nori.core import ClientBrief
 from nori.shared.normalization import int_value, mapping, string_list
 
-from ..models import ContentTask, KPIPlan, OperationPlan
+from nori.core import ContentTask, KPIPlan, OperationPlan
 
 from .policy import (
     date_from_day,
