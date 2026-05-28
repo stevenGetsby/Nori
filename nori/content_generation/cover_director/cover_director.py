@@ -88,15 +88,17 @@ class CoverDirectorAgent(AgentBase):
             error_type=CoverDirectorError,
         )
 
-        # 参考图进入 llms.image 前先压缩，避免 relay::gpt-image-2 413
-        ref_bytes = [b for b in (image_to_bytes(p) for p in ref_paths) if b]
+        # Local references are compressed before llms.image; remote URLs are
+        # preserved because relay::gpt-image-2 accepts URL refs but rejects base64.
+        ref_inputs = [_reference_input(p) for p in ref_paths]
+        ref_inputs = [item for item in ref_inputs if item]
 
         try:
             images = self.llm_factory.image(
                 prompt,
                 usage="image",
                 size=size,
-                reference_images=ref_bytes or None,
+                reference_images=ref_inputs or None,
             )
         except Exception as exc:  # noqa: BLE001
             raise CoverDirectorError(f"llms.image 失败: {type(exc).__name__}: {exc}") from exc
@@ -141,3 +143,9 @@ def _normalize_skill(skill: NoteSkill | dict[str, Any]) -> dict[str, Any]:
     if isinstance(skill, dict):
         return skill
     raise TypeError(f"skill 必须是 NoteSkill 或 dict，收到 {type(skill)!r}")
+
+
+def _reference_input(path: str) -> bytes | str:
+    if path.startswith(("http://", "https://")):
+        return path
+    return image_to_bytes(path)

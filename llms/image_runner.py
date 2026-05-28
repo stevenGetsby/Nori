@@ -7,7 +7,7 @@ from typing import Any, Callable
 from .capabilities import ensure_image_capability
 from .client import build_client_bundle, validate_api_key
 from .config import get_active
-from .image_inputs import load_image_bytes
+from .image_inputs import split_reference_images
 from .image_providers import (
     image_google,
     image_openai_edit,
@@ -32,15 +32,12 @@ def image_outputs(
     **kwargs: Any,
 ) -> list[str]:
     """Run an image request and return normalized image outputs."""
-    ref_bytes_list: list[bytes] = []
-    if reference_images:
-        ref_bytes_list = [load_image_bytes(item) for item in reference_images]
-        ref_bytes_list = [b for b in ref_bytes_list if b]
+    ref_bytes_list, ref_urls = split_reference_images(reference_images)
 
     active_model = (_get_active or get_active)(usage)
     started = time.perf_counter()
     try:
-        ensure_image_capability(active_model, ref_bytes_list)
+        ensure_image_capability(active_model, ref_bytes_list, ref_urls)
 
         if active_model.provider_id == "google":
             api_key = validate_api_key(active_model, usage)
@@ -56,13 +53,26 @@ def image_outputs(
             size = bundle.model.resolution_options[0]
         if active_model.provider_id == "relay":
             request_kwargs.setdefault("response_format", "b64_json")
+            if ref_bytes_list and not ref_urls:
+                from nori.core.contracts import ImageCapabilityError
 
-        if ref_bytes_list and active_model.provider_id == "relay":
+                raise ImageCapabilityError(
+                    "relay image reference generation requires public HTTPS image URLs; "
+                    "local files/data-uri/base64 references are rejected by this provider"
+                )
+
+        if (ref_bytes_list or ref_urls) and active_model.provider_id == "relay":
             relay_func = _image_relay_generate_with_references_func or image_relay_generate_with_references
-            results = relay_func(bundle, prompt, ref_bytes_list, size, request_kwargs)
+            results = relay_func(bundle, prompt, ref_bytes_list, size, request_kwargs, ref_urls=ref_urls)
         elif ref_bytes_list:
             edit_func = _image_openai_edit_func or image_openai_edit
             results = edit_func(bundle, prompt, ref_bytes_list, size, request_kwargs)
+        elif ref_urls:
+            from nori.core.contracts import ImageCapabilityError
+
+            raise ImageCapabilityError(
+                f"active image provider {active_model.provider_id!r} does not support URL reference_images"
+            )
         else:
             resp = bundle.client.images.generate(
                 model=bundle.model_id,

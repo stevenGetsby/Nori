@@ -198,6 +198,24 @@ def test_cover_director_falls_back_to_reference_assets_when_draft_empty(tmp_path
     assert len(captured["refs"]) == 1
 
 
+def test_cover_director_preserves_remote_url_references(tmp_path, monkeypatch):
+    url = "https://example.test/holly-ref.jpg"
+    draft = _draft(cover_path=url)
+    skill = _planting_skill()
+    captured: dict = {}
+
+    def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
+        captured["refs"] = reference_images
+        return [_TINY_PNG_DATA_URI]
+
+    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "image", fake_image)
+
+    result = CoverDirectorAgent().run(draft, skill, out_dir=tmp_path)
+    assert result.reference_paths == [url]
+    assert captured["refs"] == [url]
+
+
 def test_cover_director_passes_none_references_when_no_assets(tmp_path, monkeypatch):
     draft = _draft()
     skill = _planting_skill()

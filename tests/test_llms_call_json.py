@@ -77,6 +77,19 @@ def test_merge_kwargs_prefers_max_completion_tokens_for_gpt5():
     assert defaulted == {"max_completion_tokens": 4096}
 
 
+def test_merge_kwargs_prefers_max_completion_tokens_for_openai_compatible_gpt5_providers():
+    model = SimpleNamespace(
+        provider_id="lumina",
+        model_id="gpt-5.5",
+        max_output=128,
+        temperature_fixed=None,
+        extra_body={},
+    )
+
+    assert request_params.merge_chat_kwargs(model, {"max_tokens": 32}) == {"max_completion_tokens": 32}
+    assert request_params.merge_chat_kwargs(model, {}) == {"max_completion_tokens": 128}
+
+
 def test_merge_kwargs_prefers_max_tokens_for_non_gpt5():
     model = SimpleNamespace(
         provider_id="openai",

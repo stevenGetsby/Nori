@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from nori.core import AccountOperationProject
-from nori.core import ContentTask, ClientBrief
+from nori.content_generation.content_producer.package import ContentPackageAssembler, PreparedContentPackageInput
 from nori.content_generation.models import CandidateTitle, CoverResult, NoteDraft
-from nori.core import UserAsset
-from nori.content_generation.content_producer import builder as content_package_builder
+from nori.core import AccountOperationProject, ClientBrief, ContentTask, StableArtifactAssembler, UserAsset
 
 
 def _task() -> ContentTask:
@@ -61,39 +59,46 @@ def _skill() -> dict:
     return {"skill_id": "flower_skill", "label": "花店种草"}
 
 
-def test_normalize_assets_adds_task_brief_text_when_missing():
-    assets = content_package_builder.normalize_assets(
-        [UserAsset(kind="image", path="/tmp/ref.jpg", usable_for=["cover"])],
-        _task(),
-        _brief(),
-    )
-
-    assert [asset.kind for asset in assets] == ["image", "text"]
-    assert "任务标题：母亲节花束搭配" in assets[1].text
-    assert "品牌：春日花房" in assets[1].text
-
-
-def test_build_intent_context_and_selected_skill():
+def test_content_package_assembler_prepares_agent_inputs_and_context() -> None:
+    assembler = ContentPackageAssembler()
     project = AccountOperationProject(project_id="ops_001", name="春日花房代运营", client_brief=_brief())
 
-    intent = content_package_builder.build_intent(_task(), _brief(), {"goal": "自定义目标"})
-    context = content_package_builder.build_context(_task(), _brief(), project, {"extra": "value"})
-    selected = content_package_builder.selected_skill([{"skill_id": "other"}, _skill()], "flower_skill")
+    prepared = assembler.prepare(
+        _task(),
+        _brief(),
+        assets=[{"kind": "image", "path": "/tmp/ref.jpg", "usable_for": ["cover"]}],
+        project=project,
+        intent_override={"goal": "自定义目标"},
+        context_override={"extra": "value"},
+    )
 
-    assert intent["goal"] == "自定义目标"
-    assert intent["format"] == "小红书图文"
-    assert context["project"]["project_id"] == "ops_001"
-    assert context["extra"] == "value"
-    assert selected == _skill()
+    assert isinstance(assembler, StableArtifactAssembler)
+    assert isinstance(prepared, PreparedContentPackageInput)
+    assert [asset.kind for asset in prepared.assets] == ["image", "text"]
+    assert prepared.assets[0].path == "/tmp/ref.jpg"
+    assert "任务标题：母亲节花束搭配" in prepared.assets[1].text
+    assert "品牌：春日花房" in prepared.assets[1].text
+    assert prepared.intent == {
+        "goal": "自定义目标",
+        "format": "小红书图文",
+        "topic": "母亲节花束",
+        "platform": "xhs",
+        "content_type": "note",
+    }
+    assert prepared.context["task"]["task_id"] == "task_001"
+    assert prepared.context["client_brief"]["brand_name"] == "春日花房"
+    assert prepared.context["project"]["project_id"] == "ops_001"
+    assert prepared.context["extra"] == "value"
 
 
-def test_package_from_outputs_maps_prompts_material_usage_and_source_refs():
-    task = _task()
+def test_content_package_assembler_selects_skill_and_builds_package() -> None:
+    assembler = ContentPackageAssembler()
     project = AccountOperationProject(project_id="ops_001", client_brief=_brief())
     assets = [UserAsset(kind="image", path="/tmp/ref.jpg", usable_for=["cover"])]
 
-    package = content_package_builder.package_from_outputs(
-        task,
+    selected = assembler.selected_skill([{"skill_id": "other"}, _skill()], "flower_skill")
+    package = assembler.build(
+        _task(),
         _draft(),
         _cover(),
         skills=[_skill()],
@@ -104,13 +109,25 @@ def test_package_from_outputs_maps_prompts_material_usage_and_source_refs():
         use_cover=True,
     )
 
+    assert selected == _skill()
     assert package.package_id == "pkg_task_001"
     assert package.cover_path == "/tmp/generated-cover.png"
     assert package.image_paths == ["/tmp/body.jpg", "/tmp/ref.jpg"]
     assert package.prompts["note_draft"]["title"] == "母亲节花别乱买"
     assert package.prompts["cover_result"]["prompt"] == "cover prompt"
+    assert {"source": "input_asset", "index": 0, "kind": "image", "path": "/tmp/ref.jpg", "text_preview": "", "usable_for": ["cover"]} in package.material_usage
     assert {"source": "task_required_asset", "kind": "product_photo"} in package.material_usage
+    assert {"source": "benchmark_note", "note_id": "xhs_001"} in package.source_refs
     assert {"source": "note_skill", "skill_id": "flower_skill", "label": "花店种草"} in package.source_refs
+    assert {"source": "client_brief", "client_name": "花店主理人", "brand_name": "春日花房"} in package.source_refs
     assert {"source": "account_operation_project", "project_id": "ops_001"} in package.source_refs
     assert package.metadata["production"]["task_status_before"] == "planned"
     assert package.metadata["production"]["cover_generated"] is True
+
+
+def test_content_package_assembler_stable_ids_and_media_paths_are_deduped() -> None:
+    assembler = ContentPackageAssembler()
+
+    assert assembler.package_id_for_task(_task()) == "pkg_task_001"
+    assert assembler.slug(" 母亲节 花束! ") == "母亲节_花束"
+    assert assembler.dedupe(["/tmp/a.jpg", "", "/tmp/a.jpg", "/tmp/b.jpg"]) == ["/tmp/a.jpg", "/tmp/b.jpg"]

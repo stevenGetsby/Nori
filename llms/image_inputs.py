@@ -46,6 +46,31 @@ def load_image_bytes(item: Any) -> bytes:
     return b""
 
 
+def load_image_url(item: Any) -> str:
+    """Return a remote image URL reference if the input is already URL-shaped."""
+    if not isinstance(item, str):
+        return ""
+    value = item.strip()
+    if value.startswith(("http://", "https://")):
+        return value
+    return ""
+
+
+def split_reference_images(items: list[Any] | None) -> tuple[list[bytes], list[str]]:
+    """Split caller references into local bytes and remote image URLs."""
+    ref_bytes: list[bytes] = []
+    ref_urls: list[str] = []
+    for item in items or []:
+        url = load_image_url(item)
+        if url:
+            ref_urls.append(url)
+            continue
+        raw = load_image_bytes(item)
+        if raw:
+            ref_bytes.append(raw)
+    return ref_bytes, ref_urls
+
+
 def bytes_to_data_uri(raw: bytes) -> str:
     return f"data:{sniff_mime(raw)};base64,{base64.b64encode(raw).decode()}"
 

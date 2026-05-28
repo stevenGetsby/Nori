@@ -9,7 +9,10 @@ import asyncio
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Union
 
-import aiomysql  # type: ignore
+try:
+    import aiomysql  # type: ignore
+except ModuleNotFoundError:  # MySQL is optional for JSON/SQLite crawler paths.
+    aiomysql = None  # type: ignore[assignment]
 
 
 class AbstractAsyncDB(ABC):
@@ -43,7 +46,9 @@ class AbstractAsyncDB(ABC):
 
 
 class AsyncMysqlDB(AbstractAsyncDB):
-    def __init__(self, pool: aiomysql.Pool) -> None:
+    def __init__(self, pool: Any) -> None:
+        if aiomysql is None:
+            raise RuntimeError("aiomysql is required when DB_TYPE is mysql")
         self.__pool = pool
 
     async def query(self, sql: str, *args: Union[str, int]) -> List[Dict[str, Any]]:

@@ -8,6 +8,7 @@ from .models import AssetBundle, CandidateTitle, ContentPackage, CoverResult, No
 
 _LAZY_EXPORTS = {
     "ContentGenerationFacade": "facade",
+    "GenerationAgent": "generation",
     "ContentProducerAgent": "content_producer",
     "ContentProductionError": "content_producer",
     "produce_content_package": "content_producer",
@@ -27,6 +28,7 @@ __all__ = [
     "ContentGenerationFacade",
     "ContentProducerAgent",
     "ContentProductionError",
+    "GenerationAgent",
     "CoverDirectorAgent",
     "CoverDirectorError",
     "CoverResult",

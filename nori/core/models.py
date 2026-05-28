@@ -369,6 +369,121 @@ class ContentTask:
 
 
 @dataclass(slots=True)
+class IntentContract:
+    """Frozen acceptance contract shared by generation and review stages."""
+
+    contract_id: str = ""
+    brand_name: str = ""
+    platform: str = "xhs"
+    primary_goal: str = ""
+    business_goals: list[str] = field(default_factory=list)
+    audience: list[str] = field(default_factory=list)
+    positioning_notes: list[str] = field(default_factory=list)
+    must_include: list[str] = field(default_factory=list)
+    tone: list[str] = field(default_factory=list)
+    deliverables: list[str] = field(default_factory=list)
+    taboos: list[str] = field(default_factory=list)
+    source_refs: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "contract_id": self.contract_id,
+            "brand_name": self.brand_name,
+            "platform": self.platform,
+            "primary_goal": self.primary_goal,
+            "business_goals": list(self.business_goals),
+            "audience": list(self.audience),
+            "positioning_notes": list(self.positioning_notes),
+            "must_include": list(self.must_include),
+            "tone": list(self.tone),
+            "deliverables": list(self.deliverables),
+            "taboos": list(self.taboos),
+            "source_refs": _dict_list(self.source_refs),
+            "metadata": dict(self.metadata),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any] | None) -> "IntentContract":
+        data = _mapping(data)
+        return cls(
+            contract_id=str(data.get("contract_id") or ""),
+            brand_name=str(data.get("brand_name") or ""),
+            platform=str(data.get("platform") or "xhs"),
+            primary_goal=str(data.get("primary_goal") or ""),
+            business_goals=_string_list(data.get("business_goals")),
+            audience=_string_list(data.get("audience")),
+            positioning_notes=_string_list(data.get("positioning_notes")),
+            must_include=_string_list(data.get("must_include")),
+            tone=_string_list(data.get("tone")),
+            deliverables=_string_list(data.get("deliverables")),
+            taboos=_string_list(data.get("taboos")),
+            source_refs=_dict_list(data.get("source_refs")),
+            metadata=_mapping(data.get("metadata")),
+        )
+
+    @classmethod
+    def from_brief_and_task(
+        cls,
+        brief: "ClientBrief" | dict[str, Any] | None,
+        task: ContentTask | dict[str, Any] | None,
+        *,
+        contract_id: str = "",
+    ) -> "IntentContract":
+        normalized_brief = brief if isinstance(brief, ClientBrief) else ClientBrief.from_dict(brief)
+        normalized_task = task if isinstance(task, ContentTask) else ContentTask.from_dict(task)
+        task_brief = dict(normalized_task.brief or {})
+        brand_name = normalized_brief.brand_name
+        topic = normalized_task.topic or normalized_task.title
+        deliverable = str(task_brief.get("deliverable") or normalized_task.content_type or "").strip()
+        return cls(
+            contract_id=contract_id or f"intent_{normalized_task.task_id or 'default'}",
+            brand_name=brand_name,
+            platform=normalized_task.platform or normalized_brief.platform,
+            primary_goal=normalized_task.objective or (normalized_brief.goals[0] if normalized_brief.goals else ""),
+            business_goals=list(normalized_brief.goals),
+            audience=list(normalized_brief.audience),
+            positioning_notes=list(normalized_brief.positioning_notes),
+            must_include=_dedupe_contract_terms([
+                brand_name,
+                topic,
+                *_string_list(task_brief.get("must_include")),
+            ]),
+            tone=_dedupe_contract_terms([
+                *tone_terms(normalized_brief.constraints),
+                *_string_list(task_brief.get("tone")),
+            ]),
+            deliverables=[deliverable] if deliverable else [],
+            taboos=list(normalized_brief.taboos),
+            source_refs=[
+                {"source": "client_brief", "brand_name": brand_name},
+                {"source": "content_task", "task_id": normalized_task.task_id},
+            ],
+        )
+
+    def missing_terms(self, text: str) -> list[str]:
+        haystack = str(text or "")
+        return [term for term in self.must_include if term and term not in haystack]
+
+
+def tone_terms(constraints: list[str]) -> list[str]:
+    known = ["不羁", "自信", "有趣", "搞怪", "走心", "犀利", "亲和", "反叛", "温暖"]
+    text = "\n".join(constraints)
+    return [term for term in known if term in text]
+
+
+def _dedupe_contract_terms(values: list[str]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        text = str(value or "").strip()
+        if text and text not in seen:
+            out.append(text)
+            seen.add(text)
+    return out
+
+
+@dataclass(slots=True)
 class ContentCalendar:
     """Calendar-level grouping for account operation content tasks."""
 
@@ -854,6 +969,7 @@ __all__ = [
     "DecisionPoint",
     "DomainSnapshot",
     "ExplanationTrace",
+    "IntentContract",
     "KPIPlan",
     "LearningSignal",
     "MarketAnalysis",

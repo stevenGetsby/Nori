@@ -74,6 +74,17 @@ def test_collect_reference_paths_falls_back_to_reference_assets_only_when_draft_
     assert result == [str(ref1)]
 
 
+def test_collect_reference_paths_keeps_remote_url_references():
+    url = "https://example.test/holly-ref.jpg"
+    result = cover_refs.collect_reference_paths(
+        _draft(cover_path=url),
+        [],
+        max_references=1,
+    )
+
+    assert result == [url]
+
+
 def test_select_references_llm_filters_dedupes_and_caps_chosen_indices(tmp_path):
     a = tmp_path / "a.png"; a.write_bytes(b"img")
     b = tmp_path / "b.png"; b.write_bytes(b"img")
@@ -131,3 +142,20 @@ def test_select_references_llm_returns_empty_for_no_images_or_invalid_response(t
         [_image_asset(str(image))],
         json_call=fake_json_call,
     ) == []
+
+
+def test_select_references_llm_accepts_remote_url_assets():
+    url = "https://example.test/holly-ref.jpg"
+
+    def fake_json_call(**kwargs):
+        return {"chosen_indices": [0]}
+
+    result = cover_refs.select_references_llm(
+        _draft(),
+        {},
+        {},
+        [_image_asset(url, usable_for=["cover"])],
+        json_call=fake_json_call,
+    )
+
+    assert result == [url]

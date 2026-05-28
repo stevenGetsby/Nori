@@ -49,6 +49,6 @@ def merge_model_extra_body(out: dict, model: Any) -> None:
 
 def max_output_param_name(model: Any) -> str:
     model_id = model.model_id.lower()
-    if model.provider_id in {"ghc", "openai"} and model_id.startswith("gpt-5"):
+    if model_id.startswith("gpt-5"):
         return "max_completion_tokens"
     return "max_tokens"

@@ -9,7 +9,7 @@
 | Default suite | `python -m pytest tests -q` |
 | Project status | `python 文档/codex-skills/nori-project-operator/scripts/nori_status.py .` |
 
-Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed, 3 skipped. Project skill exists; canonical workflow stages and models are split across the five business modules; concrete stages own package folders with `prompts.py` / `schema.py` support modules and explicit public exports; runtime stages use `nori.core.LLMFactory` instead of direct `llms` imports; domain facades inherit `nori.core.WorkflowBase` and declare readable `step_names`; cross-stage workflow contracts and asset library contracts live in `nori.core.models`, and `AccountOperationProject` lives in `nori.core.project`; `ops_models`, `ops_agents`, `gen_agents`, `ana_agents`, `agent_models`, and `agent_utils` legacy packages have been removed; local `api_config.yaml` exists and status output redacts it to active model names.
+Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed, 3 skipped. Project skill exists; canonical workflow stages and models are split across the five business modules; concrete stages own package folders with prompt files only when they own prompt text/construction and explicit public exports; model contracts live in business-module `models.py` files or `nori.core`; runtime stages use `nori.core.LLMFactory` instead of direct `llms` imports; domain facades inherit `nori.core.WorkflowBase` and declare readable `step_names`; cross-stage workflow contracts and asset library contracts live in `nori.core.models`, and `AccountOperationProject` lives in `nori.core.project`; `ops_models`, `ops_agents`, `gen_agents`, `ana_agents`, `agent_models`, and `agent_utils` legacy packages have been removed; local `api_config.yaml` exists and status output redacts it to active model names.
 
 ## Domain Architecture Refactor
 
@@ -167,9 +167,7 @@ Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed
 | Task | Status | Acceptance |
 | --- | --- | --- |
 | Content task generation bridge | Done | `ContentTask -> NoteMakerAgent -> CoverDirectorAgent -> ContentPackage` covered by mocked tests. |
-| Extract content package builder boundary | Done | Canonical path is `nori.content_generation.content_producer.builder`. |
-| Extract content package input boundary | Done | Canonical path is `nori.content_generation.content_producer.inputs`. |
-| Extract content package provenance boundary | Done | Canonical path is `nori.content_generation.content_producer.refs`. |
+| Consolidate content package assembly | Done | Canonical path is `nori.content_generation.content_producer.package.ContentPackageAssembler`. |
 | Extract content production state boundary | Done | Canonical path is `nori.content_generation.content_producer.state`. |
 | Artifact index | Done | Package records note draft, cover result, prompts, material usage, and source refs. |
 | Retry/error contract | Done | Generation failures attach structured error to task/project metadata before raising `ContentProductionError`. |

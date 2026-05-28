@@ -30,11 +30,14 @@ Input / assets
   -> nori.user_profiling.IntakeAgent
   -> nori.user_profiling.AccountPlannerAgent
   -> nori.context_building.{OperationPlanner,KPIPlanner,CalendarPlanner}
+  -> nori.core.IntentContract
+  -> nori.content_generation.GenerationAgent
   -> nori.content_generation.ContentProducerAgent
   -> nori.content_generation.NoteMakerAgent
   -> nori.content_generation.CoverDirectorAgent
   -> nori.content_generation.models.ContentPackage
   -> nori.learning_loop.ReviewGateAgent
+  -> nori.learning_loop.QualityReviewerAgent
   -> nori.learning_loop.{MetricsSnapshotAgent,StrategyIterationAgent}
   -> nori.learning_loop.models.ComplianceReview / MetricsSnapshot / StrategyIteration
 ```
@@ -54,12 +57,12 @@ nori.core
 
 | Domain module | Public contract | Current facade | Backing implementation |
 | --- | --- | --- | --- |
-| Shared core | `UserProfile`, `UserAsset`, `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, `ContentCalendar`, `AccountOperationProject`, `MarketAnalysis`, `ContextPack`, `DecisionPoint`, `ExplanationTrace`, `CandidateSet`, `PerformanceSnapshot`, `LearningSignal`, `DomainSnapshot` | `nori.core` | Provider-free dataclasses with `to_dict/from_dict`; `UserAsset`, asset library, brief, plan, KPI, task, calendar, and account-operation project contracts are cross-stage contracts; `ExplanationTrace` writes `stage_steps` and only reads legacy `agent_steps`; `DomainSnapshot` includes `validate()` / `is_valid()` quality gates; `nori.core.architecture` exposes `DOMAIN_MODULES`, `DomainModule`, `domain_module_names()`, and `get_domain_module()`. |
+| Shared core | `UserProfile`, `UserAsset`, `AssetRecord`, `AssetLibrary`, `ClientBrief`, `IntentContract`, `OperationPlan`, `KPIPlan`, `ContentTask`, `ContentCalendar`, `AccountOperationProject`, `MarketAnalysis`, `ContextPack`, `DecisionPoint`, `ExplanationTrace`, `CandidateSet`, `PerformanceSnapshot`, `LearningSignal`, `DomainSnapshot` | `nori.core` | Provider-free dataclasses with `to_dict/from_dict`; `IntentContract` freezes user goals, required terms, tone, deliverables, and taboos before generation; `ArtifactStore` provides JSON checkpoint/resume for long live runs; `ExplanationTrace` writes `stage_steps` and only reads legacy `agent_steps`; `DomainSnapshot` includes `validate()` / `is_valid()` quality gates; `nori.core.architecture` exposes `DOMAIN_MODULES`, `DomainModule`, `domain_module_names()`, and `get_domain_module()`. |
 | User profiling | Long-lived user/account/brand/preference profile | `nori.user_profiling.facade.UserProfilingFacade` | `nori.user_profiling.models` owns `UserInput`, `IntakeResult`, `AccountPlannerInput`, `AccountPlanResult`, and `AccountPositioning`. Image tagging returns `nori.core.UserAsset` without importing content generation. |
 | Market analysis | Competitor samples, hot examples, trend/audience insights | `nori.market_analysis.facade.MarketAnalysisFacade` | `nori.market_analysis.models` owns `CompetitorResearch`, `CompetitorSample`, `XHSNoteSample`, `XHSSeedSkillDraft`, `NoteEvidence`, `NoteSkill`, and `SessionSkillReport`; evidence can come from `DataCollector` and `XHSNoteAnalyzer`. |
 | Context building | Operation project assembly, KPI/calendar planning, unified generation context, and xAI evidence trace | `nori.context_building.{OperationPlannerAgent,KPIPlannerAgent,CalendarPlannerAgent,ContextPackBuilder}` | Context-building stages import cross-stage contracts directly from `nori.core`; shared `ContextPack` also lives in `nori.core`. |
-| Content generation | Content package production and candidate set before final human selection | `nori.content_generation.{ContentProducerAgent,ContentGenerationFacade}` | `nori.content_generation.models` owns `AssetBundle`, `CandidateTitle`, `NoteDraft`, `CoverResult`, and `ContentPackage`. Shared assets/tasks come from `nori.core.UserAsset` and `nori.core.ContentTask`. |
-| Learning loop | Review gates, monitoring snapshots, and preference/strategy update signals | `nori.learning_loop.{ReviewGateAgent,MetricsSnapshotAgent,StrategyIterationAgent,LearningLoopFacade}` | `nori.learning_loop.models` owns `ComplianceReview`, `MetricsSnapshot`, `StrategyIteration`; review/metric evidence feeds `nori.core` learning contracts. |
+| Content generation | Routed text/image/package generation and candidate set before final human selection | `nori.content_generation.{GenerationAgent,ContentProducerAgent,ContentGenerationFacade}` | `GenerationAgent` is the coarse system stage; it routes `text` to `NoteMakerAgent`, `image` to `CoverDirectorAgent`, and `note_package` to `ContentProducerAgent`. Specialized child agents remain separate because text, image, and future video generation have different inputs and provider contracts. |
+| Learning loop | Review gates, product-quality checks, monitoring snapshots, and preference/strategy update signals | `nori.learning_loop.{ReviewGateAgent,QualityReviewerAgent,MetricsSnapshotAgent,StrategyIterationAgent,LearningLoopFacade}` | `nori.learning_loop.models` owns `ComplianceReview`, `MetricsSnapshot`, `StrategyIteration`; `QualityReviewerAgent` checks generated packages against `IntentContract` so publish readiness is not limited to compliance/consistency. |
 
 Design rule: new cross-stage behavior should add a shared `nori.core` contract or one of the five domain facades before adding another standalone agent.
 
@@ -128,6 +131,7 @@ Committed config artifacts:
 
 | Agent | Input | Output | Boundary |
 | --- | --- | --- | --- |
+| `GenerationAgent` | `artifact_type` plus route-specific inputs | `ContentPackage` / `NoteDraft` / `CoverResult` | Coarse generation stage and router. It owns route selection and shared intent handoff, while preserving specialized child agents for text and image. |
 | `IntakeAgent` | `UserInput(text, images)` | `IntakeResult(intention, context, missing, questions, assets)` | Only layer that performs image understanding / vision tagging. |
 | `NoteMakerAgent` | `NoteSkill[]`, `UserAsset[]`, intent/context | `NoteDraft` | Only writes note copy/title/tags; does not read original image bytes. |
 | `CoverDirectorAgent` | `NoteDraft`, selected skill, tagged assets | `CoverResult` | Only layer that calls image generation and reads reference image bytes. |
@@ -139,19 +143,19 @@ Workflow stage package layout:
 
 | Stage package | Implementation files |
 | --- | --- |
-| `nori/user_profiling/intaker/` | `intaker.py`, `prompts.py`, `schema.py`, `normalizer.py`, `taxonomy.py`, `image_tagger.py` |
-| `nori/user_profiling/account_planner/` | `account_planner.py`, `prompts.py`, `schema.py`, `inputs.py`, `fallback.py`, `search.py`, `normalizer.py`, `portrait.py`, `keywords.py` |
-| `nori/content_generation/note_maker/` | `note_maker.py`, `prompts.py`, `schema.py`, `skill_picker.py`, `asset_curator.py`, `note_composer.py` |
-| `nori/content_generation/cover_director/` | `cover_director.py`, `prompts.py`, `schema.py`, `refs.py`, `output.py` |
-| `nori/content_generation/content_producer/` | `content_producer.py`, `prompts.py`, `schema.py`, `inputs.py`, `builder.py`, `refs.py`, `state.py` |
-| `nori/context_building/operation_planner/` | `operation_planner.py`, `prompts.py`, `schema.py`, `inputs.py`, `project_builder.py`, `project_policy.py`, `normalizer.py` |
-| `nori/context_building/kpi_planner/` | `kpi_planner.py`, `prompts.py`, `schema.py`, `inputs.py`, `normalizer.py` |
-| `nori/context_building/calendar_planner/` | `calendar_planner.py`, `prompts.py`, `schema.py`, `inputs.py`, `normalizer.py`, `policy.py`, `task_builder.py` |
-| `nori/learning_loop/review/` | `review_gate.py`, `prompts.py`, `schema.py`, `inputs.py`, `policy.py`, `scoring.py`, `state.py` |
-| `nori/learning_loop/strategy/` | `strategy_iteration.py`, `prompts.py`, `schema.py`, `inputs.py`, `policy.py`, `state.py` |
-| `nori/market_analysis/xhs_note_analyzer/` | `xhs_note_analyzer.py`, `prompts.py`, `schema.py`, `loader.py`, `rules.py`, `note_llm.py`, `session_clustering.py`, `session_llm.py`, `session_reporter.py`, `skill_builder.py` |
+| `nori/user_profiling/intaker/` | `intaker.py`, `prompts.py`, `normalizer.py`, `taxonomy.py`, `image_tagger.py` |
+| `nori/user_profiling/account_planner/` | `account_planner.py`, `prompts.py`, `inputs.py`, `fallback.py`, `search.py`, `normalizer.py`, `portrait.py`, `keywords.py` |
+| `nori/content_generation/note_maker/` | `note_maker.py`, `prompts.py`, `skill_picker.py`, `asset_curator.py`, `note_composer.py` |
+| `nori/content_generation/cover_director/` | `cover_director.py`, `prompts.py`, `refs.py`, `output.py` |
+| `nori/content_generation/content_producer/` | `content_producer.py`, `package.py`, `state.py` |
+| `nori/context_building/operation_planner/` | `operation_planner.py`, `prompts.py`, `inputs.py`, `project_builder.py`, `project_policy.py`, `normalizer.py` |
+| `nori/context_building/kpi_planner/` | `kpi_planner.py`, `prompts.py`, `inputs.py`, `normalizer.py` |
+| `nori/context_building/calendar_planner/` | `calendar_planner.py`, `prompts.py`, `inputs.py`, `normalizer.py`, `policy.py`, `task_builder.py` |
+| `nori/learning_loop/review/` | `review_gate.py`, `inputs.py`, `policy.py`, `scoring.py`, `state.py` |
+| `nori/learning_loop/strategy/` | `strategy_iteration.py`, `inputs.py`, `policy.py`, `state.py` |
+| `nori/market_analysis/xhs_note_analyzer/` | `xhs_note_analyzer.py`, `prompts.py`, `loader.py`, `rules.py`, `note_llm.py`, `session_clustering.py`, `session_llm.py`, `session_reporter.py`, `skill_builder.py` |
 
-Flat helper module paths such as `nori.content_generation.skill_picker` and `nori.context_building.operation_planner_inputs` should not exist. New implementation code and imports should live inside the owning stage package.
+Flat helper module paths such as `nori.content_generation.skill_picker` and `nori.context_building.operation_planner_inputs` should not exist. Stage-local `schema.py` re-export files should not exist either; model contracts live in the owning business module `models.py` files or in `nori.core` for shared contracts. Prompt files are kept only for stages that own real prompt text or prompt construction. New implementation code and imports should live inside the owning stage package.
 
 Shared generation utilities:
 
@@ -161,6 +165,9 @@ Shared generation utilities:
 | `nori/core/llm.py` | `LLMFactory` is the injectable project LLM gateway used by agents instead of reaching directly into `llms` in constructors or orchestration code. |
 | `nori/core/agent.py` | `AgentBase` standardizes `stage_name`, `use_llm`, `llm_factory`, and required/optional JSON helper methods while preserving each agent's domain-specific `run(...)` signature. |
 | `nori/core/workflow.py` | `WorkflowBase` provides a small ordered-step runner for agents and domain facades that compose multiple substages; `named_workflow_steps(...)` lets facades declare readable no-op stage names when their public methods own execution. All five business facades expose this shared workflow contract through `workflow_name` and `step_names`. |
+| `nori/core/artifacts.py` | `StableArtifactAssembler` provides shared slug/dedupe behavior for deterministic assemblers that produce stable local artifact IDs or media/reference lists. |
+| `nori/core/artifacts.py` | `ArtifactStore` writes stage JSON checkpoints plus `manifest.json`, and exposes `get_or_build(...)` for resumable long-running flows. |
+| `nori/core/models.py` | `IntentContract` freezes user intent before generation and exposes `missing_terms(...)` so generation/review stages can verify concrete acceptance requirements. |
 | `nori/shared/llm_json.py` | `call_stage_json` wraps `llms.chat_json(json_mode=True)` for required generation stages and translates parse/provider errors into the caller's domain exception. |
 | `nori/shared/llm_json.py` | `call_stage_messages_json` applies the same required-stage contract to pre-built messages, including multimodal vision messages. |
 | `nori/shared/llm_json.py` | `try_stage_json` is the system/user convenience wrapper for optional JSON LLM stages, delegating to the same pre-built-message fallback path. |
@@ -212,9 +219,7 @@ Shared generation utilities:
 | `nori/context_building/calendar_planner/task_builder.py` | CalendarPlanner content-task boundary: builds fallback `ContentTask` rows, normalizes LLM task rows, preserves invalid-row fallback, and applies task-level policy defaults. |
 | `nori/context_building/planner_critics.py` | Shared planner critic policy boundary: evaluates Operation/KPI/Calendar fallback quality, structural completeness, task readiness, KPI alignment, and rule-fallback warnings without owning agent orchestration. |
 | `nori/content_generation/content_producer/content_producer.py` | `ContentTask + NoteSkill + assets -> ContentPackage`; delegates note and cover generation. |
-| `nori/content_generation/content_producer/inputs.py` | ContentProducer input boundary: restores `UserAsset` rows, adds task/brief text fallback, builds note/cover intent and context, and selects the generated draft's skill. |
-| `nori/content_generation/content_producer/builder.py` | ContentProducer-owned package construction boundary: maps `NoteDraft` / `CoverResult` outputs into `ContentPackage` fields while delegating input preparation and provenance rows. |
-| `nori/content_generation/content_producer/refs.py` | ContentPackage provenance boundary: builds material-usage rows, source refs, stable package IDs, slugs, and deduped media/reference paths without reading draft orchestration state. |
+| `nori/content_generation/content_producer/package.py` | `ContentPackageAssembler` class: restores assets, builds production intent/context, selects the generated draft's skill, builds stable package IDs, material usage, source refs, and maps `NoteDraft` / `CoverResult` into `ContentPackage`. |
 | `nori/content_generation/content_producer/state.py` | ContentProducer state boundary: formats production errors, classifies note/cover/production failures, and updates task/project success or failure metadata. |
 | `nori/learning_loop/review/review_gate.py` | `ContentPackage + optional task/brief/project -> ComplianceReview[]`; rule-based review gate that delegates input restoration, policy, scoring, and project attachment. |
 | `nori/learning_loop/review/inputs.py` | Review input boundary: restores package/task/brief dict snapshots and derives missing client brief context from the project. |

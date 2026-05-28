@@ -19,46 +19,42 @@ ALLOWED_NORI_TOP_LEVEL_DIRS = {
 
 
 WORKFLOW_STAGE_PACKAGES = {
-    "nori/user_profiling/intaker": {"intaker.py", "prompts.py", "schema.py", "normalizer.py", "taxonomy.py", "image_tagger.py"},
+    "nori/user_profiling/intaker": {"intaker.py", "prompts.py", "normalizer.py", "taxonomy.py", "image_tagger.py"},
     "nori/user_profiling/account_planner": {
         "account_planner.py",
         "inputs.py",
         "prompts.py",
-        "schema.py",
         "fallback.py",
         "search.py",
         "normalizer.py",
         "portrait.py",
         "keywords.py",
     },
-    "nori/content_generation/note_maker": {"note_maker.py", "prompts.py", "schema.py", "skill_picker.py", "asset_curator.py", "note_composer.py"},
-    "nori/content_generation/cover_director": {"cover_director.py", "prompts.py", "schema.py", "refs.py", "output.py"},
-    "nori/content_generation/content_producer": {"content_producer.py", "prompts.py", "schema.py", "inputs.py", "builder.py", "refs.py", "state.py"},
+    "nori/content_generation/note_maker": {"note_maker.py", "prompts.py", "skill_picker.py", "asset_curator.py", "note_composer.py"},
+    "nori/content_generation/cover_director": {"cover_director.py", "prompts.py", "refs.py", "output.py"},
+    "nori/content_generation/content_producer": {"content_producer.py", "package.py", "state.py"},
     "nori/context_building/operation_planner": {
         "operation_planner.py",
         "inputs.py",
         "prompts.py",
-        "schema.py",
         "project_builder.py",
         "project_policy.py",
         "normalizer.py",
     },
-    "nori/context_building/kpi_planner": {"kpi_planner.py", "inputs.py", "prompts.py", "schema.py", "normalizer.py"},
+    "nori/context_building/kpi_planner": {"kpi_planner.py", "inputs.py", "prompts.py", "normalizer.py"},
     "nori/context_building/calendar_planner": {
         "calendar_planner.py",
         "inputs.py",
         "prompts.py",
-        "schema.py",
         "normalizer.py",
         "policy.py",
         "task_builder.py",
     },
-    "nori/learning_loop/review": {"review_gate.py", "prompts.py", "schema.py", "inputs.py", "policy.py", "scoring.py", "state.py"},
-    "nori/learning_loop/strategy": {"strategy_iteration.py", "prompts.py", "schema.py", "inputs.py", "policy.py", "state.py"},
+    "nori/learning_loop/review": {"review_gate.py", "inputs.py", "policy.py", "scoring.py", "state.py"},
+    "nori/learning_loop/strategy": {"strategy_iteration.py", "inputs.py", "policy.py", "state.py"},
     "nori/market_analysis/xhs_note_analyzer": {
         "xhs_note_analyzer.py",
         "prompts.py",
-        "schema.py",
         "loader.py",
         "rules.py",
         "note_llm.py",
@@ -67,6 +63,18 @@ WORKFLOW_STAGE_PACKAGES = {
         "session_reporter.py",
         "skill_builder.py",
     },
+}
+
+
+PROMPT_OWNING_STAGE_PACKAGES = {
+    "nori/user_profiling/intaker",
+    "nori/user_profiling/account_planner",
+    "nori/content_generation/note_maker",
+    "nori/content_generation/cover_director",
+    "nori/context_building/operation_planner",
+    "nori/context_building/kpi_planner",
+    "nori/context_building/calendar_planner",
+    "nori/market_analysis/xhs_note_analyzer",
 }
 
 
@@ -124,6 +132,9 @@ REMOVED_FLAT_WRAPPER_FILES = [
     "nori/content_generation/package_inputs.py",
     "nori/content_generation/package_builder.py",
     "nori/content_generation/package_refs.py",
+    "nori/content_generation/content_producer/inputs.py",
+    "nori/content_generation/content_producer/builder.py",
+    "nori/content_generation/content_producer/refs.py",
     "nori/content_generation/production_state.py",
     "nori/context_building/operation_planner_inputs.py",
     "nori/context_building/operation_planner_prompts.py",
@@ -243,13 +254,17 @@ def test_workflow_implementation_files_are_grouped_by_stage_package():
         assert "prompt.py" not in files
 
 
-def test_workflow_stage_packages_have_uniform_agent_support_modules():
+def test_workflow_stage_packages_keep_contracts_in_models_not_schema_reexports():
     for package in WORKFLOW_STAGE_PACKAGES:
         package_path = ROOT / package
-        assert (package_path / "schema.py").is_file(), package
-        assert (package_path / "prompts.py").is_file(), package
-        schema_source = (package_path / "schema.py").read_text()
-        assert "__all__" in schema_source, package
+        assert not (package_path / "schema.py").exists(), package
+
+
+def test_workflow_stage_packages_only_keep_prompt_files_when_they_own_prompts():
+    for package in WORKFLOW_STAGE_PACKAGES:
+        package_path = ROOT / package
+        expected = package in PROMPT_OWNING_STAGE_PACKAGES
+        assert (package_path / "prompts.py").exists() is expected, package
 
 
 def test_workflow_runtime_uses_core_llm_factory_instead_of_direct_llms_imports():
@@ -274,7 +289,7 @@ def test_nori_top_level_packages_are_domain_or_shared_boundaries():
     package_dirs = {
         path.name
         for path in (ROOT / "nori").iterdir()
-        if path.is_dir() and not path.name.startswith("__")
+        if path.is_dir() and not path.name.startswith("__") and (path / "__init__.py").is_file()
     }
     assert package_dirs == ALLOWED_NORI_TOP_LEVEL_DIRS
 

@@ -95,6 +95,11 @@ def test_image_input_helpers_normalize_supported_sources(tmp_path):
     assert image_inputs.load_image_bytes("https://example.test/source.png") == b""
     assert image_inputs.load_image_bytes("not valid base64") == b""
     assert image_inputs.load_image_bytes(None) == b""
+    assert image_inputs.load_image_url("https://example.test/source.png") == "https://example.test/source.png"
+
+    ref_bytes, ref_urls = image_inputs.split_reference_images([PNG_BYTES, "https://example.test/source.png"])
+    assert ref_bytes == [PNG_BYTES]
+    assert ref_urls == ["https://example.test/source.png"]
 
 
 def test_image_input_helpers_sniff_mime_and_build_data_uri():
@@ -165,6 +170,67 @@ def test_relay_image_provider_retries_reference_payload_variants_without_mutatin
     assert images.generate_calls[1]["extra_body"]["images"][0].startswith("data:image/png;base64,")
     assert "image_urls" not in images.generate_calls[1]["extra_body"]
     assert images.generate_calls[1]["size"] == "1024x1024"
+
+
+def test_relay_image_provider_raises_when_base64_refs_are_rejected():
+    class Base64RejectRelayImages(FakeImages):
+        def generate(self, **kwargs):
+            self.generate_calls.append(kwargs)
+            extra_body = kwargs.get("extra_body") or {}
+            if any(key in extra_body for key in ("image_urls", "images", "image")):
+                raise RuntimeError("不支持base64参数，请使用图片url传参")
+            return FakeImageResponse(FakeImageItem(url="https://example.test/text-fallback.png"))
+
+    model = _model(supports_reference_image=True, provider_id="relay")
+    images = Base64RejectRelayImages()
+    request_kwargs = {"extra_body": {"trace": "caller"}, "response_format": "b64_json"}
+
+    with pytest.raises(RuntimeError, match="provide public HTTPS image URLs"):
+        image_providers.image_relay_generate_with_references(
+            _bundle(model, images),
+            "edit this",
+            [PNG_BYTES],
+            "1024x1024",
+            request_kwargs,
+        )
+
+    assert request_kwargs == {"extra_body": {"trace": "caller"}, "response_format": "b64_json"}
+    assert len(images.generate_calls) == 3
+    assert images.generate_calls[-1]["extra_body"]["image"].startswith("data:image/png;base64,")
+
+
+def test_relay_image_provider_sends_reference_urls_before_local_base64():
+    model = _model(supports_reference_image=True, provider_id="relay")
+    images = FakeImages()
+    request_kwargs = {"extra_body": {"trace": "caller"}, "response_format": "b64_json"}
+
+    result = image_providers.image_relay_generate_with_references(
+        _bundle(model, images),
+        "edit this",
+        [PNG_BYTES],
+        "1024x1024",
+        request_kwargs,
+        ref_urls=["https://example.test/source.png"],
+    )
+
+    assert result == ["https://example.test/generated.png"]
+    assert request_kwargs == {"extra_body": {"trace": "caller"}, "response_format": "b64_json"}
+    assert len(images.generate_calls) == 1
+    assert images.generate_calls[0]["extra_body"]["trace"] == "caller"
+    assert images.generate_calls[0]["extra_body"]["image_urls"] == ["https://example.test/source.png"]
+    assert "images" not in images.generate_calls[0]["extra_body"]
+
+
+def test_relay_image_runner_rejects_local_reference_without_public_url(monkeypatch):
+    model = _model(supports_reference_image=True, provider_id="relay")
+    images = FakeImages()
+    monkeypatch.setattr(call_module, "get_active", lambda usage: model)
+    monkeypatch.setattr(call_module, "build_client_bundle", lambda model_arg, usage: _bundle(model_arg, images))
+
+    with pytest.raises(ImageCapabilityError, match="requires public HTTPS image URLs"):
+        call_module.image("draw from local", usage="image", reference_images=[PNG_BYTES])
+
+    assert images.generate_calls == []
 
 
 def test_image_text_generation_does_not_require_reference_capability(monkeypatch):

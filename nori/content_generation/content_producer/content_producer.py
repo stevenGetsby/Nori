@@ -6,12 +6,11 @@ from pathlib import Path
 from typing import Any
 
 from nori.core import AgentBase, LLMFactory
-from nori.core import ClientBrief, ContentTask, UserAsset
+from nori.core import ClientBrief, ContentTask, IntentContract, UserAsset
 
 from ..cover_director import CoverDirectorAgent
 from ..note_maker import NoteMakerAgent
-from . import builder as _package_builder
-from . import inputs as _package_inputs
+from .package import ContentPackageAssembler
 from . import state as _production_state
 from ..models import ContentPackage
 
@@ -36,11 +35,13 @@ class ContentProducerAgent(AgentBase):
         *,
         note_maker: Any | None = None,
         cover_director: Any | None = None,
+        package_assembler: ContentPackageAssembler | None = None,
         llm_factory: LLMFactory | None = None,
     ) -> None:
         super().__init__(stage_name="content_producer", use_llm=True, llm_factory=llm_factory)
         self.note_maker = note_maker or NoteMakerAgent(llm_factory=self.llm_factory)
         self.cover_director = cover_director or CoverDirectorAgent(llm_factory=self.llm_factory)
+        self.package_assembler = package_assembler or ContentPackageAssembler()
 
     def run(
         self,
@@ -53,31 +54,41 @@ class ContentProducerAgent(AgentBase):
         project: AccountOperationProject | None = None,
         intent: dict[str, Any] | None = None,
         context: dict[str, Any] | None = None,
+        intent_contract: IntentContract | dict[str, Any] | None = None,
         use_cover: bool = True,
     ) -> ContentPackage:
         normalized_task = _normalize_task(task)
         brief = _normalize_client_brief(client_brief or (project.client_brief if project else None))
-        merged_intent = _package_inputs.build_intent(normalized_task, brief, intent)
-        merged_context = _package_inputs.build_context(normalized_task, brief, project, context)
-        normalized_assets = _package_inputs.normalize_assets(assets, normalized_task, brief)
+        contract = _normalize_intent_contract(intent_contract)
+        if contract.contract_id:
+            intent = {**dict(intent or {}), "intent_contract": contract.to_dict()}
+            context = {**dict(context or {}), "intent_contract": contract.to_dict()}
+        prepared = self.package_assembler.prepare(
+            normalized_task,
+            brief,
+            assets=assets,
+            project=project,
+            intent_override=intent,
+            context_override=context,
+        )
         status_before = normalized_task.status
 
         try:
             draft = self.note_maker.run(
                 skills,
-                normalized_assets,
-                intent=merged_intent,
-                context=merged_context,
+                prepared.assets,
+                intent=prepared.intent,
+                context=prepared.context,
             )
             cover = None
             if use_cover:
                 cover = self.cover_director.run(
                     draft,
-                    _package_inputs.selected_skill(skills, draft.skill_id),
-                    reference_assets=normalized_assets,
+                    self.package_assembler.selected_skill(skills, draft.skill_id),
+                    reference_assets=prepared.assets,
                     out_dir=out_dir,
-                    intent=merged_intent,
-                    tagged_assets=normalized_assets,
+                    intent=prepared.intent,
+                    tagged_assets=prepared.assets,
                 )
         except Exception as exc:  # noqa: BLE001 - convert agent failures into contract metadata.
             error = _production_state.production_error(
@@ -88,14 +99,15 @@ class ContentProducerAgent(AgentBase):
             _production_state.attach_error(normalized_task, project, error)
             raise ContentProductionError(error["message"], error=error) from exc
 
-        package = _package_builder.package_from_outputs(
+        package = self.package_assembler.build(
             normalized_task,
             draft,
             cover,
             skills=skills,
-            assets=normalized_assets,
+            assets=prepared.assets,
             brief=brief,
             project=project,
+            intent_contract=contract,
             status_before=status_before,
             use_cover=use_cover,
         )
@@ -127,6 +139,12 @@ def _normalize_client_brief(value: ClientBrief | dict[str, Any] | None) -> Clien
     if isinstance(value, ClientBrief):
         return value
     return ClientBrief.from_dict(value)
+
+
+def _normalize_intent_contract(value: IntentContract | dict[str, Any] | None) -> IntentContract:
+    if isinstance(value, IntentContract):
+        return value
+    return IntentContract.from_dict(value)
 
 
 __all__ = [

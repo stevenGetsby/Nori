@@ -81,7 +81,7 @@ def select_references_llm(
             continue
         if 0 <= idx < len(tagged_assets):
             asset = tagged_assets[idx]
-            if asset.kind == "image" and asset.path and asset.path not in seen and Path(asset.path).exists():
+            if asset.kind == "image" and asset.path and asset.path not in seen and _reference_exists(asset.path):
                 paths.append(asset.path)
                 seen.add(asset.path)
         if len(paths) >= max_references:
@@ -100,7 +100,7 @@ def collect_reference_paths(
     seen: set[str] = set()
 
     def _add(path: str) -> None:
-        if path and Path(path).exists() and path not in seen:
+        if path and _reference_exists(path) and path not in seen:
             paths.append(path)
             seen.add(path)
 
@@ -119,3 +119,9 @@ def collect_reference_paths(
                     break
 
     return paths[:max_references]
+
+
+def _reference_exists(path: str) -> bool:
+    if path.startswith(("http://", "https://")):
+        return True
+    return Path(path).exists()

@@ -15,14 +15,25 @@ def image_relay_generate_with_references(
     ref_bytes_list: list[bytes],
     size: str | None,
     kwargs: dict,
+    *,
+    ref_urls: list[str] | None = None,
 ) -> list[str]:
     """relay gpt-image-2 image-to-image via generation extra_body variants."""
+    urls = [url for url in (ref_urls or []) if url]
     data_uris = [bytes_to_data_uri(raw) for raw in ref_bytes_list if raw]
-    payload_variants: list[dict[str, Any]] = [
-        {"image_urls": data_uris},
-        {"images": data_uris},
-        {"image": data_uris[0] if len(data_uris) == 1 else data_uris},
-    ]
+    payload_variants: list[dict[str, Any]] = []
+    if urls:
+        payload_variants.extend([
+            {"image_urls": urls},
+            {"images": urls},
+            {"image": urls[0] if len(urls) == 1 else urls},
+        ])
+    if data_uris:
+        payload_variants.extend([
+            {"image_urls": data_uris},
+            {"images": data_uris},
+            {"image": data_uris[0] if len(data_uris) == 1 else data_uris},
+        ])
     last_error: Exception | None = None
 
     for extra in payload_variants:
@@ -45,6 +56,11 @@ def image_relay_generate_with_references(
                 raise
 
     if last_error:
+        if is_relay_base64_reference_error(last_error):
+            raise RuntimeError(
+                "relay rejected local/base64 reference_images; provide public HTTPS image URLs "
+                "for true image reference generation"
+            )
         raise last_error
     return []
 
@@ -87,6 +103,11 @@ def is_retryable_relay_reference_error(exc: Exception) -> bool:
         "字段",
         "参数",
     ))
+
+
+def is_relay_base64_reference_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return "base64" in text or "不支持base64" in text
 
 
 def image_google(

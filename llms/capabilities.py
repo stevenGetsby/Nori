@@ -6,15 +6,20 @@ from typing import Any
 from nori.core.contracts import ChatCapabilityError, ImageCapabilityError
 
 
-def ensure_image_capability(model: Any, ref_bytes_list: list[bytes]) -> None:
+def ensure_image_capability(
+    model: Any,
+    ref_bytes_list: list[bytes] | None = None,
+    ref_urls: list[str] | None = None,
+) -> None:
     """Validate an image request before provider dispatch."""
 
+    has_references = bool(ref_bytes_list) or bool(ref_urls)
     if getattr(model, "type", "image") != "image":
         raise ImageCapabilityError(
             f"active image model {getattr(model, 'key', '')!r} has type "
             f"{getattr(model, 'type', '')!r}; expected type='image'"
         )
-    if ref_bytes_list and not getattr(model, "supports_reference_image", False):
+    if has_references and not getattr(model, "supports_reference_image", False):
         raise ImageCapabilityError(
             f"active image model {model.key!r} does not support reference_images; "
             "set models.<key>.supports_reference_image=true or switch active_models.image"
