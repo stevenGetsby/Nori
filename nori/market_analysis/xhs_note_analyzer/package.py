@@ -1,10 +1,17 @@
-"""Prompt templates owned by XHSNoteAnalyzer."""
+"""Class-owned prompt contracts for XHSNoteAnalyzer LLM stages."""
 from __future__ import annotations
 
+from typing import Any
 
-NOTE_SYSTEM_PROMPT = "你是 Nori 的 XHS Note Skill Analyzer。只输出 JSON。"
+from nori.core import AgentPromptBuilder
+from nori.market_analysis.models import XHSNoteSample, XHSSeedSkillDraft
+from nori.shared.prompting import json_prompt
 
-NOTE_USER_PROMPT = """\
+
+class XHSNoteEnhancementPromptBuilder(AgentPromptBuilder):
+    system_prompt = "你是 Nori 的 XHS Note Skill Analyzer。只输出 JSON。"
+
+    user_prompt_template = """\
 基于规则 analyzer 已抽取的结构和证据，深化小红书 note 的 seed skill draft。
 
 原始 note：
@@ -44,9 +51,17 @@ NOTE_USER_PROMPT = """\
 }}
 """
 
-KEYWORD_SYSTEM_PROMPT = "你是 Nori 的小红书选词助手，只输出 JSON。"
+    def build_user_prompt(self, note: XHSNoteSample, rule_draft: XHSSeedSkillDraft) -> str:
+        return self.user_prompt_template.format(
+            note=json_prompt(note.to_dict()),
+            rule_draft=json_prompt(rule_draft.to_dict()),
+        )
 
-KEYWORD_USER_PROMPT = """\
+
+class XHSKeywordPromptBuilder(AgentPromptBuilder):
+    system_prompt = "你是 Nori 的小红书选词助手，只输出 JSON。"
+
+    user_prompt_template = """\
 根据本次创作 context，给出 1-{max_n} 个小红书搜索关键词。
 
 context:
@@ -59,9 +74,17 @@ context:
 4. 输出 JSON: {{"keywords": ["...", "..."]}}
 """
 
-LABEL_SYSTEM_PROMPT = "你是 Nori 的小红书笔记目标识别助手，只输出 JSON。"
+    def build_user_prompt(self, context: dict[str, Any], *, max_n: int) -> str:
+        return self.user_prompt_template.format(
+            max_n=max_n,
+            context=json_prompt({key: value for key, value in context.items() if key != "keywords"}),
+        )
 
-LABEL_USER_PROMPT = """\
+
+class XHSLabelPromptBuilder(AgentPromptBuilder):
+    system_prompt = "你是 Nori 的小红书笔记目标识别助手，只输出 JSON。"
+
+    user_prompt_template = """\
 给下面这批小红书笔记每篇打 goal 和 tone 标签。
 
 候选 goal: tutorial / planting / debrief / opinion / news / rant / general
@@ -73,12 +96,12 @@ LABEL_USER_PROMPT = """\
 输出 JSON: {{"labels": [{{"note_id": "...", "goal": "...", "tone": "..."}}, ...]}}
 """
 
+    def build_user_prompt(self, notes: list[dict[str, Any]]) -> str:
+        return self.user_prompt_template.format(notes=json_prompt(notes))
+
 
 __all__ = [
-    "KEYWORD_SYSTEM_PROMPT",
-    "KEYWORD_USER_PROMPT",
-    "LABEL_SYSTEM_PROMPT",
-    "LABEL_USER_PROMPT",
-    "NOTE_SYSTEM_PROMPT",
-    "NOTE_USER_PROMPT",
+    "XHSKeywordPromptBuilder",
+    "XHSLabelPromptBuilder",
+    "XHSNoteEnhancementPromptBuilder",
 ]

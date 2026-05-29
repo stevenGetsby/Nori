@@ -9,15 +9,16 @@ from nori.core import AgentBase, LLMFactory
 from nori.shared.llm_json import attach_llm_error, try_stage_json
 from nori.core import ClientBrief
 
-from . import inputs as _planner_inputs
-from . import prompts as _planner_prompts
+from .package import CalendarPlannerInputPreparer, CalendarPlannerPromptBuilder
 from . import normalizer as _calendar_normalizer
 from .. import planner_critics as _planner_critics
 from nori.core import ContentCalendar, KPIPlan, OperationPlan
 
 
-SYSTEM_PROMPT = _planner_prompts.SYSTEM_PROMPT
-USER_PROMPT = _planner_prompts.USER_PROMPT_TEMPLATE
+_INPUT_PREPARER = CalendarPlannerInputPreparer()
+_PROMPT_BUILDER = CalendarPlannerPromptBuilder()
+SYSTEM_PROMPT = _PROMPT_BUILDER.system_prompt
+USER_PROMPT = _PROMPT_BUILDER.user_prompt_template
 
 
 class CalendarPlannerAgent(AgentBase):
@@ -27,6 +28,8 @@ class CalendarPlannerAgent(AgentBase):
 
     def __init__(self, *, use_llm: bool = True, llm_factory: LLMFactory | None = None) -> None:
         super().__init__(stage_name=self.stage_name, use_llm=use_llm, llm_factory=llm_factory)
+        self.input_preparer = _INPUT_PREPARER
+        self.prompt_builder = _PROMPT_BUILDER
 
     def run(
         self,
@@ -38,23 +41,34 @@ class CalendarPlannerAgent(AgentBase):
         horizon_days: int | None = None,
         use_llm: bool | None = None,
     ) -> ContentCalendar:
-        plan, kpi, brief, inherited_calendar = _planner_inputs.normalize_inputs(
+        prepared = self.input_preparer.prepare(
             operation_plan,
             kpi_plan=kpi_plan,
             client_brief=client_brief,
-        )
-        start, days = _planner_inputs.normalize_run_window(
             start_date=start_date,
             horizon_days=horizon_days,
-            plan=plan,
-            inherited_calendar=inherited_calendar,
         )
-        fallback = _calendar_normalizer.fallback_calendar(plan, kpi, brief, start_date=start, horizon_days=days)
+        fallback = _calendar_normalizer.fallback_calendar(
+            prepared.operation_plan,
+            prepared.kpi_plan,
+            prepared.client_brief,
+            start_date=prepared.start_date,
+            horizon_days=prepared.horizon_days,
+        )
         should_use_llm = self.should_use_llm(use_llm)
         if not should_use_llm:
-            return _with_critic(fallback, plan, kpi)
-        planned = _llm_calendar(plan, kpi, brief, fallback, start_date=start, horizon_days=days, llm_factory=self.llm_factory)
-        return _with_critic(planned or fallback, plan, kpi)
+            return _with_critic(fallback, prepared.operation_plan, prepared.kpi_plan)
+        planned = _llm_calendar(
+            prepared.operation_plan,
+            prepared.kpi_plan,
+            prepared.client_brief,
+            fallback,
+            start_date=prepared.start_date,
+            horizon_days=prepared.horizon_days,
+            llm_factory=self.llm_factory,
+            prompt_builder=self.prompt_builder,
+        )
+        return _with_critic(planned or fallback, prepared.operation_plan, prepared.kpi_plan)
 
 
 def plan_calendar(
@@ -75,11 +89,13 @@ def _llm_calendar(
     start_date: date,
     horizon_days: int,
     llm_factory: LLMFactory | None = None,
+    prompt_builder: CalendarPlannerPromptBuilder | None = None,
 ) -> ContentCalendar | None:
     llm_gateway = llm_factory or LLMFactory()
+    prompts = prompt_builder or _PROMPT_BUILDER
     data, error = try_stage_json(
-        system=SYSTEM_PROMPT,
-        user=_planner_prompts.build_user_prompt(
+        system=prompts.system_prompt,
+        user=prompts.build_user_prompt(
             plan,
             kpi,
             brief,

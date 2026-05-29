@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from nori.content_generation.models import CandidateTitle, NoteDraft
 from nori.core import UserAsset
-from nori.content_generation.cover_director import refs as cover_refs
+from nori.content_generation.cover_director.package import CoverReferenceSelector
+
+
+cover_refs = CoverReferenceSelector()
 
 
 def _draft(cover_path: str = "", image_paths: list[str] | None = None) -> NoteDraft:
@@ -47,7 +50,7 @@ def test_collect_reference_paths_prefers_draft_paths_and_dedupes_existing_files(
     draft = _draft(cover_path=paths[0], image_paths=[paths[1], paths[0], missing, paths[2], paths[3]])
     fallback_assets = [_image_asset(paths[4])]
 
-    result = cover_refs.collect_reference_paths(
+    result = cover_refs.collect_legacy_paths(
         draft,
         fallback_assets,
         max_references=3,
@@ -61,7 +64,7 @@ def test_collect_reference_paths_falls_back_to_reference_assets_only_when_draft_
     ref2 = tmp_path / "ref2.jpg"; ref2.write_bytes(b"img")
     non_image = tmp_path / "doc.txt"; non_image.write_text("text", encoding="utf-8")
 
-    result = cover_refs.collect_reference_paths(
+    result = cover_refs.collect_legacy_paths(
         _draft(),
         [
             UserAsset(kind="text", path=str(non_image)),
@@ -76,7 +79,7 @@ def test_collect_reference_paths_falls_back_to_reference_assets_only_when_draft_
 
 def test_collect_reference_paths_keeps_remote_url_references():
     url = "https://example.test/holly-ref.jpg"
-    result = cover_refs.collect_reference_paths(
+    result = cover_refs.collect_legacy_paths(
         _draft(cover_path=url),
         [],
         max_references=1,
@@ -101,7 +104,7 @@ def test_select_references_llm_filters_dedupes_and_caps_chosen_indices(tmp_path)
         calls.append(kwargs)
         return {"chosen_indices": [0, 1, 1, 2, 3, 99, "bad"]}
 
-    result = cover_refs.select_references_llm(
+    result = cover_refs.select_with_llm(
         _draft(),
         {"tone": "朋友安利", "note_type": "图文", "creative_goal": "真实使用感"},
         {"user_text": "需要突出品牌和产品"},
@@ -125,7 +128,7 @@ def test_select_references_llm_returns_empty_for_no_images_or_invalid_response(t
         calls.append(kwargs)
         return {"chosen_indices": "0"}
 
-    assert cover_refs.select_references_llm(
+    assert cover_refs.select_with_llm(
         _draft(),
         {},
         {},
@@ -135,7 +138,7 @@ def test_select_references_llm_returns_empty_for_no_images_or_invalid_response(t
     assert calls == []
 
     image = tmp_path / "image.jpg"; image.write_bytes(b"img")
-    assert cover_refs.select_references_llm(
+    assert cover_refs.select_with_llm(
         _draft(),
         {},
         {},
@@ -150,7 +153,7 @@ def test_select_references_llm_accepts_remote_url_assets():
     def fake_json_call(**kwargs):
         return {"chosen_indices": [0]}
 
-    result = cover_refs.select_references_llm(
+    result = cover_refs.select_with_llm(
         _draft(),
         {},
         {},

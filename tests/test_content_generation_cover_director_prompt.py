@@ -5,7 +5,10 @@ from __future__ import annotations
 import pytest
 
 from nori.content_generation.models import CandidateTitle, NoteDraft
-from nori.content_generation.cover_director import prompts as cover_prompt
+from nori.content_generation.cover_director.package import CoverPromptBuilder
+
+
+cover_prompt = CoverPromptBuilder()
 
 
 class _PromptError(RuntimeError):
@@ -50,7 +53,7 @@ def test_design_prompt_llm_builds_cover_prompt_contract():
         calls.append(kwargs)
         return {"prompt": "A vertical 3:4 cover with warm light and Chinese title text."}
 
-    prompt = cover_prompt.design_prompt_llm(
+    prompt = cover_prompt.design_with_llm(
         _draft(),
         _skill(),
         ["/tmp/ref-a.png", "/tmp/ref-b.png"],
@@ -77,7 +80,7 @@ def test_design_prompt_llm_raises_domain_error_for_empty_prompt():
         return {"prompt": "  "}
 
     with pytest.raises(_PromptError, match="返回空 prompt"):
-        cover_prompt.design_prompt_llm(
+        cover_prompt.design_with_llm(
             _draft(),
             _skill(),
             [],

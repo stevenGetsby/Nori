@@ -8,10 +8,13 @@ from nori.core import AgentBase, WorkflowBase
 from nori.content_generation.models import ContentPackage
 from nori.core import ClientBrief, ContentTask, IntentContract
 
-from . import inputs as _inputs
+from .package import ReviewInputPreparer
 from . import policy as _policy
 from . import state as _state
 from ..models import ComplianceReview
+
+
+_INPUT_PREPARER = ReviewInputPreparer()
 
 
 class ComplianceReviewerAgent(AgentBase):
@@ -31,9 +34,9 @@ class ComplianceReviewerAgent(AgentBase):
         client_brief: ClientBrief | dict[str, Any] | None = None,
         project: AccountOperationProject | None = None,
     ) -> ComplianceReview:
-        pkg = _inputs.normalize_package(package)
-        normalized_task = _inputs.normalize_task(task)
-        brief = _inputs.normalize_client_brief(client_brief, project)
+        pkg = _INPUT_PREPARER.normalize_package(package)
+        normalized_task = _INPUT_PREPARER.normalize_task(task)
+        brief = _INPUT_PREPARER.normalize_client_brief(client_brief, project)
 
         review = _policy.build_review(
             package=pkg,
@@ -72,9 +75,9 @@ class ConsistencyReviewerAgent(AgentBase):
         client_brief: ClientBrief | dict[str, Any] | None = None,
         project: AccountOperationProject | None = None,
     ) -> ComplianceReview:
-        pkg = _inputs.normalize_package(package)
-        normalized_task = _inputs.normalize_task(task)
-        brief = _inputs.normalize_client_brief(client_brief, project)
+        pkg = _INPUT_PREPARER.normalize_package(package)
+        normalized_task = _INPUT_PREPARER.normalize_task(task)
+        brief = _INPUT_PREPARER.normalize_client_brief(client_brief, project)
 
         review = _policy.build_review(
             package=pkg,
@@ -114,12 +117,12 @@ class QualityReviewerAgent(AgentBase):
         client_brief: ClientBrief | dict[str, Any] | None = None,
         project: AccountOperationProject | None = None,
     ) -> ComplianceReview:
-        pkg = _inputs.normalize_package(package)
+        pkg = _INPUT_PREPARER.normalize_package(package)
         contract = intent_contract if isinstance(intent_contract, IntentContract) else IntentContract.from_dict(intent_contract)
         issues = _quality_issues(pkg, contract)
         review = _policy.build_review(
             package=pkg,
-            task=_inputs.normalize_task(task),
+            task=_INPUT_PREPARER.normalize_task(task),
             reviewer=self.reviewer,
             issues=issues,
             metadata={

@@ -5,7 +5,10 @@ from __future__ import annotations
 from nori.core import AccountOperationProject
 from nori.core import ContentTask, OperationPlan, ClientBrief
 
-from nori.context_building.kpi_planner import inputs as kpi_planner_inputs
+from nori.context_building.kpi_planner.package import KPIPlannerInputPreparer
+
+
+kpi_planner_inputs = KPIPlannerInputPreparer()
 
 
 def _operation_plan() -> OperationPlan:

@@ -5,7 +5,10 @@ from __future__ import annotations
 from nori.core import ClientBrief
 
 from nori.user_profiling.models import AccountPlanResult
-from nori.context_building.operation_planner import prompts as operation_planner_prompts
+from nori.context_building.operation_planner.package import OperationPlannerPromptBuilder
+
+
+operation_planner_prompts = OperationPlannerPromptBuilder()
 
 
 def _brief() -> ClientBrief:
@@ -53,5 +56,5 @@ def test_build_user_prompt_uses_empty_account_plan_mapping_when_absent():
 
 
 def test_operation_planner_prompt_constants_keep_json_only_contract():
-    assert "只输出 JSON" in operation_planner_prompts.SYSTEM_PROMPT
-    assert "输出 JSON，字段固定" in operation_planner_prompts.USER_PROMPT_TEMPLATE
+    assert "只输出 JSON" in operation_planner_prompts.system_prompt
+    assert "输出 JSON，字段固定" in operation_planner_prompts.user_prompt_template

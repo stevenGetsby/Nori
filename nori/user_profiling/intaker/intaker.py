@@ -9,12 +9,11 @@ from __future__ import annotations
 
 from nori.core import AgentBase, LLMFactory
 from nori.shared.llm_json import attach_llm_error, try_stage_json
-from nori.shared.prompting import json_prompt
 from nori.user_profiling.models import IntakeResult, UserInput
 
 from . import normalizer as _intake_normalizer
 from . import image_tagger as _image_tagger
-from . import prompts as _intake_prompts
+from .package import IntakeTextPromptBuilder, IntakeVisionPromptBuilder
 
 
 # vision 打标的并发度（每张图 = 1 次 LLM）
@@ -74,8 +73,10 @@ intake = IntakeAgent().run
 IntakeVisionLLMError = _image_tagger.IntakeVisionLLMError
 
 
-SYSTEM_PROMPT = _intake_prompts.SYSTEM_PROMPT
-USER_PROMPT = _intake_prompts.USER_PROMPT
+_TEXT_PROMPT_BUILDER = IntakeTextPromptBuilder()
+_VISION_PROMPT_BUILDER = IntakeVisionPromptBuilder()
+SYSTEM_PROMPT = _TEXT_PROMPT_BUILDER.system_prompt
+USER_PROMPT = _TEXT_PROMPT_BUILDER.user_prompt_template
 
 
 def _llm_intake(
@@ -86,11 +87,8 @@ def _llm_intake(
 ) -> IntakeResult | None:
     llm_gateway = llm_factory or LLMFactory()
     data, error = try_stage_json(
-        system=SYSTEM_PROMPT,
-        user=USER_PROMPT.format(
-            text=normalized.text.strip() or "无",
-            images=json_prompt(normalized.images),
-        ),
+        system=_TEXT_PROMPT_BUILDER.system_prompt,
+        user=_TEXT_PROMPT_BUILDER.build_user_prompt(normalized),
         chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )
@@ -105,8 +103,8 @@ def _llm_intake(
 
 # ============ 视觉打标工序 ============
 
-VISION_SYSTEM_PROMPT = _intake_prompts.VISION_SYSTEM_PROMPT
-VISION_USER_TEMPLATE = _intake_prompts.VISION_USER_TEMPLATE
+VISION_SYSTEM_PROMPT = _VISION_PROMPT_BUILDER.system_prompt
+VISION_USER_TEMPLATE = _VISION_PROMPT_BUILDER.user_prompt_template
 
 
 def _vision_parallelism() -> int:

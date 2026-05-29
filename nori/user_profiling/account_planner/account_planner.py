@@ -8,11 +8,14 @@ from nori.user_profiling.models import AccountPlanResult, AccountPlannerInput
 from nori.shared.llm_json import attach_llm_error, try_stage_json
 
 from . import fallback as _plan_fallback
-from . import inputs as _plan_inputs
 from . import normalizer as _plan_normalizer
-from . import prompts as _plan_prompts
+from .package import AccountPlannerInputPreparer, AccountPlannerPromptBuilder
 from .search import EmptySearchProvider, SearchProvider
 from .search import run_search as _run_search
+
+
+_INPUT_PREPARER = AccountPlannerInputPreparer()
+_PROMPT_BUILDER = AccountPlannerPromptBuilder(_INPUT_PREPARER)
 
 
 class AccountPlannerAgent(AgentBase):
@@ -29,6 +32,8 @@ class AccountPlannerAgent(AgentBase):
 	) -> None:
 		super().__init__(stage_name=self.stage_name, use_llm=use_llm, llm_factory=llm_factory)
 		self.search_provider = search_provider or EmptySearchProvider()
+		self.input_preparer = _INPUT_PREPARER
+		self.prompt_builder = _PROMPT_BUILDER
 
 	def run(
 		self,
@@ -39,7 +44,7 @@ class AccountPlannerAgent(AgentBase):
 		use_llm: bool | None = None,
 		enable_search: bool | None = None,
 	) -> AccountPlanResult:
-		normalized = _plan_inputs.normalize_input(user_input, images, links)
+		normalized = self.input_preparer.prepare(user_input, images, links).normalized
 		if enable_search is not None:
 			normalized.enable_search = enable_search
 
@@ -60,7 +65,7 @@ class AccountPlannerAgent(AgentBase):
 	) -> AccountPlanResult:
 		if not should_use_llm:
 			return fallback
-		return _llm_plan(normalized, fallback, [], llm_factory=self.llm_factory) or fallback
+		return _llm_plan(normalized, fallback, [], llm_factory=self.llm_factory, prompt_builder=self.prompt_builder) or fallback
 
 	def _enrich_with_search(
 		self,
@@ -72,7 +77,7 @@ class AccountPlannerAgent(AgentBase):
 		if not search_results:
 			return result
 		if should_use_llm:
-			refined = _llm_plan(normalized, result, search_results, llm_factory=self.llm_factory)
+			refined = _llm_plan(normalized, result, search_results, llm_factory=self.llm_factory, prompt_builder=self.prompt_builder)
 			if refined:
 				return refined
 		return _plan_normalizer.merge_search_results(result, search_results)
@@ -81,8 +86,8 @@ class AccountPlannerAgent(AgentBase):
 account_plan = AccountPlannerAgent().run
 
 
-SYSTEM_PROMPT = _plan_prompts.SYSTEM_PROMPT
-USER_PROMPT = _plan_prompts.USER_PROMPT_TEMPLATE
+SYSTEM_PROMPT = _PROMPT_BUILDER.system_prompt
+USER_PROMPT = _PROMPT_BUILDER.user_prompt_template
 
 
 def _llm_plan(
@@ -91,11 +96,13 @@ def _llm_plan(
 	search_results: list[dict[str, Any]],
 	*,
 	llm_factory: LLMFactory | None = None,
+	prompt_builder: AccountPlannerPromptBuilder | None = None,
 ) -> AccountPlanResult | None:
 	llm_gateway = llm_factory or LLMFactory()
+	prompts = prompt_builder or _PROMPT_BUILDER
 	data, error = try_stage_json(
-		system=SYSTEM_PROMPT,
-		user=_plan_prompts.build_user_prompt(normalized, search_results),
+		system=prompts.system_prompt,
+		user=prompts.build_user_prompt(normalized, search_results),
 		chat_func=llm_gateway.chat_func,
 		chat_json_func=llm_gateway.chat_json_func,
 	)

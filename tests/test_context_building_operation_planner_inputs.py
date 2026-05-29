@@ -7,7 +7,10 @@ from nori.core import ClientBrief
 from datetime import date
 
 from nori.user_profiling.models import AccountPlanResult
-from nori.context_building.operation_planner import inputs as operation_planner_inputs
+from nori.context_building.operation_planner.package import OperationPlannerInputPreparer
+
+
+operation_planner_inputs = OperationPlannerInputPreparer()
 
 
 def test_normalize_client_brief_restores_dicts_and_preserves_instances():

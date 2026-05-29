@@ -143,19 +143,19 @@ Workflow stage package layout:
 
 | Stage package | Implementation files |
 | --- | --- |
-| `nori/user_profiling/intaker/` | `intaker.py`, `prompts.py`, `normalizer.py`, `taxonomy.py`, `image_tagger.py` |
-| `nori/user_profiling/account_planner/` | `account_planner.py`, `prompts.py`, `inputs.py`, `fallback.py`, `search.py`, `normalizer.py`, `portrait.py`, `keywords.py` |
-| `nori/content_generation/note_maker/` | `note_maker.py`, `prompts.py`, `skill_picker.py`, `asset_curator.py`, `note_composer.py` |
-| `nori/content_generation/cover_director/` | `cover_director.py`, `prompts.py`, `refs.py`, `output.py` |
+| `nori/user_profiling/intaker/` | `intaker.py`, `package.py`, `normalizer.py`, `taxonomy.py`, `image_tagger.py` |
+| `nori/user_profiling/account_planner/` | `account_planner.py`, `package.py`, `fallback.py`, `search.py`, `normalizer.py`, `portrait.py`, `keywords.py` |
+| `nori/content_generation/note_maker/` | `note_maker.py`, `package.py` |
+| `nori/content_generation/cover_director/` | `cover_director.py`, `package.py`, `output.py` |
 | `nori/content_generation/content_producer/` | `content_producer.py`, `package.py`, `state.py` |
-| `nori/context_building/operation_planner/` | `operation_planner.py`, `prompts.py`, `inputs.py`, `project_builder.py`, `project_policy.py`, `normalizer.py` |
-| `nori/context_building/kpi_planner/` | `kpi_planner.py`, `prompts.py`, `inputs.py`, `normalizer.py` |
-| `nori/context_building/calendar_planner/` | `calendar_planner.py`, `prompts.py`, `inputs.py`, `normalizer.py`, `policy.py`, `task_builder.py` |
-| `nori/learning_loop/review/` | `review_gate.py`, `inputs.py`, `policy.py`, `scoring.py`, `state.py` |
-| `nori/learning_loop/strategy/` | `strategy_iteration.py`, `inputs.py`, `policy.py`, `state.py` |
-| `nori/market_analysis/xhs_note_analyzer/` | `xhs_note_analyzer.py`, `prompts.py`, `loader.py`, `rules.py`, `note_llm.py`, `session_clustering.py`, `session_llm.py`, `session_reporter.py`, `skill_builder.py` |
+| `nori/context_building/operation_planner/` | `operation_planner.py`, `package.py`, `project_builder.py`, `project_policy.py`, `normalizer.py` |
+| `nori/context_building/kpi_planner/` | `kpi_planner.py`, `package.py`, `normalizer.py` |
+| `nori/context_building/calendar_planner/` | `calendar_planner.py`, `package.py`, `normalizer.py`, `policy.py`, `task_builder.py` |
+| `nori/learning_loop/review/` | `review_gate.py`, `package.py`, `policy.py`, `scoring.py`, `state.py` |
+| `nori/learning_loop/strategy/` | `strategy_iteration.py`, `package.py`, `policy.py`, `state.py` |
+| `nori/market_analysis/xhs_note_analyzer/` | `xhs_note_analyzer.py`, `package.py`, `loader.py`, `rules.py`, `note_llm.py`, `session_clustering.py`, `session_llm.py`, `session_reporter.py`, `skill_builder.py` |
 
-Flat helper module paths such as `nori.content_generation.skill_picker` and `nori.context_building.operation_planner_inputs` should not exist. Stage-local `schema.py` re-export files should not exist either; model contracts live in the owning business module `models.py` files or in `nori.core` for shared contracts. Prompt files are kept only for stages that own real prompt text or prompt construction. New implementation code and imports should live inside the owning stage package.
+Flat helper module paths such as `nori.content_generation.skill_picker` and `nori.context_building.operation_planner_inputs` should not exist. Stage-local `schema.py` re-export files should not exist either; model contracts live in the owning business module `models.py` files or in `nori.core` for shared contracts. Stage-local `inputs.py`, `prompts.py`, and `refs.py` files have been consolidated into class-owned `package.py` contracts when they only supported a single agent. New implementation code and imports should live inside the owning stage package.
 
 Shared generation utilities:
 
@@ -163,7 +163,7 @@ Shared generation utilities:
 | --- | --- |
 | `nori/core/contracts.py` | Public contract owner for runtime config models, LLM gateway errors, structured LLM helper result models, and model `from_dict()` coercion helpers. |
 | `nori/core/llm.py` | `LLMFactory` is the injectable project LLM gateway used by agents instead of reaching directly into `llms` in constructors or orchestration code. |
-| `nori/core/agent.py` | `AgentBase` standardizes `stage_name`, `use_llm`, `llm_factory`, and required/optional JSON helper methods while preserving each agent's domain-specific `run(...)` signature. |
+| `nori/core/agent.py` | `AgentBase` standardizes `stage_name`, `use_llm`, `llm_factory`, and required/optional JSON helper methods while preserving each agent's domain-specific `run(...)` signature. `AgentInputPreparer` and `AgentPromptBuilder` give stage packages a shared class pattern for input and prompt contracts. |
 | `nori/core/workflow.py` | `WorkflowBase` provides a small ordered-step runner for agents and domain facades that compose multiple substages; `named_workflow_steps(...)` lets facades declare readable no-op stage names when their public methods own execution. All five business facades expose this shared workflow contract through `workflow_name` and `step_names`. |
 | `nori/core/artifacts.py` | `StableArtifactAssembler` provides shared slug/dedupe behavior for deterministic assemblers that produce stable local artifact IDs or media/reference lists. |
 | `nori/core/artifacts.py` | `ArtifactStore` writes stage JSON checkpoints plus `manifest.json`, and exposes `get_or_build(...)` for resumable long-running flows. |
@@ -177,14 +177,10 @@ Shared generation utilities:
 | `nori/user_profiling/intaker/taxonomy.py` | Intake-owned taxonomy boundary: stores goal/format/tone/asset/guardrail/data vocabularies, alias maps, rule-based text classification, allowed-label cleanup, missing-field repair, and question fallback text. |
 | `nori/user_profiling/intaker/image_tagger.py` | Intake-owned vision tagging boundary: builds multimodal per-image JSON messages, isolates per-image failures, filters tag vocabularies, and returns `UserAsset` records. `intaker.py` keeps compatibility facades for existing call sites. |
 | `nori/market_analysis/note_skill_fixture.py` | Market-analysis-owned learned-skill fixture bridge: converts `SessionSkillReport` / `NoteSkill` objects to the skills-only JSON shape consumed by NoteMaker tests and smoke scripts. |
-| `nori/content_generation/note_maker/skill_picker.py` | NoteMaker-owned skill selection boundary: builds compact candidate summaries, routes the required JSON call through the injected stage helper, and translates unknown `skill_id` into the caller's domain error. |
-| `nori/content_generation/note_maker/asset_curator.py` | NoteMaker-owned asset curation boundary: builds asset-curation JSON prompts, normalizes selected asset indices into `AssetBundle`, caps gallery paths, and keeps `note_maker.py` focused on stage orchestration and note composition. |
-| `nori/content_generation/note_maker/note_composer.py` | NoteMaker-owned composition boundary: builds note-composition JSON prompts, normalizes candidate titles/tags/validation, and translates missing title/body into the caller's domain error. |
-| `nori/content_generation/cover_director/refs.py` | CoverDirector-owned reference selection boundary: preserves legacy draft/reference-asset path collection and tagged-assets LLM selection while keeping `cover_director.py` focused on orchestration, prompt writing, and image output. |
-| `nori/content_generation/cover_director/prompts.py` | CoverDirector-owned prompt-writing boundary: builds the image-generation prompt JSON call from `NoteDraft`, skill rules, intent, and selected reference count, and translates empty prompt responses into the caller's domain error. |
+| `nori/content_generation/note_maker/package.py` | NoteMaker-owned package contract: `NoteSkillSelector`, `NoteAssetCurator`, and `NoteComposer` own prompt construction, asset curation, note field normalization, and domain error translation; `note_maker.py` stays focused on stage orchestration. |
+| `nori/content_generation/cover_director/package.py` | CoverDirector-owned package contract: `CoverReferenceSelector` and `CoverPromptBuilder` own tagged/legacy reference selection, reference input conversion, prompt construction, and empty-prompt domain errors. |
 | `nori/content_generation/cover_director/output.py` | CoverDirector-owned image output boundary: persists data-uri or remote image payloads, sanitizes cover filenames, and translates base64/download failures into the caller's domain error. |
-| `nori/user_profiling/account_planner/inputs.py` | AccountPlanner-owned input boundary: restores/merges `AccountPlannerInput`, extra images/links, platform defaults, and per-image prompt context. |
-| `nori/user_profiling/account_planner/prompts.py` | AccountPlanner-owned prompt boundary: stores the JSON-only account-planning prompt contract and serializes normalized text, image/link evidence, intention/context, and optional search results for LLM drafting. |
+| `nori/user_profiling/account_planner/package.py` | AccountPlanner-owned package contract: restores/merges `AccountPlannerInput`, extra images/links, platform defaults, per-image prompt context, and JSON-only account-planning prompt construction. |
 | `nori/user_profiling/account_planner/fallback.py` | AccountPlanner-owned deterministic fallback boundary: builds the non-inferential `AccountPlanResult` shell with platform/goal tags and empty benchmark/IP portrait sections. |
 | `nori/user_profiling/account_planner/search.py` | AccountPlanner-owned search boundary: defines search provider protocol/fallback, cleans and dedupes planner keywords, isolates provider errors, and normalizes search result defaults. |
 | `nori/user_profiling/account_planner/normalizer.py` | AccountPlanner-owned result normalization boundary: converts LLM JSON/search evidence into `AccountPlanResult`, delegates keyword and portrait mechanics, and preserves fallback metadata. |
@@ -202,18 +198,15 @@ Shared generation utilities:
 | `nori/core/models.py` | Canonical owner for cross-stage workflow contracts: `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentCalendar`, and `ContentTask`. |
 | `nori/core/project.py` | Canonical owner for the cross-module `AccountOperationProject` aggregate, with lazy coercion into each business module's concrete nested models. |
 | `nori/context_building/operation_planner/operation_planner.py` | `ClientBrief + AccountPlanResult -> AccountOperationProject`; owns orchestration, LLM request, fallback selection, and critic attachment. |
-| `nori/context_building/operation_planner/inputs.py` | OperationPlanner input boundary: restores `ClientBrief`/`AccountPlanResult` inputs from dicts, normalizes planner start dates and horizons, and serializes optional account plans for prompts. |
-| `nori/context_building/operation_planner/prompts.py` | OperationPlanner prompt boundary: stores the JSON-only SOP planning prompt contract and serializes normalized client briefs, optional account plans, and bounded horizons for LLM drafting. |
+| `nori/context_building/operation_planner/package.py` | OperationPlanner package contract: restores `ClientBrief`/`AccountPlanResult` inputs, normalizes planner start dates and horizons, and owns JSON-only SOP prompt construction. |
 | `nori/context_building/operation_planner/project_builder.py` | OperationPlanner deterministic fallback assembly boundary: builds rule-based operation projects, tasks, calendars, and derived KPI snapshots while delegating pure fallback policy. |
 | `nori/context_building/operation_planner/project_policy.py` | OperationPlanner pure policy boundary: derives account positioning, content pillars, objectives, risk controls, topic pools, references, milestones, project IDs/titles, and operation-derived KPI plans without constructing a project shell. |
 | `nori/context_building/operation_planner/normalizer.py` | OperationPlanner-owned LLM output normalization boundary: merges operation plan/calendar JSON into a fallback project shell, normalizes LLM task rows, clamps milestone/task dates, and derives KPIPlan snapshots. |
 | `nori/context_building/kpi_planner/kpi_planner.py` | `OperationPlan -> KPIPlan`. |
-| `nori/context_building/kpi_planner/inputs.py` | KPIPlanner input boundary: restores `OperationPlan` / `AccountOperationProject` / composite dict inputs and derives project context such as project id, client brief, and content task count. |
-| `nori/context_building/kpi_planner/prompts.py` | KPIPlanner prompt boundary: stores the JSON-only KPI planning prompt contract and serializes normalized operation plans plus project context for LLM drafting. |
+| `nori/context_building/kpi_planner/package.py` | KPIPlanner package contract: restores `OperationPlan` / `AccountOperationProject` / composite dict inputs, derives project context, and owns JSON-only KPI prompt construction. |
 | `nori/context_building/kpi_planner/normalizer.py` | KPIPlanner-owned normalization boundary: builds deterministic KPI fallback, merges LLM KPI JSON, clamps KPI milestone days, preserves fallback measurement notes when LLM output is empty, and applies content-task target defaults. |
 | `nori/context_building/calendar_planner/calendar_planner.py` | `OperationPlan + KPIPlan + ClientBrief -> ContentCalendar`. |
-| `nori/context_building/calendar_planner/inputs.py` | CalendarPlanner input boundary: restores `OperationPlan` / `AccountOperationProject` / composite dict inputs, normalizes KPI and brief overrides, and derives run start/horizon from explicit args, inherited calendars, and operation plans. |
-| `nori/context_building/calendar_planner/prompts.py` | CalendarPlanner prompt boundary: stores the JSON-only content-calendar prompt contract and serializes normalized operation plans, KPI plans, client briefs, and run windows for LLM drafting. |
+| `nori/context_building/calendar_planner/package.py` | CalendarPlanner package contract: restores `OperationPlan` / `AccountOperationProject` / composite dict inputs, normalizes KPI/brief overrides, derives run windows, and owns JSON-only calendar prompt construction. |
 | `nori/context_building/calendar_planner/normalizer.py` | CalendarPlanner-owned normalization boundary: builds `ContentCalendar` shells, merges cadence/themes/notes, and delegates content-task row construction plus deterministic policy. |
 | `nori/context_building/calendar_planner/policy.py` | CalendarPlanner pure policy boundary: clamps horizons and task days, derives target task counts and scheduled dates, formats calendar IDs/cadence/topics, and resolves required asset fallbacks without constructing `ContentCalendar`. |
 | `nori/context_building/calendar_planner/task_builder.py` | CalendarPlanner content-task boundary: builds fallback `ContentTask` rows, normalizes LLM task rows, preserves invalid-row fallback, and applies task-level policy defaults. |
@@ -222,12 +215,12 @@ Shared generation utilities:
 | `nori/content_generation/content_producer/package.py` | `ContentPackageAssembler` class: restores assets, builds production intent/context, selects the generated draft's skill, builds stable package IDs, material usage, source refs, and maps `NoteDraft` / `CoverResult` into `ContentPackage`. |
 | `nori/content_generation/content_producer/state.py` | ContentProducer state boundary: formats production errors, classifies note/cover/production failures, and updates task/project success or failure metadata. |
 | `nori/learning_loop/review/review_gate.py` | `ContentPackage + optional task/brief/project -> ComplianceReview[]`; rule-based review gate that delegates input restoration, policy, scoring, and project attachment. |
-| `nori/learning_loop/review/inputs.py` | Review input boundary: restores package/task/brief dict snapshots and derives missing client brief context from the project. |
+| `nori/learning_loop/review/package.py` | Review package contract: restores package/task/brief dict snapshots and derives missing client brief context from the project. |
 | `nori/learning_loop/review/policy.py` | Review policy boundary: computes compliance and consistency issues from packages, tasks, and client briefs while delegating issue scoring and suggestions. |
 | `nori/learning_loop/review/scoring.py` | Review scoring boundary: creates normalized issue rows, applies severity penalties, maps score/status, counts severities, and dedupes fix suggestions without reading package models. |
 | `nori/learning_loop/review/state.py` | Review state boundary: attaches generated `ComplianceReview` rows to an optional project without owning reviewer policy. |
 | `nori/learning_loop/strategy/strategy_iteration.py` | Manual `MetricsSnapshot` recording and rule-based `StrategyIteration` creation from reviews + metrics; delegates input restoration, policy, and project attachment. |
-| `nori/learning_loop/strategy/inputs.py` | Strategy iteration input boundary: restores review/metrics dict snapshots and derives default evidence lists from the project. |
+| `nori/learning_loop/strategy/package.py` | Strategy iteration package contract: restores review/metrics dict snapshots and derives default evidence lists from the project. |
 | `nori/learning_loop/strategy/policy.py` | Strategy-iteration policy boundary: normalizes metric snapshots, summarizes review/metric evidence, and derives diagnosis, decisions, and next actions without mutating projects. |
 | `nori/learning_loop/strategy/state.py` | Strategy iteration state boundary: attaches metrics snapshots and strategy iterations to an optional project without owning policy. |
 

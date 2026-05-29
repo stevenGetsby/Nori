@@ -11,14 +11,15 @@ from nori.shared.llm_json import attach_llm_error, try_stage_json
 from nori.core import ClientBrief
 
 from . import normalizer as _plan_normalizer
-from . import inputs as _planner_inputs
-from . import prompts as _planner_prompts
+from .package import OperationPlannerInputPreparer, OperationPlannerPromptBuilder
 from . import project_builder as _project_builder
 from .. import planner_critics as _planner_critics
 
 
-SYSTEM_PROMPT = _planner_prompts.SYSTEM_PROMPT
-USER_PROMPT = _planner_prompts.USER_PROMPT_TEMPLATE
+_INPUT_PREPARER = OperationPlannerInputPreparer()
+_PROMPT_BUILDER = OperationPlannerPromptBuilder(_INPUT_PREPARER)
+SYSTEM_PROMPT = _PROMPT_BUILDER.system_prompt
+USER_PROMPT = _PROMPT_BUILDER.user_prompt_template
 
 
 class OperationPlannerAgent(AgentBase):
@@ -28,6 +29,8 @@ class OperationPlannerAgent(AgentBase):
 
     def __init__(self, *, use_llm: bool = True, llm_factory: LLMFactory | None = None) -> None:
         super().__init__(stage_name=self.stage_name, use_llm=use_llm, llm_factory=llm_factory)
+        self.input_preparer = _INPUT_PREPARER
+        self.prompt_builder = _PROMPT_BUILDER
 
     def run(
         self,
@@ -40,17 +43,21 @@ class OperationPlannerAgent(AgentBase):
         horizon_days: int = 7,
         use_llm: bool | None = None,
     ) -> AccountOperationProject:
-        brief = _planner_inputs.normalize_client_brief(client_brief)
-        normalized_plan = _planner_inputs.normalize_account_plan(account_plan)
-        days = _planner_inputs.bounded_horizon(horizon_days)
-        start = _planner_inputs.normalize_start_date(start_date)
+        prepared = self.input_preparer.prepare(
+            client_brief,
+            account_plan,
+            start_date=start_date,
+            horizon_days=horizon_days,
+        )
+        brief = prepared.brief
+        normalized_plan = prepared.account_plan
         fallback = _project_builder.fallback_project(
             brief,
             normalized_plan,
             project_id=project_id,
             project_name=project_name,
-            start_date=start,
-            horizon_days=days,
+            start_date=prepared.start_date,
+            horizon_days=prepared.horizon_days,
         )
 
         should_use_llm = self.should_use_llm(use_llm)
@@ -61,9 +68,10 @@ class OperationPlannerAgent(AgentBase):
             brief,
             normalized_plan,
             fallback,
-            start_date=start,
-            horizon_days=days,
+            start_date=prepared.start_date,
+            horizon_days=prepared.horizon_days,
             llm_factory=self.llm_factory,
+            prompt_builder=self.prompt_builder,
         )
         return _with_critic(planned or fallback, brief, normalized_plan)
 
@@ -86,11 +94,13 @@ def _llm_project(
     start_date: date,
     horizon_days: int,
     llm_factory: LLMFactory | None = None,
+    prompt_builder: OperationPlannerPromptBuilder | None = None,
 ) -> AccountOperationProject | None:
     llm_gateway = llm_factory or LLMFactory()
+    prompts = prompt_builder or _PROMPT_BUILDER
     data, error = try_stage_json(
-        system=SYSTEM_PROMPT,
-        user=_planner_prompts.build_user_prompt(brief, account_plan, horizon_days=horizon_days),
+        system=prompts.system_prompt,
+        user=prompts.build_user_prompt(brief, account_plan, horizon_days=horizon_days),
         chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )

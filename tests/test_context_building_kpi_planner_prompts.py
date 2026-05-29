@@ -4,7 +4,10 @@ from __future__ import annotations
 
 from nori.core import OperationPlan
 
-from nori.context_building.kpi_planner import prompts as kpi_planner_prompts
+from nori.context_building.kpi_planner.package import KPIPlannerPromptBuilder
+
+
+kpi_planner_prompts = KPIPlannerPromptBuilder()
 
 
 def _operation_plan() -> OperationPlan:
@@ -33,5 +36,5 @@ def test_build_user_prompt_serializes_operation_plan_and_project_context():
 
 
 def test_kpi_prompt_constants_keep_json_only_contract():
-    assert "只输出 JSON" in kpi_planner_prompts.SYSTEM_PROMPT
-    assert "输出 JSON，字段固定" in kpi_planner_prompts.USER_PROMPT_TEMPLATE
+    assert "只输出 JSON" in kpi_planner_prompts.system_prompt
+    assert "输出 JSON，字段固定" in kpi_planner_prompts.user_prompt_template

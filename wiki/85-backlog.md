@@ -97,14 +97,10 @@ Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed
 | Extract Intake text-normalizer boundary | Done | Moved deterministic text fallback, optional text-LLM output cleanup, label alias mapping, image context construction, and missing/question fallback into `nori.user_profiling.intaker.normalizer`. |
 | Extract Intake taxonomy boundary | Done | Moved goal/format/tone/asset/guardrail/data vocabularies, alias mapping, allowed-label cleanup, rule-based classification, and missing/question fallback text into `nori.user_profiling.intaker.taxonomy`. |
 | Extract Intake image tagger boundary | Done | Moved per-image vision prompt construction, parallel dispatch, failure isolation, and tag filtering into `nori.user_profiling.intaker.image_tagger`, leaving `intaker.py` focused on text intake and flow orchestration. |
-| Extract NoteMaker skill-picker boundary | Done | Moved compact candidate summary construction, skill-picker prompt, and unknown `skill_id` domain-error translation into `nori.content_generation.note_maker.skill_picker`. |
-| Extract NoteMaker asset-curator boundary | Done | Moved asset-curation prompt construction, selected-index normalization, text bucket cleanup, and cover/gallery path selection into `nori.content_generation.note_maker.asset_curator`. |
-| Extract NoteMaker note-composer boundary | Done | Moved note-composition prompt construction, candidate title/tag/validation normalization, and missing title/body domain-error translation into `nori.content_generation.note_maker.note_composer`. |
-| Extract CoverDirector reference-selection boundary | Done | Moved tagged-asset selection prompt construction, chosen-index normalization, draft/reference-asset path collection, dedupe, and reference caps into `nori.content_generation.cover_director.refs`. |
-| Extract CoverDirector prompt-writer boundary | Done | Moved cover prompt JSON construction, asset fact/text-point summarization, reference-count context, and empty-prompt domain error translation into `nori.content_generation.cover_director.prompts`. |
+| Consolidate NoteMaker package contract | Done | Moved skill selection, asset curation, note composition, prompt construction, selected-index normalization, and note-field cleanup into class-owned `nori.content_generation.note_maker.package`. |
+| Consolidate CoverDirector package contract | Done | Moved tagged-asset selection, draft/reference path collection, reference input conversion, prompt construction, and reference caps into class-owned `nori.content_generation.cover_director.package`. |
 | Extract CoverDirector output boundary | Done | Moved data-uri decoding, remote image download, safe filename construction, and output error translation into `nori.content_generation.cover_director.output`. |
-| Extract AccountPlanner input boundary | Done | Moved `AccountPlannerInput` restoration/merge behavior, image/link evidence merging, platform defaults, and asset prompt context into `nori.user_profiling.account_planner.inputs`. |
-| Extract AccountPlanner prompt boundary | Done | Moved JSON-only planning prompt text and normalized evidence/search-result serialization into `nori.user_profiling.account_planner.prompts`. |
+| Consolidate AccountPlanner package contract | Done | Moved `AccountPlannerInput` restoration, evidence merging, asset prompt context, and JSON-only prompt construction into class-owned `nori.user_profiling.account_planner.package`. |
 | Extract AccountPlanner fallback boundary | Done | Moved deterministic no-inference fallback result construction into `nori.user_profiling.account_planner.fallback`. |
 | Extract AccountPlanner search boundary | Done | Moved search provider protocol/fallback, keyword cleanup/dedupe, platform id normalization, provider-error isolation, and search row defaulting into `nori.user_profiling.account_planner.search`. |
 | Extract AccountPlanner result-normalizer boundary | Done | Moved AccountPlanner LLM result cleanup, keyword-level normalization, platform-token stripping, search-only merge behavior, and IP portrait benchmark derivation into `nori.user_profiling.account_planner.normalizer`. |
@@ -142,16 +138,13 @@ Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed
 | Task | Status | Notes |
 | --- | --- | --- |
 | Ops dataclasses | Done | `AccountOperationProject` is the core project aggregate; `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentCalendar`, and `ContentTask` are core workflow contracts; `ContentPackage`, `ComplianceReview`, `MetricsSnapshot`, and `StrategyIteration` stay in their owning business modules. |
-| Extract OperationPlanner input boundary | Done | Canonical path is `nori.context_building.operation_planner.inputs`. |
-| Extract OperationPlanner prompt boundary | Done | Canonical path is `nori.context_building.operation_planner.prompts`. |
+| Consolidate OperationPlanner package contract | Done | Canonical path is class-owned `nori.context_building.operation_planner.package`. |
 | Extract OperationPlanner fallback builder boundary | Done | Canonical path is `nori.context_building.operation_planner.project_builder`. |
 | Extract OperationPlanner fallback policy boundary | Done | Canonical path is `nori.context_building.operation_planner.project_policy`. |
 | Extract OperationPlanner LLM normalizer boundary | Done | Canonical path is `nori.context_building.operation_planner.normalizer`. |
-| Extract KPIPlanner input boundary | Done | Canonical path is `nori.context_building.kpi_planner.inputs`. |
-| Extract KPIPlanner prompt boundary | Done | Canonical path is `nori.context_building.kpi_planner.prompts`. |
+| Consolidate KPIPlanner package contract | Done | Canonical path is class-owned `nori.context_building.kpi_planner.package`. |
 | Extract KPIPlanner normalizer boundary | Done | Canonical path is `nori.context_building.kpi_planner.normalizer`. |
-| Extract CalendarPlanner input boundary | Done | Canonical path is `nori.context_building.calendar_planner.inputs`. |
-| Extract CalendarPlanner prompt boundary | Done | Canonical path is `nori.context_building.calendar_planner.prompts`. |
+| Consolidate CalendarPlanner package contract | Done | Canonical path is class-owned `nori.context_building.calendar_planner.package`. |
 | Extract CalendarPlanner normalizer boundary | Done | Canonical path is `nori.context_building.calendar_planner.normalizer`. |
 | Extract CalendarPlanner policy boundary | Done | Canonical path is `nori.context_building.calendar_planner.policy`. |
 | Extract CalendarPlanner task builder boundary | Done | Canonical path is `nori.context_building.calendar_planner.task_builder`. |
@@ -177,13 +170,13 @@ Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed
 | Task | Status | Acceptance |
 | --- | --- | --- |
 | Compliance reviewer | Done | Produces `ComplianceReview` from `ContentPackage`, text-only first. |
-| Extract review input boundary | Done | Canonical path is `nori.learning_loop.review.inputs`. |
+| Consolidate review package contract | Done | Canonical path is class-owned `nori.learning_loop.review.package`. |
 | Extract review policy boundary | Done | Canonical path is `nori.learning_loop.review.policy`. |
 | Extract review scoring boundary | Done | Canonical path is `nori.learning_loop.review.scoring`. |
 | Extract review state boundary | Done | Canonical path is `nori.learning_loop.review.state`. |
 | Consistency reviewer | Done | Checks brief/title/body/cover prompt alignment. |
 | Metrics snapshot workflow | Done | Manual metrics entry can attach to package/task/project. |
-| Extract strategy iteration input boundary | Done | Canonical path is `nori.learning_loop.strategy.inputs`. |
+| Consolidate strategy iteration package contract | Done | Canonical path is class-owned `nori.learning_loop.strategy.package`. |
 | Extract strategy iteration policy boundary | Done | Canonical path is `nori.learning_loop.strategy.policy`. |
 | Extract strategy iteration state boundary | Done | Canonical path is `nori.learning_loop.strategy.state`. |
 | Strategy iteration agent | Done | Metrics + reviews -> `StrategyIteration.next_actions`. |
@@ -197,7 +190,8 @@ Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed
 | Skill report -> NoteMaker fixture bridge | Done | Added `load_note_skills`, `note_skill_fixture`, `write_note_skill_fixture`, and model `from_dict()` support. |
 | Extract XHS note loader boundary | Done | Moved local note/author `meta.json` restoration, tag extraction, and platform metric count parsing into `nori.market_analysis.xhs_note_analyzer.loader`. |
 | Extract XHS single-note rule boundary | Done | Moved rule-only seed draft construction, scene/goal classification, content rule extraction, CTA evidence, and confidence scoring into `nori.market_analysis.xhs_note_analyzer.rules`. |
-| Extract XHS single-note LLM enhancement boundary | Done | Moved optional single-note prompt text, JSON routing, LLM output normalization, fallback draft marking, and `validation.llm_error` attachment into `nori.market_analysis.xhs_note_analyzer.note_llm`. |
+| Consolidate XHS analyzer package contract | Done | Moved note enhancement, keyword, and label prompt contracts into class-owned `nori.market_analysis.xhs_note_analyzer.package`; `note_llm` and `session_llm` now own call orchestration and output normalization only. |
+| Extract XHS single-note LLM enhancement boundary | Done | Moved optional JSON routing, LLM output normalization, fallback draft marking, and `validation.llm_error` attachment into `nori.market_analysis.xhs_note_analyzer.note_llm`. |
 | Extract XHS session clustering boundary | Done | Moved rule-goal classification, required LLM-label validation, top-four bucket selection, tone majority, and leftover note tracking into `nori.market_analysis.xhs_note_analyzer.session_clustering`. |
 | Extract XHS session LLM boundary | Done | Moved keyword generation, hot-note prompt shaping, goal/tone label normalization, and fail-fast JSON helper routing into `nori.market_analysis.xhs_note_analyzer.session_llm`. |
 | Extract XHS session reporter boundary | Done | Moved report timestamping, full session report writing, and skills-only guide JSON writing into `nori.market_analysis.xhs_note_analyzer.session_reporter`. |

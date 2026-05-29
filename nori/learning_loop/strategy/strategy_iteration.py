@@ -9,10 +9,13 @@ from nori.core import AgentBase
 from nori.content_generation.models import ContentPackage
 from nori.core import ContentTask
 
-from . import inputs as _inputs
+from .package import StrategyIterationInputPreparer
 from . import policy as _policy
 from . import state as _state
 from ..models import ComplianceReview, MetricsSnapshot, StrategyIteration
+
+
+_INPUT_PREPARER = StrategyIterationInputPreparer()
 
 
 class MetricsSnapshotAgent(AgentBase):
@@ -70,8 +73,8 @@ class StrategyIterationAgent(AgentBase):
         project_id: str = "",
         metadata: dict[str, Any] | None = None,
     ) -> StrategyIteration:
-        normalized_reviews = _inputs.normalize_reviews(reviews, project)
-        normalized_metrics = _inputs.normalize_metrics_snapshots(metrics_snapshots, project)
+        normalized_reviews = _INPUT_PREPARER.normalize_reviews(reviews, project)
+        normalized_metrics = _INPUT_PREPARER.normalize_metrics_snapshots(metrics_snapshots, project)
         pid = project_id or (project.project_id if project else "")
         review_summary = _policy.review_summary(normalized_reviews)
         metric_summary = _policy.metrics_summary(normalized_metrics)

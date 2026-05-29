@@ -19,9 +19,7 @@ from nori.content_generation.models import NoteDraft
 from nori.core import UserAsset
 from nori.market_analysis.models import NoteSkill
 
-from . import asset_curator as _asset_curator
-from . import note_composer as _note_composer
-from . import skill_picker as _skill_picker
+from .package import NoteAssetCurator, NoteComposer, NoteSkillSelector
 
 
 class NoteMakerLLMError(RuntimeError):
@@ -35,6 +33,9 @@ class NoteMakerAgent(AgentBase):
 
     def __init__(self, *, llm_factory: LLMFactory | None = None) -> None:
         super().__init__(stage_name=self.stage_name, use_llm=True, llm_factory=llm_factory)
+        self.skill_selector = NoteSkillSelector()
+        self.asset_curator = NoteAssetCurator()
+        self.note_composer = NoteComposer()
 
     def run(
         self,
@@ -51,22 +52,22 @@ class NoteMakerAgent(AgentBase):
             raise ValueError("NoteMakerAgent.run 需要至少一条 skill")
         norm_assets = [_normalize_asset(a) for a in assets if a]
 
-        skill = norm_skills[0] if len(norm_skills) == 1 else _skill_picker.pick_skill_llm(
+        skill = norm_skills[0] if len(norm_skills) == 1 else self.skill_selector.pick(
             norm_skills,
             intent,
             context,
             json_call=self._call_json,
             error_type=NoteMakerLLMError,
         )
-        bundle = _asset_curator.curate_assets_llm(norm_assets, skill, intent, json_call=self._call_json)
-        composed = _note_composer.compose_note_llm(
+        bundle = self.asset_curator.curate(norm_assets, skill, intent, json_call=self._call_json)
+        composed = self.note_composer.compose(
             skill,
             bundle,
             intent,
             json_call=self._call_json,
             error_type=NoteMakerLLMError,
         )
-        cover_path, image_paths = _asset_curator.pick_visual_paths(bundle)
+        cover_path, image_paths = self.asset_curator.pick_visual_paths(bundle)
 
         return NoteDraft(
             skill_id=str(skill.get("skill_id") or ""),

@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from nori.user_profiling.models import AccountPlannerInput
-from nori.user_profiling.account_planner import inputs as account_plan_inputs
+from nori.user_profiling.account_planner.package import AccountPlannerInputPreparer
+
+
+account_plan_inputs = AccountPlannerInputPreparer()
 
 
 def test_normalize_input_merges_existing_input_with_extra_images_and_links():

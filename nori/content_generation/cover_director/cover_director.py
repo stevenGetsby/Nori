@@ -16,25 +16,28 @@ from pathlib import Path
 from typing import Any
 
 from nori.core import AgentBase, LLMFactory
-from nori.shared.image_io import image_to_bytes
 from nori.shared.llm_json import call_stage_json
 from nori.content_generation.models import CoverResult, NoteDraft
 from nori.core import UserAsset
 from nori.market_analysis.models import NoteSkill
 
 from . import output as _cover_output
-from . import prompts as _cover_prompts
-from . import refs as _cover_refs
+from .package import (
+    DEFAULT_MAX_PROMPT_REFERENCES,
+    DEFAULT_MAX_REFERENCES,
+    CoverPromptBuilder,
+    CoverReferenceSelector,
+)
 
 
 # 小红书封面贴近 3:4；relay::gpt-image-2 推荐 1072x1440
 DEFAULT_SIZE = "1072x1440"
 
 # 参考图硬上限（保护下游生图 API 上下文）。LLM 可以选 0～N 张。
-MAX_REFERENCES = _cover_refs.DEFAULT_MAX_REFERENCES
+MAX_REFERENCES = DEFAULT_MAX_REFERENCES
 
 # 旧路径（未传 tagged_assets）采用的软上限
-MAX_PROMPT_REFERENCES = _cover_refs.DEFAULT_MAX_PROMPT_REFERENCES
+MAX_PROMPT_REFERENCES = DEFAULT_MAX_PROMPT_REFERENCES
 
 
 class CoverDirectorError(RuntimeError):
@@ -48,6 +51,8 @@ class CoverDirectorAgent(AgentBase):
 
     def __init__(self, *, llm_factory: LLMFactory | None = None) -> None:
         super().__init__(stage_name=self.stage_name, use_llm=True, llm_factory=llm_factory)
+        self.reference_selector = CoverReferenceSelector()
+        self.prompt_builder = CoverPromptBuilder()
 
     def run(
         self,
@@ -64,7 +69,7 @@ class CoverDirectorAgent(AgentBase):
         intent = dict(intent or {})
 
         if tagged_assets:
-            ref_paths = _cover_refs.select_references_llm(
+            ref_paths = self.reference_selector.select_with_llm(
                 draft,
                 skill_dict,
                 intent,
@@ -73,13 +78,13 @@ class CoverDirectorAgent(AgentBase):
                 max_references=MAX_REFERENCES,
             )
         else:
-            ref_paths = _cover_refs.collect_reference_paths(
+            ref_paths = self.reference_selector.collect_legacy_paths(
                 draft,
                 reference_assets,
                 max_references=MAX_PROMPT_REFERENCES,
             )
 
-        prompt = _cover_prompts.design_prompt_llm(
+        prompt = self.prompt_builder.design_with_llm(
             draft,
             skill_dict,
             ref_paths,
@@ -90,7 +95,7 @@ class CoverDirectorAgent(AgentBase):
 
         # Local references are compressed before llms.image; remote URLs are
         # preserved because relay::gpt-image-2 accepts URL refs but rejects base64.
-        ref_inputs = [_reference_input(p) for p in ref_paths]
+        ref_inputs = [self.reference_selector.to_image_input(p) for p in ref_paths]
         ref_inputs = [item for item in ref_inputs if item]
 
         try:
@@ -143,9 +148,3 @@ def _normalize_skill(skill: NoteSkill | dict[str, Any]) -> dict[str, Any]:
     if isinstance(skill, dict):
         return skill
     raise TypeError(f"skill 必须是 NoteSkill 或 dict，收到 {type(skill)!r}")
-
-
-def _reference_input(path: str) -> bytes | str:
-    if path.startswith(("http://", "https://")):
-        return path
-    return image_to_bytes(path)

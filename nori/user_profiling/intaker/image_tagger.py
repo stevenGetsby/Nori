@@ -9,7 +9,7 @@ from nori.core import LLMFactory, UserAsset
 from nori.shared.image_io import image_to_data_uri
 from nori.shared.llm_json import call_stage_messages_json
 from nori.user_profiling.models import UserInput
-from . import prompts as _intake_prompts
+from .package import IntakeVisionPromptBuilder
 
 
 VISION_PARALLELISM = 6
@@ -27,8 +27,9 @@ class IntakeVisionLLMError(RuntimeError):
     """Raised when one optional per-image vision tagging call fails."""
 
 
-VISION_SYSTEM_PROMPT = _intake_prompts.VISION_SYSTEM_PROMPT
-VISION_USER_TEMPLATE = _intake_prompts.VISION_USER_TEMPLATE
+_VISION_PROMPT_BUILDER = IntakeVisionPromptBuilder()
+VISION_SYSTEM_PROMPT = _VISION_PROMPT_BUILDER.system_prompt
+VISION_USER_TEMPLATE = _VISION_PROMPT_BUILDER.user_prompt_template
 
 
 def build_tagged_assets(
@@ -104,7 +105,7 @@ def tag_one_image_llm(
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": VISION_USER_TEMPLATE.format(user_text=user_text)},
+                    {"type": "text", "text": _VISION_PROMPT_BUILDER.build_user_prompt(user_text)},
                     {"type": "image_url", "image_url": {"url": data_uri}},
                 ],
             },

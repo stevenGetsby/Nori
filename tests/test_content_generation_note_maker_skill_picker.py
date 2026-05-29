@@ -1,6 +1,9 @@
 import pytest
 
-from nori.content_generation.note_maker import skill_picker
+from nori.content_generation.note_maker.package import NoteSkillSelector
+
+
+skill_picker = NoteSkillSelector()
 
 
 class SkillPickerTestError(RuntimeError):
@@ -38,7 +41,7 @@ def test_skill_picker_uses_compact_summary_and_json_call():
         calls.append({"system": system, "user": user, "timeout": timeout})
         return {"skill_id": "planting"}
 
-    selected = skill_picker.pick_skill_llm(
+    selected = skill_picker.pick(
         _skills(),
         {"goal": "产品种草"},
         {"platform": "xhs"},
@@ -59,7 +62,7 @@ def test_skill_picker_raises_domain_error_for_unknown_skill_id():
         return {"skill_id": "missing"}
 
     with pytest.raises(SkillPickerTestError, match="未知 skill_id"):
-        skill_picker.pick_skill_llm(
+        skill_picker.pick(
             _skills(),
             {},
             {},

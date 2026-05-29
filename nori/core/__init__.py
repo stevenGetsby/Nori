@@ -8,6 +8,9 @@ from typing import Any, Final
 _LAZY_EXPORTS: Final[dict[str, str]] = {
     "AccountOperationProject": "project",
     "AgentBase": "agent",
+    "AgentInputPreparer": "agent",
+    "AgentPrompt": "agent",
+    "AgentPromptBuilder": "agent",
     "ArtifactStore": "artifacts",
     "AssetLibrary": "models",
     "AssetRecord": "models",

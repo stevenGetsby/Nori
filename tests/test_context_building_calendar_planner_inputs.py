@@ -7,7 +7,10 @@ from nori.core import ContentCalendar, KPIPlan, OperationPlan, ClientBrief
 
 from datetime import date
 
-from nori.context_building.calendar_planner import inputs as calendar_planner_inputs
+from nori.context_building.calendar_planner.package import CalendarPlannerInputPreparer
+
+
+calendar_planner_inputs = CalendarPlannerInputPreparer()
 
 
 def _brief() -> ClientBrief:

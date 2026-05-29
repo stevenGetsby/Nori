@@ -5,8 +5,11 @@ from __future__ import annotations
 from nori.core import AccountOperationProject
 from nori.core import ContentTask, ClientBrief
 
-from nori.learning_loop.review import inputs as content_review_inputs
+from nori.learning_loop.review.package import ReviewInputPreparer
 from nori.content_generation.models import ContentPackage
+
+
+content_review_inputs = ReviewInputPreparer()
 
 
 def test_normalize_package_restores_dicts_and_preserves_instances():

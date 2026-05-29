@@ -8,14 +8,15 @@ from nori.core import AgentBase, LLMFactory
 from nori.shared.llm_json import attach_llm_error, try_stage_json
 
 from . import normalizer as _kpi_normalizer
-from . import inputs as _kpi_inputs
-from . import prompts as _kpi_prompts
+from .package import KPIPlannerInputPreparer, KPIPlannerPromptBuilder
 from .. import planner_critics as _planner_critics
 from nori.core import KPIPlan, OperationPlan
 
 
-SYSTEM_PROMULGATION = _kpi_prompts.SYSTEM_PROMPT
-USER_PROMPT = _kpi_prompts.USER_PROMPT_TEMPLATE
+_INPUT_PREPARER = KPIPlannerInputPreparer()
+_PROMPT_BUILDER = KPIPlannerPromptBuilder()
+SYSTEM_PROMULGATION = _PROMPT_BUILDER.system_prompt
+USER_PROMPT = _PROMPT_BUILDER.user_prompt_template
 
 
 class KPIPlannerAgent(AgentBase):
@@ -25,6 +26,8 @@ class KPIPlannerAgent(AgentBase):
 
     def __init__(self, *, use_llm: bool = True, llm_factory: LLMFactory | None = None) -> None:
         super().__init__(stage_name=self.stage_name, use_llm=use_llm, llm_factory=llm_factory)
+        self.input_preparer = _INPUT_PREPARER
+        self.prompt_builder = _PROMPT_BUILDER
 
     def run(
         self,
@@ -33,13 +36,19 @@ class KPIPlannerAgent(AgentBase):
         project_context: dict[str, Any] | None = None,
         use_llm: bool | None = None,
     ) -> KPIPlan:
-        plan, context = _kpi_inputs.normalize_plan_and_context(operation_plan, project_context)
-        fallback = _kpi_normalizer.fallback_kpi_plan(plan, context)
+        prepared = self.input_preparer.prepare(operation_plan, project_context)
+        fallback = _kpi_normalizer.fallback_kpi_plan(prepared.operation_plan, prepared.project_context)
         should_use_llm = self.should_use_llm(use_llm)
         if not should_use_llm:
-            return _with_critic(fallback, plan)
-        planned = _llm_kpi_plan(plan, context, fallback, llm_factory=self.llm_factory)
-        return _with_critic(planned or fallback, plan)
+            return _with_critic(fallback, prepared.operation_plan)
+        planned = _llm_kpi_plan(
+            prepared.operation_plan,
+            prepared.project_context,
+            fallback,
+            llm_factory=self.llm_factory,
+            prompt_builder=self.prompt_builder,
+        )
+        return _with_critic(planned or fallback, prepared.operation_plan)
 
 
 def plan_kpi(
@@ -57,11 +66,13 @@ def _llm_kpi_plan(
     fallback: KPIPlan,
     *,
     llm_factory: LLMFactory | None = None,
+    prompt_builder: KPIPlannerPromptBuilder | None = None,
 ) -> KPIPlan | None:
     llm_gateway = llm_factory or LLMFactory()
+    prompts = prompt_builder or _PROMPT_BUILDER
     data, error = try_stage_json(
-        system=SYSTEM_PROMULGATION,
-        user=_kpi_prompts.build_user_prompt(plan, context),
+        system=prompts.system_prompt,
+        user=prompts.build_user_prompt(plan, context),
         chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )

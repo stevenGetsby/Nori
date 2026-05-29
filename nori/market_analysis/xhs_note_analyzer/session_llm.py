@@ -5,19 +5,20 @@ from typing import Any
 
 from nori.core import LLMFactory
 from nori.shared.llm_json import call_stage_json
-from nori.shared.prompting import json_prompt
 from .session_clustering import GOAL_KEYWORDS
-from . import prompts as _prompts
+from .package import XHSKeywordPromptBuilder, XHSLabelPromptBuilder
 
 
 class XHSSessionLLMError(RuntimeError):
     """Raised when required session-level XHS LLM stages fail."""
 
 
-KEYWORD_SYSTEM_PROMPT = _prompts.KEYWORD_SYSTEM_PROMPT
-KEYWORD_USER_PROMPT = _prompts.KEYWORD_USER_PROMPT
-LABEL_SYSTEM_PROMPT = _prompts.LABEL_SYSTEM_PROMPT
-LABEL_USER_PROMPT = _prompts.LABEL_USER_PROMPT
+_KEYWORD_PROMPT_BUILDER = XHSKeywordPromptBuilder()
+_LABEL_PROMPT_BUILDER = XHSLabelPromptBuilder()
+KEYWORD_SYSTEM_PROMPT = _KEYWORD_PROMPT_BUILDER.system_prompt
+KEYWORD_USER_PROMPT = _KEYWORD_PROMPT_BUILDER.user_prompt_template
+LABEL_SYSTEM_PROMPT = _LABEL_PROMPT_BUILDER.system_prompt
+LABEL_USER_PROMPT = _LABEL_PROMPT_BUILDER.user_prompt_template
 
 
 def generate_keywords(
@@ -29,11 +30,8 @@ def generate_keywords(
 ) -> list[str]:
     llm_gateway = llm_factory or LLMFactory()
     data = call_stage_json(
-        system=KEYWORD_SYSTEM_PROMPT,
-        user=KEYWORD_USER_PROMPT.format(
-            max_n=max_n,
-            context=json_prompt({key: value for key, value in context.items() if key != "keywords"}),
-        ),
+        system=_KEYWORD_PROMPT_BUILDER.system_prompt,
+        user=_KEYWORD_PROMPT_BUILDER.build_user_prompt(context, max_n=max_n),
         timeout=30,
         error_type=error_type,
         chat_func=llm_gateway.chat_func,
@@ -72,8 +70,8 @@ def label_notes(
     ]
     llm_gateway = llm_factory or LLMFactory()
     data = call_stage_json(
-        system=LABEL_SYSTEM_PROMPT,
-        user=LABEL_USER_PROMPT.format(notes=json_prompt(items)),
+        system=_LABEL_PROMPT_BUILDER.system_prompt,
+        user=_LABEL_PROMPT_BUILDER.build_user_prompt(items),
         timeout=120,
         error_type=error_type,
         chat_func=llm_gateway.chat_func,

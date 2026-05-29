@@ -7,12 +7,12 @@ from nori.core import LLMFactory
 from nori.market_analysis.models import XHSNoteSample, XHSSeedSkillDraft
 from nori.shared.llm_json import attach_llm_error, try_stage_json
 from nori.shared.normalization import dedupe_preserve_order, string_list as _shared_string_list
-from nori.shared.prompting import json_prompt
-from . import prompts as _prompts
+from .package import XHSNoteEnhancementPromptBuilder
 
 
-SYSTEM_PROMPT = _prompts.NOTE_SYSTEM_PROMPT
-USER_PROMPT = _prompts.NOTE_USER_PROMPT
+_PROMPT_BUILDER = XHSNoteEnhancementPromptBuilder()
+SYSTEM_PROMPT = _PROMPT_BUILDER.system_prompt
+USER_PROMPT = _PROMPT_BUILDER.user_prompt_template
 
 
 def enhance_note(
@@ -24,11 +24,8 @@ def enhance_note(
 ) -> XHSSeedSkillDraft:
     llm_factory = LLMFactory(chat_func=chat_func, chat_json_func=chat_json_func)
     data, error = try_stage_json(
-        system=SYSTEM_PROMPT,
-        user=USER_PROMPT.format(
-            note=json_prompt(note.to_dict()),
-            rule_draft=json_prompt(rule_draft.to_dict()),
-        ),
+        system=_PROMPT_BUILDER.system_prompt,
+        user=_PROMPT_BUILDER.build_user_prompt(note, rule_draft),
         timeout=60,
         chat_func=llm_factory.chat_func,
         chat_json_func=llm_factory.chat_json_func,
