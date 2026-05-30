@@ -6,8 +6,8 @@ import os
 import pytest
 
 import llms
-from nori.user_profiling.models import AccountPlanResult
-from nori.context_building import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
+from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
 
 
 LIVE_GHC = os.getenv("NORI_LIVE_GHC") == "1"

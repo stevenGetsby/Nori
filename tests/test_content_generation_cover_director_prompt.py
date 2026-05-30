@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from nori.content_generation.models import CandidateTitle, NoteDraft
-from nori.content_generation.cover_director.package import CoverPromptBuilder
+from nori.agents.content_generation.models import CandidateTitle, NoteDraft
+from nori.agents.content_generation.cover_director.package import CoverPromptBuilder
 
 
 cover_prompt = CoverPromptBuilder()

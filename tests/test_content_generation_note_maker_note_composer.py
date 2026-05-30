@@ -1,7 +1,7 @@
 import pytest
 
-from nori.content_generation.models import AssetBundle, CandidateTitle
-from nori.content_generation.note_maker.package import NoteComposer
+from nori.agents.content_generation.models import AssetBundle, CandidateTitle
+from nori.agents.content_generation.note_maker.package import NoteComposer
 
 
 note_composer = NoteComposer()

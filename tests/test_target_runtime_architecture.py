@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 EXPECTED_RUNTIME_PACKAGES = {
     "agents",
+    "capabilities",
     "context",
     "core",
     "memory",
@@ -20,14 +21,27 @@ EXPECTED_RUNTIME_PACKAGES = {
 
 
 def test_nori_top_level_has_runtime_first_package_boundaries():
-    package_dirs = {
+    top_level_entries = {
         path.name
         for path in (ROOT / "nori").iterdir()
-        if path.is_dir() and not path.name.startswith("__") and (path / "__init__.py").is_file()
+        if not path.name.startswith("__")
+    }
+    package_dirs = {
+        name
+        for name in top_level_entries
+        if (ROOT / "nori" / name).is_dir() and (ROOT / "nori" / name / "__init__.py").is_file()
+    }
+    forbidden_legacy_entries = {
+        "content_generation",
+        "context_building",
+        "domain.py",
+        "learning_loop",
+        "market_analysis",
+        "user_profiling",
     }
 
     assert EXPECTED_RUNTIME_PACKAGES <= package_dirs
-    assert "domains" not in package_dirs
+    assert not (forbidden_legacy_entries & top_level_entries)
 
 
 def test_agent_business_capabilities_are_importable_from_agents_boundary():
@@ -91,8 +105,8 @@ def test_capability_registry_replaces_domain_registry_for_new_architecture():
 
 
 def test_public_capability_entrypoint_builds_and_validates_project_snapshot():
+    from nori.agents.content_generation.models import ContentPackage
     from nori.capabilities import build_capability_snapshot, validate_capability_snapshot
-    from nori.content_generation.models import ContentPackage
     from nori.core import AccountOperationProject, CapabilitySnapshot, ClientBrief, ContentTask
 
     project = AccountOperationProject(
@@ -123,9 +137,9 @@ def test_public_capability_entrypoint_builds_and_validates_project_snapshot():
 
 
 def test_learning_loop_facade_owns_capability_snapshot_primary_method():
-    from nori.content_generation.models import ContentPackage
+    from nori.agents.content_generation.models import ContentPackage
+    from nori.agents.learning_loop import LearningLoopFacade
     from nori.core import AccountOperationProject, CapabilitySnapshot, ClientBrief, ContentTask
-    from nori.learning_loop import LearningLoopFacade
 
     project = AccountOperationProject(
         project_id="project_001",
@@ -142,13 +156,6 @@ def test_learning_loop_facade_owns_capability_snapshot_primary_method():
         signal_source="metrics",
         signal_target="preference",
     )
-    legacy = facade.domain_snapshot_from_project(
-        project,
-        selected_candidate_ids={"task_001": "pkg_001"},
-        signal_source="metrics",
-        signal_target="preference",
-    )
-
     assert isinstance(snapshot, CapabilitySnapshot)
     assert snapshot.snapshot_id == "capability_project_001"
     assert snapshot.capability_names == [
@@ -159,52 +166,17 @@ def test_learning_loop_facade_owns_capability_snapshot_primary_method():
         "learning_loop",
     ]
     assert snapshot.is_valid()
-    assert legacy.snapshot_id == "domain_project_001"
-    assert legacy.context_packs[0].to_dict() == snapshot.context_packs[0].to_dict()
-
-
-def test_legacy_domain_entrypoint_delegates_to_capability_snapshot(monkeypatch):
-    import nori.domain as domain
-    from nori.core import CapabilitySnapshot
-
-    calls = []
-
-    def fake_build(project, **kwargs):
-        calls.append((project, kwargs))
-        return CapabilitySnapshot(
-            snapshot_id="capability_project_001",
-            project_id="project_001",
-            capability_names=[
-                "user_profiling",
-                "market_analysis",
-                "planning",
-                "content_generation",
-                "learning_loop",
-            ],
-        )
-
-    monkeypatch.setattr(domain, "_build_capability_snapshot", fake_build)
-
-    snapshot = domain.build_domain_snapshot({"project_id": "project_001"}, confidence=0.7)
-
-    assert calls
-    assert calls[0][1]["confidence"] == 0.7
-    assert snapshot.snapshot_id == "domain_project_001"
+    assert not hasattr(facade, "domain_snapshot_from_project")
 
 
 def test_new_runtime_code_does_not_call_legacy_domain_snapshot_builder():
-    allowed = {
-        Path("nori/learning_loop/facade.py"),
-    }
     for path in (ROOT / "nori").rglob("*.py"):
         rel_path = path.relative_to(ROOT)
-        if rel_path in allowed:
-            continue
         assert "domain_snapshot_from_project(" not in path.read_text(), rel_path
 
 
-def test_learning_loop_public_root_does_not_export_legacy_domain_snapshot():
-    import nori.learning_loop as learning_loop
+def test_agent_learning_loop_public_root_does_not_export_legacy_domain_snapshot():
+    import nori.agents.learning_loop as learning_loop
 
     assert "DomainSnapshot" not in learning_loop.__all__
     assert not hasattr(learning_loop, "DomainSnapshot")
@@ -214,11 +186,8 @@ def test_core_public_root_does_not_export_legacy_domain_symbols():
     import nori.core as core
 
     legacy_symbols = {
-        "DOMAIN_MODULES",
         "DomainModule",
         "DomainSnapshot",
-        "domain_module_names",
-        "get_domain_module",
     }
 
     assert not (legacy_symbols & set(core.__all__))
@@ -227,18 +196,26 @@ def test_core_public_root_does_not_export_legacy_domain_symbols():
 
 
 def test_legacy_domain_registry_is_not_used_by_new_runtime_code():
-    legacy_terms = ("DOMAIN_MODULES", "DomainModule", "domain_module_names", "get_domain_module")
-    allowed = {
-        Path("nori/core/__init__.py"),
-        Path("nori/core/architecture.py"),
-        Path("nori/domain.py"),
-    }
+    legacy_terms = ("DOMAIN_MODULES", "DomainModule", "DomainSnapshot", "domain_module_names", "get_domain_module")
     for path in (ROOT / "nori").rglob("*.py"):
         rel_path = path.relative_to(ROOT)
-        if rel_path in allowed:
-            continue
         source = path.read_text()
         assert not any(term in source for term in legacy_terms), rel_path
+
+
+def test_agent_implementation_does_not_import_removed_top_level_agent_roots():
+    removed_roots = (
+        "nori.content_generation",
+        "nori.context_building",
+        "nori.learning_loop",
+        "nori.market_analysis",
+        "nori.user_profiling",
+        "nori.domain",
+    )
+    for path in (ROOT / "nori").rglob("*.py"):
+        rel_path = path.relative_to(ROOT)
+        source = path.read_text()
+        assert not any(root in source for root in removed_roots), rel_path
 
 
 def test_holly_live_case_uses_agents_public_boundary():

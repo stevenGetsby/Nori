@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from nori.core import AccountOperationProject
-from nori.learning_loop.strategy.package import StrategyIterationInputPreparer
-from nori.learning_loop.models import ComplianceReview, MetricsSnapshot
+from nori.agents.learning_loop.strategy.package import StrategyIterationInputPreparer
+from nori.agents.learning_loop.models import ComplianceReview, MetricsSnapshot
 
 
 strategy_iteration_inputs = StrategyIterationInputPreparer()

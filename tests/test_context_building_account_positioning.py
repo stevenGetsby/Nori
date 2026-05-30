@@ -1,8 +1,8 @@
 from nori.core import AccountOperationProject
 from nori.core import ClientBrief
-from nori.user_profiling.models import AccountPlanResult
-from nori.context_building import OperationPlannerAgent
-from nori.user_profiling.models import AccountPositioning
+from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.planning import OperationPlannerAgent
+from nori.agents.user_profiling.models import AccountPositioning
 
 
 def _account_plan() -> AccountPlanResult:

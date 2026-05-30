@@ -6,8 +6,8 @@ from nori.core import (
     KPIPlan,
     OperationPlan,
 )
-from nori.user_profiling.models import AccountPlanResult
-from nori.context_building import planner_critics
+from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.planning import planner_critics
 
 
 def test_operation_project_critic_flags_missing_sections_and_fallback_source():

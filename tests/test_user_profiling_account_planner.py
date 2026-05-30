@@ -3,10 +3,10 @@ from pathlib import Path
 
 import llms
 
-from nori.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
+from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
 
 
-planner_module = importlib.import_module("nori.user_profiling.account_planner.account_planner")
+planner_module = importlib.import_module("nori.agents.user_profiling.account_planner.account_planner")
 
 
 def _holly_input(enable_search=False):

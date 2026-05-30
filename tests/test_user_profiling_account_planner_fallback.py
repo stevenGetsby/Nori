@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from nori.user_profiling.models import AccountPlannerInput
-from nori.user_profiling.account_planner import fallback as account_plan_fallback
+from nori.agents.user_profiling.models import AccountPlannerInput
+from nori.agents.user_profiling.account_planner import fallback as account_plan_fallback
 
 
 def test_fallback_plan_preserves_platform_and_goal_without_keyword_inference():

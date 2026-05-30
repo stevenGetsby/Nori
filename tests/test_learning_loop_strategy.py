@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from nori.core import AccountOperationProject
 from nori.core import ContentTask, ClientBrief
-from nori.learning_loop import (
+from nori.agents.learning_loop import (
     MetricsSnapshotAgent,
     StrategyIterationAgent,
     create_strategy_iteration,
     record_metrics_snapshot,
 )
-from nori.content_generation.models import ContentPackage
-from nori.learning_loop.models import ComplianceReview
+from nori.agents.content_generation.models import ContentPackage
+from nori.agents.learning_loop.models import ComplianceReview
 
 
 def _package() -> ContentPackage:

@@ -17,27 +17,27 @@ UserInput(text/images)
 
 | Step | Module | Status | Output |
 | --- | --- | --- | --- |
-| 1. Input orchestration | `nori/user_profiling/intaker/intaker.py` | Implemented | `IntakeResult` |
-| 2. Text intake normalization | `nori/user_profiling/intaker/normalizer.py` | Implemented | intention/context/missing/questions |
-| 3. Vision tagging | `nori/user_profiling/intaker/image_tagger.py` | Implemented | `UserAsset` with `vision_*` fields |
-| 4. Skill selection | `nori/content_generation/note_maker/package.py::NoteSkillSelector` | Implemented | chosen `NoteSkill` |
-| 5. Asset curation | `nori/content_generation/note_maker/package.py::NoteAssetCurator` | Implemented | `AssetBundle` |
-| 6. Note composition | `nori/content_generation/note_maker/package.py::NoteComposer` | Implemented | `NoteDraft` |
-| 7. Cover reference selection | `nori/content_generation/cover_director/package.py::CoverReferenceSelector` | Implemented | reference image paths |
-| 8. Cover prompt writing | `nori/content_generation/cover_director/package.py::CoverPromptBuilder` | Implemented | image prompt |
+| 1. Input orchestration | `nori/agents/user_profiling/intaker/intaker.py` | Implemented | `IntakeResult` |
+| 2. Text intake normalization | `nori/agents/user_profiling/intaker/normalizer.py` | Implemented | intention/context/missing/questions |
+| 3. Vision tagging | `nori/agents/user_profiling/intaker/image_tagger.py` | Implemented | `UserAsset` with `vision_*` fields |
+| 4. Skill selection | `nori/agents/content_generation/note_maker/package.py::NoteSkillSelector` | Implemented | chosen `NoteSkill` |
+| 5. Asset curation | `nori/agents/content_generation/note_maker/package.py::NoteAssetCurator` | Implemented | `AssetBundle` |
+| 6. Note composition | `nori/agents/content_generation/note_maker/package.py::NoteComposer` | Implemented | `NoteDraft` |
+| 7. Cover reference selection | `nori/agents/content_generation/cover_director/package.py::CoverReferenceSelector` | Implemented | reference image paths |
+| 8. Cover prompt writing | `nori/agents/content_generation/cover_director/package.py::CoverPromptBuilder` | Implemented | image prompt |
 | 9. Cover image call | `CoverDirectorAgent` | Implemented | image payload |
-| 10. Cover image output | `nori/content_generation/cover_director/output.py` | Implemented | `CoverResult.cover_path` |
+| 10. Cover image output | `nori/agents/content_generation/cover_director/output.py` | Implemented | `CoverResult.cover_path` |
 
 ## Contracts
 
 | Contract | Source |
 | --- | --- |
-| `UserInput`, `IntakeResult` | `nori/user_profiling/models.py`; front-pipeline inputs/results support `to_dict()` / `from_dict()` round trips. |
-| `UserAsset` | `nori/core/models.py`; cross-stage asset contract produced by Intake and consumed by NoteMaker/CoverDirector/ContentProducer. `nori.content_generation.models` re-exports the same class for existing generation call sites. |
-| `AssetBundle`, `CandidateTitle`, `NoteDraft` | `nori/content_generation/models.py`; generation artifacts support `to_dict()` / `from_dict()` round trips, and `UserAsset.from_dict()` is the canonical dict-asset normalization path for NoteMaker/ContentProducer. |
-| `CoverResult` | `nori/content_generation/models.py`; cover artifacts support `to_dict()` / `from_dict()` round trips. |
-| `NoteSkill` | `nori/market_analysis/models.py` |
-| `load_note_skills`, `write_note_skill_fixture` | `nori/market_analysis/note_skill_fixture.py` |
+| `UserInput`, `IntakeResult` | `nori/agents/user_profiling/models.py`; front-pipeline inputs/results support `to_dict()` / `from_dict()` round trips. |
+| `UserAsset` | `nori/core/models.py`; cross-stage asset contract produced by Intake and consumed by NoteMaker/CoverDirector/ContentProducer. `nori.agents.content_generation.models` re-exports the same class for existing generation call sites. |
+| `AssetBundle`, `CandidateTitle`, `NoteDraft` | `nori/agents/content_generation/models.py`; generation artifacts support `to_dict()` / `from_dict()` round trips, and `UserAsset.from_dict()` is the canonical dict-asset normalization path for NoteMaker/ContentProducer. |
+| `CoverResult` | `nori/agents/content_generation/models.py`; cover artifacts support `to_dict()` / `from_dict()` round trips. |
+| `NoteSkill` | `nori/agents/market_analysis/models.py` |
+| `load_note_skills`, `write_note_skill_fixture` | `nori/agents/market_analysis/note_skill_fixture.py` |
 
 ## Agent Boundaries
 
@@ -72,12 +72,12 @@ UserInput(text/images)
 | `nori.shared.try_stage_messages_json(...)` | Shared optional-stage wrapper for pre-built messages, including future multimodal/custom-message fallback paths. It returns `(data, error)` instead of raising so deterministic fallbacks can continue. Parse failures reuse the same `empty_response` / `parse_error` classification as optional `llms` structured helpers. |
 | `nori.shared.try_stage_json(...)` | System/user convenience wrapper over `try_stage_messages_json(...)` for optional-stage JSON stages. |
 | `nori.shared.attach_llm_error(...)` | Shared formatter for optional fallback `llm_error` fields, used by Intake, AccountPlanner, ops planners, and analyzer fallbacks to avoid local shape drift. |
-| `nori.user_profiling.intaker.normalizer.*` | Intake text boundary. It owns deterministic text fallback, optional text-LLM output normalization, allowed vocabulary/alias mapping, image context construction, and missing/question repair; `IntakeAgent` only decides whether to call text LLM and vision tagging. |
-| `nori.user_profiling.intaker.image_tagger.*` | Intake vision boundary. It owns per-image multimodal JSON prompt construction, parallel dispatch, per-image failure isolation, and tag vocabulary filtering; `IntakeAgent` only decides when to use vision tagging. |
-| `nori.content_generation.note_maker.package.*` | NoteMaker package boundary. `NoteSkillSelector`, `NoteAssetCurator`, and `NoteComposer` own prompt construction, selected-index normalization, text bucket cleanup, cover/gallery path selection, candidate title/tag/validation normalization, and domain-error translation; `NoteMakerAgent` only orchestrates skill pick -> asset bundle -> note draft. |
-| `nori.content_generation.cover_director.package.CoverReferenceSelector` | CoverDirector reference boundary. It owns tagged-asset prompt construction, chosen-index normalization, existing-image filtering, dedupe/cap policy, reference input conversion, and legacy draft/reference-asset path collection; `CoverDirectorAgent` keeps the wrapper for image-stage orchestration. |
-| `nori.content_generation.cover_director.package.CoverPromptBuilder` | CoverDirector prompt boundary. It owns image-prompt JSON construction from draft asset facts, skill rules, intent, and selected reference count; `CoverDirectorAgent` only injects the JSON stage and passes the resulting prompt to image generation. |
-| `nori.content_generation.cover_director.output.*` | CoverDirector output boundary. It owns data-uri decoding, remote image download, filename sanitization, and persistence errors; `CoverDirectorAgent` only passes the first image payload and records the resulting path. |
+| `nori.agents.user_profiling.intaker.normalizer.*` | Intake text boundary. It owns deterministic text fallback, optional text-LLM output normalization, allowed vocabulary/alias mapping, image context construction, and missing/question repair; `IntakeAgent` only decides whether to call text LLM and vision tagging. |
+| `nori.agents.user_profiling.intaker.image_tagger.*` | Intake vision boundary. It owns per-image multimodal JSON prompt construction, parallel dispatch, per-image failure isolation, and tag vocabulary filtering; `IntakeAgent` only decides when to use vision tagging. |
+| `nori.agents.content_generation.note_maker.package.*` | NoteMaker package boundary. `NoteSkillSelector`, `NoteAssetCurator`, and `NoteComposer` own prompt construction, selected-index normalization, text bucket cleanup, cover/gallery path selection, candidate title/tag/validation normalization, and domain-error translation; `NoteMakerAgent` only orchestrates skill pick -> asset bundle -> note draft. |
+| `nori.agents.content_generation.cover_director.package.CoverReferenceSelector` | CoverDirector reference boundary. It owns tagged-asset prompt construction, chosen-index normalization, existing-image filtering, dedupe/cap policy, reference input conversion, and legacy draft/reference-asset path collection; `CoverDirectorAgent` keeps the wrapper for image-stage orchestration. |
+| `nori.agents.content_generation.cover_director.package.CoverPromptBuilder` | CoverDirector prompt boundary. It owns image-prompt JSON construction from draft asset facts, skill rules, intent, and selected reference count; `CoverDirectorAgent` only injects the JSON stage and passes the resulting prompt to image generation. |
+| `nori.agents.content_generation.cover_director.output.*` | CoverDirector output boundary. It owns data-uri decoding, remote image download, filename sanitization, and persistence errors; `CoverDirectorAgent` only passes the first image payload and records the resulting path. |
 | `llms.request_params.merge_chat_kwargs(...)` | Canonical chat gateway merge for model constraints. It copies caller `extra_body` before applying model-level defaults and always normalizes token-limit kwargs so each model sends only its expected parameter, even when no `max_output` default is configured. |
 | `llms.request_params.merge_image_kwargs(...)` | Canonical image request merge for model-level `extra_body` without inheriting chat-only token/temperature fields. |
 | `llms.image(..., reference_images=...)` | Checks active model type and reference-image capability through `llms.capabilities.ensure_image_capability`; invalid image usage raises `ImageCapabilityError`. OpenAI-compatible image requests also merge model-level `extra_body` without mutating caller kwargs, but do not inherit chat-only token/temperature fields. Provider response normalization lives in `llms.results.collect_image_results`; responses with no usable URL/base64 image raise `ImageResultError` instead of returning an empty success. |

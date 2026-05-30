@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from nori.user_profiling.models import AccountPlanResult, AccountPlannerInput
-from nori.user_profiling.account_planner import search as account_plan_search
+from nori.agents.user_profiling.models import AccountPlanResult, AccountPlannerInput
+from nori.agents.user_profiling.account_planner import search as account_plan_search
 
 
 def _result() -> AccountPlanResult:

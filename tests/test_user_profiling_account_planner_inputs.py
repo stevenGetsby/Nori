@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from nori.user_profiling.models import AccountPlannerInput
-from nori.user_profiling.account_planner.package import AccountPlannerInputPreparer
+from nori.agents.user_profiling.models import AccountPlannerInput
+from nori.agents.user_profiling.account_planner.package import AccountPlannerInputPreparer
 
 
 account_plan_inputs = AccountPlannerInputPreparer()

@@ -18,8 +18,8 @@ from data_collect.adapter import HotNote, TopNotesResult
 from nori.agents.content_generation import ContentProducerAgent
 from nori.agents.learning_loop import ReviewGateAgent
 from nori.agents.market_analysis import SessionSkillReport, XHSNoteAnalyzer
-from nori.agents.market_analysis import session_reporter as xhs_session_reporter
-from nori.agents.market_analysis import skill_builder as xhs_skill_builder
+from nori.agents.market_analysis.xhs_note_analyzer import session_reporter as xhs_session_reporter
+from nori.agents.market_analysis.xhs_note_analyzer import skill_builder as xhs_skill_builder
 from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
 from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
 from nori.core import ClientBrief, LLMFactory

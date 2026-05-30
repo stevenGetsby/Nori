@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from nori.core import KPIPlan, OperationPlan
 
-from nori.context_building.kpi_planner import normalizer as kpi_plan_normalizer
+from nori.agents.planning.kpi_planner import normalizer as kpi_plan_normalizer
 
 
 def _operation_plan(horizon_days: int = 7) -> OperationPlan:

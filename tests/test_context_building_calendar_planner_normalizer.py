@@ -6,7 +6,7 @@ from nori.core import ContentCalendar, ContentTask, KPIPlan, OperationPlan, Clie
 
 from datetime import date
 
-from nori.context_building.calendar_planner import normalizer as calendar_plan_normalizer
+from nori.agents.planning.calendar_planner import normalizer as calendar_plan_normalizer
 
 
 def _brief() -> ClientBrief:

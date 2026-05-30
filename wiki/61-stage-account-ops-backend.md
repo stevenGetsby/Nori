@@ -10,16 +10,16 @@ Turn Nori from one-shot generation into an account-operations backend with stabl
 
 | Module | Status | Notes |
 | --- | --- | --- |
-| `nori/context_building/models.py` | Implemented | Provider-free account-operation dataclasses with serialization; `from_dict()` input cleanup uses shared `nori.core.contracts` helpers. |
-| `nori/context_building/operation_planner/operation_planner.py` | Implemented | LLM JSON path + deterministic fallback + critic metadata + fallback `llm_error` metadata. |
-| `nori/context_building/operation_planner/project_builder.py` | Implemented | Builds OperationPlanner deterministic fallback projects, including rule-based tasks, calendars, derived KPI snapshots, positioning, asset requirements, and benchmark references. |
-| `nori/context_building/operation_planner/normalizer.py` | Implemented | Normalizes OperationPlanner LLM operation-plan/calendar output into a fallback project shell, including tasks, date clamps, metadata, and derived KPI snapshot. |
-| `nori/context_building/kpi_planner/kpi_planner.py` | Implemented | Builds measurable targets; can read project task count; records optional LLM failure metadata on fallback. |
-| `nori/context_building/kpi_planner/normalizer.py` | Implemented | Normalizes KPIPlanner fallback and LLM output, including task-count defaults, milestone day clamps, and measurement-note fallback preservation. |
-| `nori/context_building/calendar_planner/calendar_planner.py` | Implemented | Builds scheduled content tasks; records optional LLM failure metadata on fallback. |
-| `nori/context_building/calendar_planner/normalizer.py` | Implemented | Normalizes CalendarPlanner fallback and LLM output, including task-count caps, scheduled-day clamps, content-pillar repair, and empty-list fallback preservation. |
-| `nori/user_profiling/account_planner/account_planner.py` | Implemented | Account positioning and IP portrait. |
-| `nori/user_profiling/account_planner/normalizer.py` | Implemented | Normalizes AccountPlanner LLM/search output into stable `AccountPlanResult` fields, including keyword levels, benchmark creators, and fallback metadata. |
+| `nori/agents/planning/models.py` | Implemented | Provider-free account-operation dataclasses with serialization; `from_dict()` input cleanup uses shared `nori.core.contracts` helpers. |
+| `nori/agents/planning/operation_planner/operation_planner.py` | Implemented | LLM JSON path + deterministic fallback + critic metadata + fallback `llm_error` metadata. |
+| `nori/agents/planning/operation_planner/project_builder.py` | Implemented | Builds OperationPlanner deterministic fallback projects, including rule-based tasks, calendars, derived KPI snapshots, positioning, asset requirements, and benchmark references. |
+| `nori/agents/planning/operation_planner/normalizer.py` | Implemented | Normalizes OperationPlanner LLM operation-plan/calendar output into a fallback project shell, including tasks, date clamps, metadata, and derived KPI snapshot. |
+| `nori/agents/planning/kpi_planner/kpi_planner.py` | Implemented | Builds measurable targets; can read project task count; records optional LLM failure metadata on fallback. |
+| `nori/agents/planning/kpi_planner/normalizer.py` | Implemented | Normalizes KPIPlanner fallback and LLM output, including task-count defaults, milestone day clamps, and measurement-note fallback preservation. |
+| `nori/agents/planning/calendar_planner/calendar_planner.py` | Implemented | Builds scheduled content tasks; records optional LLM failure metadata on fallback. |
+| `nori/agents/planning/calendar_planner/normalizer.py` | Implemented | Normalizes CalendarPlanner fallback and LLM output, including task-count caps, scheduled-day clamps, content-pillar repair, and empty-list fallback preservation. |
+| `nori/agents/user_profiling/account_planner/account_planner.py` | Implemented | Account positioning and IP portrait. |
+| `nori/agents/user_profiling/account_planner/normalizer.py` | Implemented | Normalizes AccountPlanner LLM/search output into stable `AccountPlanResult` fields, including keyword levels, benchmark creators, and fallback metadata. |
 
 ## Core Data Model
 

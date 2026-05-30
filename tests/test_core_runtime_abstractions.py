@@ -5,17 +5,17 @@ import inspect
 import llms
 from nori.core import AgentBase, LLMFactory, WorkflowBase, named_workflow_steps
 from nori.core import contracts
-from nori.content_generation.content_producer import ContentProducerAgent
-from nori.content_generation.cover_director import CoverDirectorAgent
-from nori.content_generation.note_maker import NoteMakerAgent
-from nori.context_building.calendar_planner import CalendarPlannerAgent
-from nori.context_building.kpi_planner import KPIPlannerAgent
-from nori.context_building.operation_planner import OperationPlannerAgent
-from nori.learning_loop.review import ComplianceReviewerAgent, ConsistencyReviewerAgent, ReviewGateAgent
-from nori.learning_loop.strategy import MetricsSnapshotAgent, StrategyIterationAgent
-from nori.market_analysis.xhs_note_analyzer import XHSNoteAnalyzer
-from nori.user_profiling.account_planner import AccountPlannerAgent
-from nori.user_profiling.intaker import IntakeAgent
+from nori.agents.content_generation.content_producer import ContentProducerAgent
+from nori.agents.content_generation.cover_director import CoverDirectorAgent
+from nori.agents.content_generation.note_maker import NoteMakerAgent
+from nori.agents.planning.calendar_planner import CalendarPlannerAgent
+from nori.agents.planning.kpi_planner import KPIPlannerAgent
+from nori.agents.planning.operation_planner import OperationPlannerAgent
+from nori.agents.learning_loop.review import ComplianceReviewerAgent, ConsistencyReviewerAgent, ReviewGateAgent
+from nori.agents.learning_loop.strategy import MetricsSnapshotAgent, StrategyIterationAgent
+from nori.agents.market_analysis.xhs_note_analyzer import XHSNoteAnalyzer
+from nori.agents.user_profiling.account_planner import AccountPlannerAgent
+from nori.agents.user_profiling.intaker import IntakeAgent
 
 
 AGENT_CLASSES = [

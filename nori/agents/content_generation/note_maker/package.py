@@ -1,0 +1,240 @@
+"""Class-owned package contract for NoteMakerAgent."""
+from __future__ import annotations
+
+from typing import Any, Callable
+
+from nori.agents.content_generation.models import AssetBundle, CandidateTitle
+from nori.core import UserAsset
+from nori.shared.prompting import json_block, json_prompt
+
+
+JsonCall = Callable[..., dict[str, Any]]
+
+
+class NoteSkillSelector:
+    """Pick the best note skill for the current intent."""
+
+    system_prompt = "你是 Nori 的 Skill 选择器，只输出 JSON。"
+
+    def pick(
+        self,
+        skills: list[dict[str, Any]],
+        intent: dict[str, Any],
+        context: dict[str, Any],
+        *,
+        json_call: JsonCall,
+        error_type=RuntimeError,
+    ) -> dict[str, Any]:
+        summary = [
+            {
+                "skill_id": skill.get("skill_id"),
+                "label": skill.get("label"),
+                "goal": skill.get("goal"),
+                "tone": skill.get("tone"),
+                "note_type": skill.get("note_type"),
+                "creative_goal": skill.get("creative_goal"),
+                "metrics_summary": skill.get("metrics_summary"),
+            }
+            for skill in skills
+        ]
+        data = json_call(
+            system=self.system_prompt,
+            user=(
+                f"用户意图：\n{json_prompt(intent)}\n\n"
+                f"上下文：\n{json_prompt(context)}\n\n"
+                f"候选 skill：\n{json_block(summary)}\n\n"
+                '选 1 个最契合用户意图的 skill。输出 {"skill_id": "..."}。'
+            ),
+            timeout=30,
+        )
+        chosen_id = str(data.get("skill_id") or "").strip()
+        for skill in skills:
+            if skill.get("skill_id") == chosen_id:
+                return skill
+        raise error_type(f"SkillPicker 返回未知 skill_id: {chosen_id!r}")
+
+
+class NoteAssetCurator:
+    """Group tagged assets into NoteMaker's AssetBundle contract."""
+
+    system_prompt = "你是 Nori 的素材整理工序，只输出 JSON。"
+
+    def curate(
+        self,
+        assets: list[UserAsset],
+        skill: dict[str, Any],
+        intent: dict[str, Any],
+        *,
+        json_call: JsonCall,
+    ) -> AssetBundle:
+        images = [(i, a) for i, a in enumerate(assets) if a.kind == "image"]
+        texts = [(i, a) for i, a in enumerate(assets) if a.kind == "text" and a.text.strip()]
+
+        image_input = [
+            {
+                "index": i,
+                "path": a.path,
+                "vision_roles": list(a.vision_roles),
+                "subject": a.subject,
+                "brand_signals": list(a.brand_signals),
+                "usable_for": list(a.usable_for),
+                "quality": a.quality,
+            }
+            for i, a in images
+        ]
+        text_input = [
+            {"index": i, "text": a.text.strip()[:400]}
+            for i, a in texts
+        ]
+
+        if not image_input and not text_input:
+            return AssetBundle()
+
+        data = json_call(
+            system=self.system_prompt,
+            user=(
+                f"创作目标：{skill.get('creative_goal', '')}\n"
+                f"语气：{skill.get('tone', '')}；类型：{skill.get('note_type', '')}\n"
+                f"用户意图：{json_prompt(intent)}\n\n"
+                f"图片素材（按 index 引用）：\n{json_block(image_input)}\n\n"
+                f"文本素材（按 index 引用）：\n{json_block(text_input)}\n\n"
+                "请把素材整理成 5 个桶：\n"
+                "  - main_image_indices：主视觉图片 index（封面优先）\n"
+                "  - aux_image_indices：辅助图 index\n"
+                "  - text_points：用户的卖点/描述短句\n"
+                "  - brand_facts：品牌名/口号/理念/人设\n"
+                "  - data_points：数据/数字/案例\n"
+                "保留原文，不要改写。每个文本桶最多 6 条。\n"
+                '输出 JSON：{"main_image_indices": [], "aux_image_indices": [], '
+                '"text_points": [], "brand_facts": [], "data_points": []}'
+            ),
+            timeout=60,
+        )
+        return self.bundle_from_data(data, assets)
+
+    def bundle_from_data(self, data: dict[str, Any], assets: list[UserAsset]) -> AssetBundle:
+        images = [(i, a) for i, a in enumerate(assets) if a.kind == "image"]
+        bundle = AssetBundle()
+        main_idx = self.int_list(data.get("main_image_indices"))
+        aux_idx = self.int_list(data.get("aux_image_indices"))
+        used: set[int] = set()
+        for i in main_idx:
+            if 0 <= i < len(assets) and assets[i].kind == "image" and i not in used:
+                bundle.main_images.append(assets[i])
+                used.add(i)
+        for i in aux_idx:
+            if 0 <= i < len(assets) and assets[i].kind == "image" and i not in used:
+                bundle.aux_images.append(assets[i])
+                used.add(i)
+        for i, asset in images:
+            if i not in used:
+                bundle.aux_images.append(asset)
+        if not bundle.main_images and bundle.aux_images:
+            bundle.main_images.append(bundle.aux_images.pop(0))
+
+        bundle.text_points = self.str_list(data.get("text_points"))[:6]
+        bundle.brand_facts = self.str_list(data.get("brand_facts"))[:6]
+        bundle.data_points = self.str_list(data.get("data_points"))[:6]
+        return bundle
+
+    def pick_visual_paths(self, bundle: AssetBundle) -> tuple[str, list[str]]:
+        cover = bundle.main_images[0].path if bundle.main_images else ""
+        others = [a.path for a in bundle.main_images[1:] + bundle.aux_images if a.path]
+        return cover, others[:8]
+
+    def int_list(self, value: Any) -> list[int]:
+        out: list[int] = []
+        for item in value or []:
+            try:
+                out.append(int(item))
+            except (TypeError, ValueError):
+                continue
+        return out
+
+    def str_list(self, value: Any) -> list[str]:
+        return [str(item).strip() for item in (value or []) if str(item).strip()]
+
+
+class NoteComposer:
+    """Compose and normalize the final note fields."""
+
+    system_prompt = "你是 Nori 的小红书 note 写手，只输出 JSON。"
+
+    def compose(
+        self,
+        skill: dict[str, Any],
+        bundle: AssetBundle,
+        intent: dict[str, Any],
+        *,
+        json_call: JsonCall,
+        error_type=RuntimeError,
+    ) -> dict[str, Any]:
+        data = json_call(
+            system=self.system_prompt,
+            user=(
+                f"创作目标：{skill.get('creative_goal', '')}\n"
+                f"语气：{skill.get('tone', '')}；类型：{skill.get('note_type', '')}\n"
+                f"用户意图：{json_prompt(intent)}\n\n"
+                f"素材卖点：{json_prompt(bundle.text_points)}\n"
+                f"品牌信息：{json_prompt(bundle.brand_facts)}\n"
+                f"数据点：{json_prompt(bundle.data_points)}\n\n"
+                f"标题规则：\n{json_block(skill.get('title_rules') or [])}\n\n"
+                f"开场规则：\n{json_block(skill.get('opening_rules') or [])}\n\n"
+                f"正文结构：\n{json_block(skill.get('body_structure') or [])}\n\n"
+                f"互动规则：\n{json_block(skill.get('interaction_rules') or [])}\n\n"
+                f"禁止项：{json_prompt(skill.get('avoid_rules') or [])}\n\n"
+                "按规则写一篇可发布的小红书 note：\n"
+                "  - title：推荐标题，<=24 字\n"
+                "  - candidate_titles：3-5 个候选，每个含 text / rule_name（命中的 title_rules.name）/ rationale\n"
+                "  - body：开场 → 主体段落 → 互动钩子，<=300 字\n"
+                "  - tags：3-5 个，每个 <=8 字\n"
+                "  - comment_hook：评论引导一句话\n"
+                "  - validation：{status: pass|needs_human_review, issues: [...]}"
+                "，命中禁止项时 status=needs_human_review\n\n"
+                '输出 JSON：{"title":"","candidate_titles":[],'
+                '"body":"","tags":[],"comment_hook":"","validation":{"status":"","issues":[]}}'
+            ),
+            timeout=90,
+        )
+        return self.normalize(data, error_type=error_type)
+
+    def normalize(
+        self,
+        data: dict[str, Any],
+        *,
+        error_type=RuntimeError,
+    ) -> dict[str, Any]:
+        title = str(data.get("title") or "").strip()
+        body = str(data.get("body") or "").strip()
+        if not title or not body:
+            raise error_type("NoteComposer 缺 title 或 body")
+
+        candidates: list[CandidateTitle] = []
+        for item in data.get("candidate_titles") or []:
+            if isinstance(item, dict) and item.get("text"):
+                candidates.append(CandidateTitle(
+                    text=str(item["text"]).strip()[:30],
+                    rule_name=str(item.get("rule_name") or "").strip(),
+                    rationale=str(item.get("rationale") or "").strip(),
+                ))
+        if not candidates:
+            candidates.append(CandidateTitle(text=title, rule_name="", rationale=""))
+
+        tags = [str(tag).strip() for tag in (data.get("tags") or []) if str(tag).strip()][:5]
+        hook = str(data.get("comment_hook") or "").strip()
+
+        validation = data.get("validation") if isinstance(data.get("validation"), dict) else {}
+        status = str(validation.get("status") or "pass").strip() or "pass"
+        issues = [str(item).strip() for item in (validation.get("issues") or []) if str(item).strip()]
+
+        return {
+            "title": title,
+            "body": body,
+            "tags": tags,
+            "comment_hook": hook,
+            "candidate_titles": candidates,
+            "validation": {"status": status, "issues": issues},
+        }
+
+
+__all__ = ["NoteAssetCurator", "NoteComposer", "NoteSkillSelector"]

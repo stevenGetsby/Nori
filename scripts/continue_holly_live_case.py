@@ -13,12 +13,12 @@ if str(ROOT) not in sys.path:
 
 import llms
 from data_collect.adapter import HotNote, TopNotesResult
-from nori.content_generation.content_producer import ContentProducerAgent
-from nori.context_building.calendar_planner import CalendarPlannerAgent
+from nori.agents.content_generation.content_producer import ContentProducerAgent
+from nori.agents.planning.calendar_planner import CalendarPlannerAgent
 from nori.core import AccountOperationProject, ClientBrief, KPIPlan, LLMFactory
-from nori.learning_loop.review import ReviewGateAgent
-from nori.market_analysis.models import SessionSkillReport
-from nori.user_profiling.models import AccountPlanResult, IntakeResult
+from nori.agents.learning_loop.review import ReviewGateAgent
+from nori.agents.market_analysis.models import SessionSkillReport
+from nori.agents.user_profiling.models import AccountPlanResult, IntakeResult
 
 
 def main(argv: list[str]) -> int:

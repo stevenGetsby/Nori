@@ -1,17 +1,35 @@
-"""User and account profiling agents."""
+"""User/account/brand profiling module."""
 from __future__ import annotations
 
-from nori.user_profiling.account_planner import AccountPlannerAgent, account_plan
-from nori.user_profiling.intaker import IntakeAgent, intake
-from nori.user_profiling.models import AccountPlanResult, AccountPlannerInput, IntakeResult, UserInput
+from nori.core import ClientBrief, UserProfile
+from nori.core.lazy_exports import lazy_export
+
+from .models import AccountPositioning
+from .models import AccountPlannerInput, AccountPlanResult, IntakeResult, UserInput
+
+_LAZY_EXPORTS = {
+    "AccountPlannerAgent": "account_planner",
+    "account_plan": "account_planner",
+    "IntakeAgent": "intaker",
+    "intake": "intaker",
+    "UserProfilingFacade": "facade",
+}
 
 __all__ = [
-    "AccountPlanResult",
     "AccountPlannerAgent",
     "AccountPlannerInput",
+    "AccountPlanResult",
+    "AccountPositioning",
+    "ClientBrief",
     "IntakeAgent",
     "IntakeResult",
     "UserInput",
-    "intake",
+    "UserProfile",
+    "UserProfilingFacade",
     "account_plan",
+    "intake",
 ]
+
+
+def __getattr__(name: str):
+    return lazy_export(__name__, _LAZY_EXPORTS, name)

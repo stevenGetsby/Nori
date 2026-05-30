@@ -9,12 +9,12 @@ import json
 import llms
 import pytest
 
-from nori.content_generation.models import CandidateTitle, CoverResult, NoteDraft
+from nori.agents.content_generation.models import CandidateTitle, CoverResult, NoteDraft
 from nori.core import ImageCapabilityError, UserAsset
-from nori.content_generation import CoverDirectorAgent
-from nori.content_generation.cover_director import CoverDirectorError
+from nori.agents.content_generation import CoverDirectorAgent
+from nori.agents.content_generation.cover_director import CoverDirectorError
 
-cd_module = importlib.import_module("nori.content_generation.cover_director.cover_director")
+cd_module = importlib.import_module("nori.agents.content_generation.cover_director.cover_director")
 
 
 # 1x1 透明 PNG 字节

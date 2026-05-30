@@ -4,10 +4,10 @@ import importlib
 
 import llms
 
-from nori.context_building import CalendarPlannerAgent, plan_calendar
+from nori.agents.planning import CalendarPlannerAgent, plan_calendar
 
 
-calendar_module = importlib.import_module("nori.context_building.calendar_planner.calendar_planner")
+calendar_module = importlib.import_module("nori.agents.planning.calendar_planner.calendar_planner")
 
 
 def _brief():

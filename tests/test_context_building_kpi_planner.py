@@ -4,10 +4,10 @@ import importlib
 
 import llms
 
-from nori.context_building import KPIPlannerAgent, plan_kpi
+from nori.agents.planning import KPIPlannerAgent, plan_kpi
 
 
-kpi_module = importlib.import_module("nori.context_building.kpi_planner.kpi_planner")
+kpi_module = importlib.import_module("nori.agents.planning.kpi_planner.kpi_planner")
 
 
 def _operation_plan():

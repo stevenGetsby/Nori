@@ -6,7 +6,7 @@ from nori.core import KPIPlan, OperationPlan, ClientBrief
 
 from datetime import date
 
-from nori.context_building.calendar_planner import policy as calendar_plan_policy
+from nori.agents.planning.calendar_planner import policy as calendar_plan_policy
 
 
 def _operation_plan(horizon_days: int = 14, content_tasks: object = 0) -> OperationPlan:

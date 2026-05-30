@@ -5,8 +5,8 @@ from __future__ import annotations
 from nori.core import AccountOperationProject
 from nori.core import ContentTask
 
-from nori.content_generation.content_producer import state as content_production_state
-from nori.content_generation.models import ContentPackage
+from nori.agents.content_generation.content_producer import state as content_production_state
+from nori.agents.content_generation.models import ContentPackage
 
 
 def _task() -> ContentTask:

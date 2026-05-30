@@ -8,12 +8,12 @@ import json
 import llms
 import pytest
 
-from nori.market_analysis.models import NoteSkill
+from nori.agents.market_analysis.models import NoteSkill
 from nori.core import UserAsset
-from nori.content_generation import NoteMakerAgent
-from nori.content_generation.note_maker import NoteMakerLLMError
+from nori.agents.content_generation import NoteMakerAgent
+from nori.agents.content_generation.note_maker import NoteMakerLLMError
 
-note_maker_module = importlib.import_module("nori.content_generation.note_maker.note_maker")
+note_maker_module = importlib.import_module("nori.agents.content_generation.note_maker.note_maker")
 
 
 def _planting_skill() -> dict:

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from nori.content_generation.models import CandidateTitle, NoteDraft
+from nori.agents.content_generation.models import CandidateTitle, NoteDraft
 from nori.core import UserAsset
-from nori.content_generation.cover_director.package import CoverReferenceSelector
+from nori.agents.content_generation.cover_director.package import CoverReferenceSelector
 
 
 cover_refs = CoverReferenceSelector()

@@ -117,13 +117,13 @@ def _coerce_content_task(value: Any) -> ContentTask:
 
 
 def _new_account_positioning() -> Any:
-    from nori.user_profiling.models import AccountPositioning
+    from nori.agents.user_profiling.models import AccountPositioning
 
     return AccountPositioning()
 
 
 def _coerce_account_positioning(value: Any) -> Any:
-    from nori.user_profiling.models import AccountPositioning
+    from nori.agents.user_profiling.models import AccountPositioning
 
     return value if isinstance(value, AccountPositioning) else AccountPositioning.from_dict(value)
 
@@ -133,37 +133,37 @@ def _coerce_asset_library(value: Any) -> AssetLibrary:
 
 
 def _new_competitor_research() -> Any:
-    from nori.market_analysis.models import CompetitorResearch
+    from nori.agents.market_analysis.models import CompetitorResearch
 
     return CompetitorResearch()
 
 
 def _coerce_competitor_research(value: Any) -> Any:
-    from nori.market_analysis.models import CompetitorResearch
+    from nori.agents.market_analysis.models import CompetitorResearch
 
     return value if isinstance(value, CompetitorResearch) else CompetitorResearch.from_dict(value)
 
 
 def _coerce_content_package(value: Any) -> Any:
-    from nori.content_generation.models import ContentPackage
+    from nori.agents.content_generation.models import ContentPackage
 
     return value if isinstance(value, ContentPackage) else ContentPackage.from_dict(value)
 
 
 def _coerce_compliance_review(value: Any) -> Any:
-    from nori.learning_loop.models import ComplianceReview
+    from nori.agents.learning_loop.models import ComplianceReview
 
     return value if isinstance(value, ComplianceReview) else ComplianceReview.from_dict(value)
 
 
 def _coerce_metrics_snapshot(value: Any) -> Any:
-    from nori.learning_loop.models import MetricsSnapshot
+    from nori.agents.learning_loop.models import MetricsSnapshot
 
     return value if isinstance(value, MetricsSnapshot) else MetricsSnapshot.from_dict(value)
 
 
 def _coerce_strategy_iteration(value: Any) -> Any:
-    from nori.learning_loop.models import StrategyIteration
+    from nori.agents.learning_loop.models import StrategyIteration
 
     return value if isinstance(value, StrategyIteration) else StrategyIteration.from_dict(value)
 

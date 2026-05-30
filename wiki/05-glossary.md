@@ -4,12 +4,12 @@
 
 | Term | Meaning | Canonical owner |
 | --- | --- | --- |
-| Intention | User goal, content format, tone, anti-preferences, and task intent. | `IntakeAgent` / `nori.user_profiling.models.IntakeResult` |
+| Intention | User goal, content format, tone, anti-preferences, and task intent. | `IntakeAgent` / `nori.agents.user_profiling.models.IntakeResult` |
 | Context | User assets and constraints: creative assets, commercial assets, guardrails, data references. | `IntakeAgent` |
 | UserAsset | One image or text asset. Image assets may carry `vision_roles`, `subject`, `brand_signals`, `usable_for`, `quality`. | `nori/core/models.py` |
-| NoteSkill | Reusable XHS note-making skill learned from evidence or provided by fixtures. | `nori/market_analysis/models.py` |
-| NoteDraft | Title, body, tags, comment hook, selected skill, asset bundle, cover seed. | `nori/content_generation/models.py` |
-| CoverResult | Generated cover path, prompt, size, reference paths, and source metadata. | `nori/content_generation/models.py` |
+| NoteSkill | Reusable XHS note-making skill learned from evidence or provided by fixtures. | `nori/agents/market_analysis/models.py` |
+| NoteDraft | Title, body, tags, comment hook, selected skill, asset bundle, cover seed. | `nori/agents/content_generation/models.py` |
+| CoverResult | Generated cover path, prompt, size, reference paths, and source metadata. | `nori/agents/content_generation/models.py` |
 | ClientBrief | Client-facing account-ops requirements: goals, audience, platform, constraints, source materials. | `nori/core/models.py` |
 | OperationPlan | Strategy, horizon, objectives, content pillars, cadence, KPI targets, milestones, risks. | `nori/core/models.py` |
 | KPIPlan | Measurable targets and manual measurement notes for an operation plan. | `nori/core/models.py` |

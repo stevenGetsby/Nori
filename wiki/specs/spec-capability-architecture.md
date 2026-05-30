@@ -28,7 +28,7 @@ The goal is to keep session state, memory, context assembly, workflow execution,
 | `nori.capabilities.validate_capability_snapshot(snapshot)` | Validates a `CapabilitySnapshot` object or persisted snapshot dict. |
 | `nori.workflows.RuntimeRunRecorder` | Creates session/context/workflow snapshots for scripts, CLI, API, and future UI runs. |
 
-`nori.domain` remains a compatibility layer for older callers that still expect `DomainSnapshot`.
+There is no `nori.domain` compatibility layer; the product has not shipped yet, so new code uses the capability architecture directly.
 
 ## Capability Groups
 
@@ -69,4 +69,4 @@ Current gates catch:
 | Agents own business behavior | Business entrypoints go through `nori.agents.*`; avoid adding a separate `domains/` package. |
 | Context is separate from planning | System-level context assembly belongs in `nori.context`; planning agents remain under the planning capability. |
 | Memory is separate from context | Durable facts and promotion policy belong in `nori.memory`; context only assembles what a specific call needs. |
-| Legacy compatibility is explicit | `nori.domain` and `DomainSnapshot` are retained only for older callers. |
+| No legacy compatibility layer | `nori.domain`, `DomainSnapshot`, and the old top-level business roots are removed before launch. |

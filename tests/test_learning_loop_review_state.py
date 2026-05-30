@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from nori.core import AccountOperationProject
-from nori.learning_loop.review import state as content_review_state
-from nori.learning_loop.models import ComplianceReview
+from nori.agents.learning_loop.review import state as content_review_state
+from nori.agents.learning_loop.models import ComplianceReview
 
 
 def test_attach_review_appends_to_project_when_present():

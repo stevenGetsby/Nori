@@ -1,15 +1,38 @@
-"""Planning agents for operation, KPI, and content-calendar work."""
+"""Context-building module."""
 from __future__ import annotations
 
-from nori.context_building.calendar_planner import CalendarPlannerAgent, plan_calendar
-from nori.context_building.kpi_planner import KPIPlannerAgent, plan_kpi
-from nori.context_building.operation_planner import OperationPlannerAgent, plan_operation
+from nori.core import AssetLibrary, AssetRecord
+from nori.core import AccountOperationProject, ContentCalendar, ContentTask, KPIPlan, OperationPlan
+from nori.core.lazy_exports import lazy_export
+
+
+_LAZY_EXPORTS = {
+    "ContextPackBuilder": "facade",
+    "OperationPlannerAgent": "operation_planner",
+    "plan_operation": "operation_planner",
+    "KPIPlannerAgent": "kpi_planner",
+    "plan_kpi": "kpi_planner",
+    "CalendarPlannerAgent": "calendar_planner",
+    "plan_calendar": "calendar_planner",
+}
 
 __all__ = [
+    "AccountOperationProject",
+    "AssetLibrary",
+    "AssetRecord",
     "CalendarPlannerAgent",
+    "ContentCalendar",
+    "ContentTask",
+    "ContextPackBuilder",
+    "KPIPlan",
     "KPIPlannerAgent",
+    "OperationPlan",
     "OperationPlannerAgent",
     "plan_calendar",
     "plan_kpi",
     "plan_operation",
 ]
+
+
+def __getattr__(name: str):
+    return lazy_export(__name__, _LAZY_EXPORTS, name)

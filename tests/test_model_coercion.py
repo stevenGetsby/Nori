@@ -11,7 +11,7 @@ from nori.core.contracts import (
     string_list,
 )
 from nori.core import contracts
-from nori.market_analysis.models import NoteEvidence
+from nori.agents.market_analysis.models import NoteEvidence
 
 
 def test_model_coercion_helpers_keep_shared_defaults():

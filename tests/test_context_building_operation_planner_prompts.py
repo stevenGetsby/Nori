@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from nori.core import ClientBrief
 
-from nori.user_profiling.models import AccountPlanResult
-from nori.context_building.operation_planner.package import OperationPlannerPromptBuilder
+from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.planning.operation_planner.package import OperationPlannerPromptBuilder
 
 
 operation_planner_prompts = OperationPlannerPromptBuilder()

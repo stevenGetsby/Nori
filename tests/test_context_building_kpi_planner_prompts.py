@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from nori.core import OperationPlan
 
-from nori.context_building.kpi_planner.package import KPIPlannerPromptBuilder
+from nori.agents.planning.kpi_planner.package import KPIPlannerPromptBuilder
 
 
 kpi_planner_prompts = KPIPlannerPromptBuilder()

@@ -7,8 +7,8 @@ from nori.core import ClientBrief
 
 from datetime import date
 
-from nori.user_profiling.models import AccountPlanResult
-from nori.context_building.operation_planner import project_builder as operation_project_builder
+from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.planning.operation_planner import project_builder as operation_project_builder
 
 
 def _brief() -> ClientBrief:

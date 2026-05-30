@@ -6,7 +6,7 @@ from nori.core import KPIPlan, OperationPlan, ClientBrief
 
 from datetime import date
 
-from nori.context_building.calendar_planner.package import CalendarPlannerPromptBuilder
+from nori.agents.planning.calendar_planner.package import CalendarPlannerPromptBuilder
 
 
 calendar_planner_prompts = CalendarPlannerPromptBuilder()

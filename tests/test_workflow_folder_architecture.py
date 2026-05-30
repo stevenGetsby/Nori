@@ -9,23 +9,19 @@ ROOT = Path(__file__).resolve().parents[1]
 
 ALLOWED_NORI_TOP_LEVEL_DIRS = {
     "agents",
-    "content_generation",
+    "capabilities",
     "context",
-    "context_building",
     "core",
-    "learning_loop",
-    "market_analysis",
     "memory",
     "sessions",
     "shared",
-    "user_profiling",
     "workflows",
 }
 
 
 WORKFLOW_STAGE_PACKAGES = {
-    "nori/user_profiling/intaker": {"intaker.py", "package.py", "normalizer.py", "taxonomy.py", "image_tagger.py"},
-    "nori/user_profiling/account_planner": {
+    "nori/agents/user_profiling/intaker": {"intaker.py", "package.py", "normalizer.py", "taxonomy.py", "image_tagger.py"},
+    "nori/agents/user_profiling/account_planner": {
         "account_planner.py",
         "package.py",
         "fallback.py",
@@ -34,27 +30,27 @@ WORKFLOW_STAGE_PACKAGES = {
         "portrait.py",
         "keywords.py",
     },
-    "nori/content_generation/note_maker": {"note_maker.py", "package.py"},
-    "nori/content_generation/cover_director": {"cover_director.py", "package.py", "output.py"},
-    "nori/content_generation/content_producer": {"content_producer.py", "package.py", "state.py"},
-    "nori/context_building/operation_planner": {
+    "nori/agents/content_generation/note_maker": {"note_maker.py", "package.py"},
+    "nori/agents/content_generation/cover_director": {"cover_director.py", "package.py", "output.py"},
+    "nori/agents/content_generation/content_producer": {"content_producer.py", "package.py", "state.py"},
+    "nori/agents/planning/operation_planner": {
         "operation_planner.py",
         "package.py",
         "project_builder.py",
         "project_policy.py",
         "normalizer.py",
     },
-    "nori/context_building/kpi_planner": {"kpi_planner.py", "package.py", "normalizer.py"},
-    "nori/context_building/calendar_planner": {
+    "nori/agents/planning/kpi_planner": {"kpi_planner.py", "package.py", "normalizer.py"},
+    "nori/agents/planning/calendar_planner": {
         "calendar_planner.py",
         "package.py",
         "normalizer.py",
         "policy.py",
         "task_builder.py",
     },
-    "nori/learning_loop/review": {"review_gate.py", "package.py", "policy.py", "scoring.py", "state.py"},
-    "nori/learning_loop/strategy": {"strategy_iteration.py", "package.py", "policy.py", "state.py"},
-    "nori/market_analysis/xhs_note_analyzer": {
+    "nori/agents/learning_loop/review": {"review_gate.py", "package.py", "policy.py", "scoring.py", "state.py"},
+    "nori/agents/learning_loop/strategy": {"strategy_iteration.py", "package.py", "policy.py", "state.py"},
+    "nori/agents/market_analysis/xhs_note_analyzer": {
         "xhs_note_analyzer.py",
         "package.py",
         "loader.py",
@@ -72,24 +68,24 @@ PROMPT_OWNING_STAGE_PACKAGES: set[str] = set()
 
 
 DOMAIN_PACKAGE_ROOTS = [
-    "nori.user_profiling",
-    "nori.market_analysis",
-    "nori.context_building",
-    "nori.content_generation",
-    "nori.learning_loop",
+    "nori.agents.user_profiling",
+    "nori.agents.market_analysis",
+    "nori.agents.planning",
+    "nori.agents.content_generation",
+    "nori.agents.learning_loop",
 ]
 
 
 BUSINESS_MODULE_IMPORT_ROOTS = {
-    "nori.user_profiling",
-    "nori.market_analysis",
-    "nori.context_building",
-    "nori.content_generation",
-    "nori.learning_loop",
+    "nori.agents.user_profiling",
+    "nori.agents.market_analysis",
+    "nori.agents.planning",
+    "nori.agents.content_generation",
+    "nori.agents.learning_loop",
 }
 UPSTREAM_DOMAIN_IMPORT_GUARDS = {
-    "nori/user_profiling": {"nori.context_building", "nori.content_generation", "nori.learning_loop", "nori.market_analysis"},
-    "nori/market_analysis": {"nori.context_building", "nori.content_generation", "nori.learning_loop", "nori.user_profiling"},
+    "nori/agents/user_profiling": {"nori.agents.planning", "nori.agents.content_generation", "nori.agents.learning_loop", "nori.agents.market_analysis"},
+    "nori/agents/market_analysis": {"nori.agents.planning", "nori.agents.content_generation", "nori.agents.learning_loop", "nori.agents.user_profiling"},
 }
 SHARED_WORKFLOW_CONTRACTS = {
     "AccountOperationProject",
@@ -205,7 +201,7 @@ REMOVED_LEGACY_IMPORTS = [
     "nori.agent_utils",
     "nori._model_coercion",
     "nori.config_models",
-    "nori.context_building.models",
+    "nori.agents.planning.models",
     "llms.errors",
     "llms.structured_models",
 ]
@@ -358,20 +354,20 @@ def test_upstream_domain_facades_do_not_import_downstream_domains():
 
 
 def test_user_profiling_runtime_does_not_import_content_generation():
-    for path in (ROOT / "nori" / "user_profiling").rglob("*.py"):
+    for path in (ROOT / "nori" / "agents" / "user_profiling").rglob("*.py"):
         rel_path = path.relative_to(ROOT)
-        assert not _imports_from_forbidden_modules(path, modules={"nori.content_generation"}), rel_path
+        assert not _imports_from_forbidden_modules(path, modules={"nori.agents.content_generation"}), rel_path
 
 
 def test_downstream_runtime_imports_shared_workflow_contracts_from_core():
     forbidden_roots = {
-        "nori.content_generation",
-        "nori.learning_loop",
+        "nori.agents.content_generation",
+        "nori.agents.learning_loop",
     }
     forbidden_sources = {
-        "nori.content_generation.models",
-        "nori.context_building.models",
-        "nori.user_profiling.models",
+        "nori.agents.content_generation.models",
+        "nori.agents.planning.models",
+        "nori.agents.user_profiling.models",
     }
     for root in forbidden_roots:
         for path in (ROOT / root.replace(".", "/")).rglob("*.py"):
@@ -508,7 +504,7 @@ def _imports_from_forbidden_modules(path: Path, *, modules: set[str]) -> bool:
 
 
 def _imports_from_legacy_contract_owner(path: Path, node: ast.ImportFrom) -> bool:
-    if node.module in {"nori.user_profiling.models", "nori.context_building.models", "nori.content_generation.models"}:
+    if node.module in {"nori.agents.user_profiling.models", "nori.agents.planning.models", "nori.agents.content_generation.models"}:
         return True
     if node.level == 1 and node.module == "models":
         if path.parts[:2] in {

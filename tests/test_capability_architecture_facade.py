@@ -1,15 +1,15 @@
 from nori.core import AssetLibrary, AssetRecord
 from nori.core import AccountOperationProject
 from nori.core import ContentTask, ClientBrief
-from nori.content_generation import ContentGenerationFacade
-from nori.context_building import ContextPackBuilder
-from nori.learning_loop import LearningLoopFacade
-from nori.market_analysis import MarketAnalysisFacade
-from nori.content_generation.models import ContentPackage
-from nori.learning_loop.models import MetricsSnapshot, StrategyIteration
-from nori.market_analysis.models import CompetitorResearch, CompetitorSample
-from nori.user_profiling.models import AccountPositioning
-from nori.user_profiling import UserProfilingFacade
+from nori.agents.content_generation import ContentGenerationFacade
+from nori.agents.planning import ContextPackBuilder
+from nori.agents.learning_loop import LearningLoopFacade
+from nori.agents.market_analysis import MarketAnalysisFacade
+from nori.agents.content_generation.models import ContentPackage
+from nori.agents.learning_loop.models import MetricsSnapshot, StrategyIteration
+from nori.agents.market_analysis.models import CompetitorResearch, CompetitorSample
+from nori.agents.user_profiling.models import AccountPositioning
+from nori.agents.user_profiling import UserProfilingFacade
 from nori.core import (
     CandidateSet,
     CapabilitySnapshot,
@@ -20,7 +20,6 @@ from nori.core import (
     UserProfile,
     WorkflowBase,
 )
-from nori.core.models import DomainSnapshot
 
 
 def test_shared_core_contracts_exist_and_round_trip():
@@ -71,7 +70,7 @@ def test_facades_are_importable_and_composable():
 
     assert user.module_name == "user_profiling"
     assert market.module_name == "market_analysis"
-    assert builder.module_name == "context_building"
+    assert builder.module_name == "planning"
     assert generation.module_name == "content_generation"
     assert learning.module_name == "learning_loop"
 
@@ -89,7 +88,7 @@ def test_business_facades_share_workflow_base_contract():
     assert [facade.workflow_name for facade in facades] == [
         "user_profiling",
         "market_analysis",
-        "context_building",
+        "planning",
         "content_generation",
         "learning_loop",
     ]
@@ -431,26 +430,3 @@ def test_public_capability_entrypoint_builds_and_validates_snapshot():
     assert snapshot.is_valid()
     assert validate_capability_snapshot(snapshot) == []
     assert validate_capability_snapshot(snapshot.to_dict()) == []
-
-
-def test_legacy_domain_entrypoint_builds_and_validates_compat_snapshot():
-    from nori.domain import build_domain_snapshot, validate_domain_snapshot
-
-    project = AccountOperationProject(
-        project_id="project_001",
-        name="春日花房运营",
-        client_brief=ClientBrief(client_name="花店主理人", brand_name="春日花房"),
-        account_positioning=AccountPositioning(recommended_positioning="社区花艺顾问"),
-        content_tasks=[ContentTask(task_id="task_001", topic="母亲节花束搭配")],
-        content_packages=[ContentPackage(package_id="pkg_001", task_id="task_001", title="母亲节花别乱买")],
-    )
-
-    snapshot = build_domain_snapshot(
-        project,
-        selected_candidate_ids={"task_001": "pkg_001"},
-    )
-
-    assert isinstance(snapshot, DomainSnapshot)
-    assert snapshot.snapshot_id == "domain_project_001"
-    assert snapshot.is_valid()
-    assert validate_domain_snapshot(snapshot) == []

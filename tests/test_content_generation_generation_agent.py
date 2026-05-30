@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from nori.content_generation import GenerationAgent
-from nori.content_generation.models import ContentPackage, CoverResult, NoteDraft
+from nori.agents.content_generation import GenerationAgent
+from nori.agents.content_generation.models import ContentPackage, CoverResult, NoteDraft
 from nori.core import ContentTask, IntentContract, UserAsset
-from nori.market_analysis.models import NoteSkill
+from nori.agents.market_analysis.models import NoteSkill
 
 
 class FakeContentProducer:

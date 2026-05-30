@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from nori.market_analysis.xhs_note_analyzer import loader as xhs_note_loader
-from nori.market_analysis.models import XHSNoteSample
+from nori.agents.market_analysis.xhs_note_analyzer import loader as xhs_note_loader
+from nori.agents.market_analysis.models import XHSNoteSample
 
 
 def _write_meta(tmp_path: Path, note_data: dict, author_data: dict | None = None) -> Path:

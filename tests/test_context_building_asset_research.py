@@ -1,7 +1,7 @@
 from nori.core import AssetLibrary, AssetRecord
 from nori.core import AccountOperationProject
 from nori.core import ClientBrief
-from nori.market_analysis.models import CompetitorResearch, CompetitorSample
+from nori.agents.market_analysis.models import CompetitorResearch, CompetitorSample
 
 
 def test_asset_library_round_trips_and_filters_usable_assets():

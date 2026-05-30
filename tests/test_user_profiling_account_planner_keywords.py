@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from nori.user_profiling.account_planner import keywords as account_plan_keywords
+from nori.agents.user_profiling.account_planner import keywords as account_plan_keywords
 
 
 def test_clean_keyword_strips_platform_tokens_and_separators():

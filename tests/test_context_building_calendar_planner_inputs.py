@@ -7,7 +7,7 @@ from nori.core import ContentCalendar, KPIPlan, OperationPlan, ClientBrief
 
 from datetime import date
 
-from nori.context_building.calendar_planner.package import CalendarPlannerInputPreparer
+from nori.agents.planning.calendar_planner.package import CalendarPlannerInputPreparer
 
 
 calendar_planner_inputs = CalendarPlannerInputPreparer()

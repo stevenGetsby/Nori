@@ -6,8 +6,8 @@ from nori.core import ClientBrief
 
 from datetime import date
 
-from nori.context_building.operation_planner import normalizer as operation_plan_normalizer
-from nori.context_building.operation_planner.project_builder import fallback_project
+from nori.agents.planning.operation_planner import normalizer as operation_plan_normalizer
+from nori.agents.planning.operation_planner.project_builder import fallback_project
 
 
 def _brief() -> ClientBrief:

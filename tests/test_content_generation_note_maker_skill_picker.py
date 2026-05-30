@@ -1,6 +1,6 @@
 import pytest
 
-from nori.content_generation.note_maker.package import NoteSkillSelector
+from nori.agents.content_generation.note_maker.package import NoteSkillSelector
 
 
 skill_picker = NoteSkillSelector()

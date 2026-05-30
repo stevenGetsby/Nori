@@ -4,11 +4,11 @@ import importlib
 
 import llms
 
-from nori.user_profiling.models import AccountPlanResult
-from nori.context_building import OperationPlannerAgent, plan_operation
+from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.planning import OperationPlannerAgent, plan_operation
 
 
-planner_module = importlib.import_module("nori.context_building.operation_planner.operation_planner")
+planner_module = importlib.import_module("nori.agents.planning.operation_planner.operation_planner")
 
 
 def _brief():

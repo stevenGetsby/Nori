@@ -2,8 +2,8 @@ import base64
 
 import llms
 
-from nori.user_profiling.models import UserInput
-from nori.user_profiling.intaker import image_tagger
+from nori.agents.user_profiling.models import UserInput
+from nori.agents.user_profiling.intaker import image_tagger
 
 
 _TINY_PNG_BYTES = base64.b64decode(

@@ -22,9 +22,9 @@ The stage connects P1 planning contracts with P0 generation agents. It does not 
 
 | Module | Status | Notes |
 | --- | --- | --- |
-| `nori/content_generation/generation.py` | Implemented | Coarse generation router for `note_package`, `text`, and `image` routes. |
-| `nori/content_generation/content_producer/content_producer.py` | Implemented | Produces `ContentPackage` from a planned `ContentTask`. |
-| `nori/content_generation/content_producer/package.py` | Implemented | `ContentPackageAssembler` prepares deterministic production inputs and maps draft/cover outputs into package fields. |
+| `nori/agents/content_generation/generation.py` | Implemented | Coarse generation router for `note_package`, `text`, and `image` routes. |
+| `nori/agents/content_generation/content_producer/content_producer.py` | Implemented | Produces `ContentPackage` from a planned `ContentTask`. |
+| `nori/agents/content_generation/content_producer/package.py` | Implemented | `ContentPackageAssembler` prepares deterministic production inputs and maps draft/cover outputs into package fields. |
 | `tests/test_content_generation_content_producer_package.py` | Implemented | Class-based package assembly, material usage, source refs, intent/context construction, skill selection, and text-context fallback. |
 | `tests/test_content_generation_content_producer.py` | Implemented | Uses fake NoteMaker/CoverDirector; no live LLM or image calls. |
 

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from nori.core import OperationPlan, ClientBrief
 
-from nori.user_profiling.models import AccountPlanResult
-from nori.context_building.operation_planner import project_policy as operation_project_policy
+from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.planning.operation_planner import project_policy as operation_project_policy
 
 
 def _brief() -> ClientBrief:

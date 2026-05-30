@@ -6,9 +6,9 @@ from pathlib import Path
 
 import llms
 
-from nori.market_analysis.models import XHSNoteSample
-from nori.market_analysis.xhs_note_analyzer import note_llm as xhs_note_llm
-from nori.market_analysis.xhs_note_analyzer import rules as xhs_note_rules
+from nori.agents.market_analysis.models import XHSNoteSample
+from nori.agents.market_analysis.xhs_note_analyzer import note_llm as xhs_note_llm
+from nori.agents.market_analysis.xhs_note_analyzer import rules as xhs_note_rules
 
 
 def _note() -> XHSNoteSample:

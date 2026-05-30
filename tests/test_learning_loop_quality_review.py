@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from nori.content_generation.models import ContentPackage
+from nori.agents.content_generation.models import ContentPackage
 from nori.core import IntentContract
-from nori.learning_loop.review import QualityReviewerAgent
+from nori.agents.learning_loop.review import QualityReviewerAgent
 
 
 def test_quality_reviewer_passes_when_package_satisfies_intent_contract():

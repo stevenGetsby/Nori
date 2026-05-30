@@ -23,16 +23,16 @@
 | JSON chat helper | Done, includes raw capture contract | `llms/call.py` | [60](./60-stage-generation-core.md) |
 | Intent extractor utility | Implemented, not fully wired | `llms/intent_extractor.py` | [60](./60-stage-generation-core.md) |
 | Edit target selector utility | Implemented, upgrade slot | `llms/target_selector.py` | [60](./60-stage-generation-core.md) |
-| Intake text + image tagging | Done with mocked tests; live smoke optional | `nori/user_profiling/intaker.py` | [60](./60-stage-generation-core.md) |
-| Note draft generation | Done with mocked tests; live smoke optional | `nori/content_generation/note_maker.py` | [60](./60-stage-generation-core.md) |
-| Cover image generation | Done with mocked tests; live smoke optional | `nori/content_generation/cover_director.py` | [60](./60-stage-generation-core.md) |
-| Account positioning | Done with fallback/search provider seam | `nori/user_profiling/account_planner.py` | [61](./61-stage-account-ops-backend.md) |
+| Intake text + image tagging | Done with mocked tests; live smoke optional | `nori/agents/user_profiling/intaker.py` | [60](./60-stage-generation-core.md) |
+| Note draft generation | Done with mocked tests; live smoke optional | `nori/agents/content_generation/note_maker.py` | [60](./60-stage-generation-core.md) |
+| Cover image generation | Done with mocked tests; live smoke optional | `nori/agents/content_generation/cover_director.py` | [60](./60-stage-generation-core.md) |
+| Account positioning | Done with fallback/search provider seam | `nori/agents/user_profiling/account_planner.py` | [61](./61-stage-account-ops-backend.md) |
 | Ops dataclasses | Done | `nori/core/project.py` + owning business model modules | [61](./61-stage-account-ops-backend.md) |
 | Operation planner | Done / exposed through planning capability | `nori/agents/planning` | [61](./61-stage-account-ops-backend.md) |
 | KPI planner | Done / exposed through planning capability | `nori/agents/planning` | [61](./61-stage-account-ops-backend.md) |
 | Calendar planner | Done / exposed through planning capability | `nori/agents/planning` | [61](./61-stage-account-ops-backend.md) |
 | DataCollector top notes | Partial / external-service dependent | `data_collect/adapter.py` | [62](./62-stage-data-collection-and-skill-learning.md) |
-| XHS note analyzer | Done for single/session skill extraction | `nori/market_analysis/xhs_note_analyzer.py` | [62](./62-stage-data-collection-and-skill-learning.md) |
+| XHS note analyzer | Done for single/session skill extraction | `nori/agents/market_analysis/xhs_note_analyzer.py` | [62](./62-stage-data-collection-and-skill-learning.md) |
 | ContentTask production bridge | Done / exposed through content-generation capability | `nori/agents/content_generation` | [63](./63-stage-production-orchestration.md) |
 | Compliance review agent | Done / exposed through learning-loop capability | `nori/agents/learning_loop` | [64](./64-stage-review-and-iteration.md) |
 | Consistency review agent | Done / exposed through learning-loop capability | `nori/agents/learning_loop` | [64](./64-stage-review-and-iteration.md) |
@@ -41,13 +41,13 @@
 | Automatic metrics ingestion | Deferred | TBD | [85](./85-backlog.md#deferred) |
 | Shared capability/runtime contracts | Done | `nori/core/models.py`, `nori/sessions`, `nori/context`, `nori/memory`, `nori/workflows` | [spec](./specs/spec-capability-architecture.md) |
 | Capability architecture registry | Done | `nori/core/architecture.py`, `nori/capabilities.py` | [spec](./specs/spec-capability-architecture.md) |
-| User profiling facade | Done | `nori/user_profiling/facade.py` | [spec](./specs/spec-domain-architecture.md) |
-| Market analysis facade | Done | `nori/market_analysis/facade.py` | [spec](./specs/spec-domain-architecture.md) |
-| ContextPack builder | Done | `nori/context_building/facade.py` | [spec](./specs/spec-domain-architecture.md) |
-| CandidateSet generation facade | Done | `nori/content_generation/facade.py` | [spec](./specs/spec-domain-architecture.md) |
-| Learning loop facade | Done | `nori/learning_loop/facade.py` | [spec](./specs/spec-domain-architecture.md) |
+| User profiling facade | Done | `nori/agents/user_profiling/facade.py` | [spec](./specs/spec-domain-architecture.md) |
+| Market analysis facade | Done | `nori/agents/market_analysis/facade.py` | [spec](./specs/spec-domain-architecture.md) |
+| ContextPack builder | Done | `nori/agents/planning/facade.py` | [spec](./specs/spec-domain-architecture.md) |
+| CandidateSet generation facade | Done | `nori/agents/content_generation/facade.py` | [spec](./specs/spec-domain-architecture.md) |
+| Learning loop facade | Done | `nori/agents/learning_loop/facade.py` | [spec](./specs/spec-domain-architecture.md) |
 | AccountOperationProject capability projection | Done | `LearningLoopFacade.capability_snapshot_from_project()` | [spec](./specs/spec-capability-architecture.md) |
-| CapabilitySnapshot aggregation | Done | `nori/learning_loop/facade.py` | [spec](./specs/spec-capability-architecture.md) |
+| CapabilitySnapshot aggregation | Done | `nori/agents/learning_loop/facade.py` | [spec](./specs/spec-capability-architecture.md) |
 | CapabilitySnapshot validation | Done | `nori/core/models.py` | [spec](./specs/spec-capability-architecture.md) |
 | Public capability entrypoint | Done | `nori/capabilities.py` | [spec](./specs/spec-capability-architecture.md) |
 

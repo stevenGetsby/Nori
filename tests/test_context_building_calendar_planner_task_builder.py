@@ -6,7 +6,7 @@ from nori.core import ContentTask, KPIPlan, OperationPlan, ClientBrief
 
 from datetime import date
 
-from nori.context_building.calendar_planner import task_builder as calendar_task_builder
+from nori.agents.planning.calendar_planner import task_builder as calendar_task_builder
 
 
 def _brief() -> ClientBrief:

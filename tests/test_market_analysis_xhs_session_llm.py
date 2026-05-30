@@ -8,7 +8,7 @@ import llms
 import pytest
 
 from data_collect import HotNote
-from nori.market_analysis.xhs_note_analyzer import session_llm as xhs_session_llm
+from nori.agents.market_analysis.xhs_note_analyzer import session_llm as xhs_session_llm
 
 
 def _note(note_id: str, *, desc: str = "", tags: list[str] | None = None) -> HotNote:

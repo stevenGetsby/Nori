@@ -3,10 +3,10 @@ from pathlib import Path
 
 import llms
 
-from nori.user_profiling import IntakeAgent, UserInput
+from nori.agents.user_profiling import IntakeAgent, UserInput
 
 
-intaker_module = importlib.import_module("nori.user_profiling.intaker.intaker")
+intaker_module = importlib.import_module("nori.agents.user_profiling.intaker.intaker")
 
 
 def test_intaker_text_goal_format_and_tone():

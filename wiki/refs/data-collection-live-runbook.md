@@ -117,8 +117,8 @@ Outputs:
 The skills-only JSON can be loaded by generation tests or scripts:
 
 ```python
-from nori.market_analysis import load_note_skills
-from nori.content_generation.note_maker import NoteMakerAgent
+from nori.agents.market_analysis import load_note_skills
+from nori.agents.content_generation.note_maker import NoteMakerAgent
 
 skills = load_note_skills("path/to/note_skill_guides.json")
 draft = NoteMakerAgent().run(skills, assets, intent={"goal": "产品种草"})

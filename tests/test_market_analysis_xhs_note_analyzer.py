@@ -5,12 +5,12 @@ from pathlib import Path
 import llms
 import pytest
 
-from nori.market_analysis import XHSNoteAnalyzer
-from nori.market_analysis.models import XHSNoteSample, XHSSeedSkillDraft
+from nori.agents.market_analysis import XHSNoteAnalyzer
+from nori.agents.market_analysis.models import XHSNoteSample, XHSSeedSkillDraft
 from data_collect import HotNote, TopNotesResult
 
 
-analyzer_module = importlib.import_module("nori.market_analysis.xhs_note_analyzer.xhs_note_analyzer")
+analyzer_module = importlib.import_module("nori.agents.market_analysis.xhs_note_analyzer.xhs_note_analyzer")
 
 
 def _sample_meta_path(tmp_path: Path):
