@@ -9,25 +9,25 @@
 | Default suite | `python -m pytest tests -q` |
 | Project status | `python 文档/codex-skills/nori-project-operator/scripts/nori_status.py .` |
 
-Latest default test run on 2026-05-26: `python -m pytest tests -q` -> 448 passed, 3 skipped. Project skill exists; canonical workflow stages and models are split across the five business modules; concrete stages own package folders with prompt files only when they own prompt text/construction and explicit public exports; model contracts live in business-module `models.py` files or `nori.core`; runtime stages use `nori.core.LLMFactory` instead of direct `llms` imports; domain facades inherit `nori.core.WorkflowBase` and declare readable `step_names`; cross-stage workflow contracts and asset library contracts live in `nori.core.models`, and `AccountOperationProject` lives in `nori.core.project`; `ops_models`, `ops_agents`, `gen_agents`, `ana_agents`, `agent_models`, and `agent_utils` legacy packages have been removed; local `api_config.yaml` exists and status output redacts it to active model names.
+Latest default test run on 2026-05-31: `python -m pytest tests -q` -> 473 passed, 3 skipped. Project skill exists; public capability entrypoints now live under `nori.agents.*` and `nori.capabilities`; runtime state lives under `nori.sessions`, `nori.context`, `nori.memory`, and `nori.workflows`; `LearningLoopFacade.capability_snapshot_from_project()` builds the current aggregate view; `nori.domain` and `DomainSnapshot` remain compatibility surfaces only. Concrete stages own package folders with prompt files only when they own prompt text/construction and explicit public exports; runtime stages use `nori.core.LLMFactory` instead of direct `llms` imports; local `api_config.yaml` exists and status output redacts it to active model names.
 
-## Domain Architecture Refactor
+## Capability / Runtime Architecture Refactor
 
 | Task | Status | Notes |
 | --- | --- | --- |
-| Define shared + five-module architecture | Done | Spec written at `wiki/specs/spec-domain-architecture.md`. |
-| Add domain architecture registry | Done | `nori/core/architecture.py` exposes `DomainModule`, `DOMAIN_MODULES`, `domain_module_names()`, and `get_domain_module()`. |
-| Add shared domain contracts | Done | `nori/core/models.py` defines `UserProfile`, `UserAsset`, `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, `ContentCalendar`, `MarketAnalysis`, `ContextPack`, `DecisionPoint`, `ExplanationTrace`, `CandidateSet`, `PerformanceSnapshot`, `LearningSignal`, and `DomainSnapshot`. |
+| Define capability/runtime architecture | Done | Spec written at `wiki/specs/spec-capability-architecture.md`; old domain spec retained as historical compatibility background. |
+| Add capability architecture registry | Done | `nori/core/architecture.py` exposes `CapabilityModule`, `CAPABILITY_MODULES`, `capability_module_names()`, and `get_capability_module()`. |
+| Add shared capability/runtime contracts | Done | `nori/core/models.py` defines `CapabilitySnapshot`; runtime contracts live in `nori/sessions`, `nori/context`, `nori/memory`, and `nori/workflows`. |
 | Add user profiling facade | Done | `nori/user_profiling/facade.py` maps `ClientBrief` + `AccountPositioning` into `UserProfile`. |
 | Add market analysis facade | Done | `nori/market_analysis/facade.py` maps `CompetitorResearch` into `MarketAnalysis`. |
 | Add context-building facade | Done | `nori/context_building/facade.py` combines profile, task, market evidence, assets, and decisions. |
 | Add content-generation facade | Done | `nori/content_generation/facade.py` groups generated packages into `CandidateSet`. |
 | Add learning-loop facade | Done | `nori/learning_loop/facade.py` maps metrics/strategy artifacts into monitoring and learning contracts. |
-| Keep package `__init__` files as public exports | Done | Five domain packages now keep orchestration logic in `facade.py` and use package roots as stable import surfaces. |
-| Project old ops artifacts into new domain modules | Done | `AccountOperationProject` can now feed profile, market, context, candidate, snapshot, and learning-signal contracts through the five facades. |
-| Add full domain snapshot aggregation | Done | `LearningLoopFacade.domain_snapshot_from_project()` returns a round-trippable `DomainSnapshot` across all five modules. |
-| Add DomainSnapshot structural validation | Done | `DomainSnapshot.validate()` / `is_valid()` guard module coverage, candidate/context alignment, and selected-candidate integrity. |
-| Add public domain entrypoint | Done | `nori/domain.py` exposes `build_domain_snapshot()` and `validate_domain_snapshot()` for upper-layer CLI/API/UI consumers. |
+| Keep package `__init__` files as public exports | Done | `nori.agents.*` exposes capability-level public agent groups. |
+| Project old ops artifacts into capability view | Done | `AccountOperationProject` can now feed profile, market, context, candidate, snapshot, and learning-signal contracts into `CapabilitySnapshot`. |
+| Add full capability snapshot aggregation | Done | `LearningLoopFacade.capability_snapshot_from_project()` returns a round-trippable `CapabilitySnapshot` across all five capability groups. |
+| Add CapabilitySnapshot structural validation | Done | `CapabilitySnapshot.validate()` / `is_valid()` guard capability coverage, candidate/context alignment, and selected-candidate integrity. |
+| Add public capability entrypoint | Done | `nori/capabilities.py` exposes `build_capability_snapshot()` and `validate_capability_snapshot()` for upper-layer CLI/API/UI consumers. |
 | Centralize business-module lazy exports | Done | Added `nori.core.lazy_exports.lazy_export`; five business package roots now use one shared lazy-export helper for facade/stage public APIs while keeping lightweight model exports eager. |
 | Rename explanation trace stage history | Done | `ExplanationTrace` now serializes workflow history as `stage_steps`; legacy `agent_steps` payloads still read in and normalize row key `agent` to `stage`. |
 | Decouple upstream facades from context-building models | Done | `UserProfilingFacade` and `MarketAnalysisFacade` now consume persisted project dict/object shapes without importing `AccountOperationProject`; architecture tests guard the upstream dependency direction. |

@@ -12,7 +12,7 @@
 | P3 Production Orchestration | Active / bridge implemented | [63-stage-production-orchestration.md](./63-stage-production-orchestration.md) | Bridge `ContentTask -> NoteMaker -> CoverDirector -> ContentPackage`. |
 | P4 Review + Iteration | Active / offline loop implemented | [64-stage-review-and-iteration.md](./64-stage-review-and-iteration.md) | Add compliance, consistency, review analysis, and strategy optimization. |
 | Later Platform / UI | Deferred | [85-backlog.md](./85-backlog.md#deferred) | Publishing, community ops, metrics ingestion, multi-platform UI/workbench. |
-| Domain Architecture Refactor | Active / project projection implemented | [spec-domain-architecture.md](./specs/spec-domain-architecture.md) | Organize Nori as shared contracts plus user profiling, market analysis, context building, content generation, and learning loop modules. |
+| Capability/Runtime Architecture Refactor | Active / Holly runtime verified | [spec-capability-architecture.md](./specs/spec-capability-architecture.md) | Organize Nori around shared runtime contracts, sessions, context, memory, workflows, and agent-owned capability groups. |
 
 ## Feature Index
 
@@ -28,28 +28,28 @@
 | Cover image generation | Done with mocked tests; live smoke optional | `nori/content_generation/cover_director.py` | [60](./60-stage-generation-core.md) |
 | Account positioning | Done with fallback/search provider seam | `nori/user_profiling/account_planner.py` | [61](./61-stage-account-ops-backend.md) |
 | Ops dataclasses | Done | `nori/core/project.py` + owning business model modules | [61](./61-stage-account-ops-backend.md) |
-| Operation planner | Done / moved to domain module | `nori/context_building/operation_planner.py` | [61](./61-stage-account-ops-backend.md) |
-| KPI planner | Done / moved to domain module | `nori/context_building/kpi_planner.py` | [61](./61-stage-account-ops-backend.md) |
-| Calendar planner | Done / moved to domain module | `nori/context_building/calendar_planner.py` | [61](./61-stage-account-ops-backend.md) |
+| Operation planner | Done / exposed through planning capability | `nori/agents/planning` | [61](./61-stage-account-ops-backend.md) |
+| KPI planner | Done / exposed through planning capability | `nori/agents/planning` | [61](./61-stage-account-ops-backend.md) |
+| Calendar planner | Done / exposed through planning capability | `nori/agents/planning` | [61](./61-stage-account-ops-backend.md) |
 | DataCollector top notes | Partial / external-service dependent | `data_collect/adapter.py` | [62](./62-stage-data-collection-and-skill-learning.md) |
 | XHS note analyzer | Done for single/session skill extraction | `nori/market_analysis/xhs_note_analyzer.py` | [62](./62-stage-data-collection-and-skill-learning.md) |
-| ContentTask production bridge | Done / moved to domain module | `nori/content_generation/producer.py` | [63](./63-stage-production-orchestration.md) |
-| Compliance review agent | Done / moved to domain module | `nori/learning_loop/review.py` | [64](./64-stage-review-and-iteration.md) |
-| Consistency review agent | Done / moved to domain module | `nori/learning_loop/review.py` | [64](./64-stage-review-and-iteration.md) |
-| Manual metrics snapshot workflow | Done / moved to domain module | `nori/learning_loop/strategy.py` | [64](./64-stage-review-and-iteration.md) |
-| Strategy iteration agent | Done / moved to domain module | `nori/learning_loop/strategy.py` | [64](./64-stage-review-and-iteration.md) |
+| ContentTask production bridge | Done / exposed through content-generation capability | `nori/agents/content_generation` | [63](./63-stage-production-orchestration.md) |
+| Compliance review agent | Done / exposed through learning-loop capability | `nori/agents/learning_loop` | [64](./64-stage-review-and-iteration.md) |
+| Consistency review agent | Done / exposed through learning-loop capability | `nori/agents/learning_loop` | [64](./64-stage-review-and-iteration.md) |
+| Manual metrics snapshot workflow | Done / exposed through learning-loop capability | `nori/agents/learning_loop` | [64](./64-stage-review-and-iteration.md) |
+| Strategy iteration agent | Done / exposed through learning-loop capability | `nori/agents/learning_loop` | [64](./64-stage-review-and-iteration.md) |
 | Automatic metrics ingestion | Deferred | TBD | [85](./85-backlog.md#deferred) |
-| Shared domain contracts | Done | `nori/core/models.py` | [spec](./specs/spec-domain-architecture.md) |
-| Domain architecture registry | Done | `nori/core/architecture.py` | [spec](./specs/spec-domain-architecture.md) |
+| Shared capability/runtime contracts | Done | `nori/core/models.py`, `nori/sessions`, `nori/context`, `nori/memory`, `nori/workflows` | [spec](./specs/spec-capability-architecture.md) |
+| Capability architecture registry | Done | `nori/core/architecture.py`, `nori/capabilities.py` | [spec](./specs/spec-capability-architecture.md) |
 | User profiling facade | Done | `nori/user_profiling/facade.py` | [spec](./specs/spec-domain-architecture.md) |
 | Market analysis facade | Done | `nori/market_analysis/facade.py` | [spec](./specs/spec-domain-architecture.md) |
 | ContextPack builder | Done | `nori/context_building/facade.py` | [spec](./specs/spec-domain-architecture.md) |
 | CandidateSet generation facade | Done | `nori/content_generation/facade.py` | [spec](./specs/spec-domain-architecture.md) |
 | Learning loop facade | Done | `nori/learning_loop/facade.py` | [spec](./specs/spec-domain-architecture.md) |
-| AccountOperationProject domain projection | Done | five domain facades | [spec](./specs/spec-domain-architecture.md) |
-| DomainSnapshot aggregation | Done | `nori/learning_loop/facade.py` | [spec](./specs/spec-domain-architecture.md) |
-| DomainSnapshot validation | Done | `nori/core/models.py` | [spec](./specs/spec-domain-architecture.md) |
-| Public domain entrypoint | Done | `nori/domain.py` | [spec](./specs/spec-domain-architecture.md) |
+| AccountOperationProject capability projection | Done | `LearningLoopFacade.capability_snapshot_from_project()` | [spec](./specs/spec-capability-architecture.md) |
+| CapabilitySnapshot aggregation | Done | `nori/learning_loop/facade.py` | [spec](./specs/spec-capability-architecture.md) |
+| CapabilitySnapshot validation | Done | `nori/core/models.py` | [spec](./specs/spec-capability-architecture.md) |
+| Public capability entrypoint | Done | `nori/capabilities.py` | [spec](./specs/spec-capability-architecture.md) |
 
 ## Milestones
 

@@ -1,8 +1,10 @@
 <!-- Last verified: 2026-05-25 | Current stage: Architecture Refactor -->
 
-# Spec: Domain Architecture Refactor
+# Historical Spec: Domain Architecture Refactor
 
-## Goal
+This document is retained as historical context for the earlier domain-module refactor. The current canonical architecture is capability/runtime based; see `spec-capability-architecture.md`.
+
+## Original Goal
 
 Refactor Nori into one shared layer plus five stable domain modules:
 
@@ -39,7 +41,7 @@ The purpose is to make the shared layer and five domain modules the canonical im
 
 ## Public Entrypoint
 
-`nori.domain` is the recommended stable import path for upper layers that need the complete projected architecture:
+At the time of this historical refactor, `nori.domain` was the stable import path for upper layers that needed the complete projected architecture. Current code should prefer `nori.capabilities`; `nori.domain` is retained for compatibility:
 
 | API | Purpose |
 | --- | --- |

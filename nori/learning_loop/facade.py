@@ -7,13 +7,14 @@ from nori.content_generation.facade import ContentGenerationFacade
 from nori.context_building.facade import ContextPackBuilder
 from nori.core import (
     AccountOperationProject,
-    DomainSnapshot,
+    CapabilitySnapshot,
     LearningSignal,
     PerformanceSnapshot,
     WorkflowBase,
-    domain_module_names,
+    capability_module_names,
     named_workflow_steps,
 )
+from nori.core.models import DomainSnapshot
 from nori.market_analysis.facade import MarketAnalysisFacade
 from nori.user_profiling.facade import UserProfilingFacade
 
@@ -28,7 +29,7 @@ class LearningLoopFacade(WorkflowBase):
     def __init__(self) -> None:
         super().__init__(
             workflow_name=self.module_name,
-            steps=named_workflow_steps("performance", "strategy", "domain_snapshot"),
+            steps=named_workflow_steps("performance", "strategy", "capability_snapshot"),
         )
 
     def performance_snapshot(self, snapshot: MetricsSnapshot | dict[str, Any]) -> PerformanceSnapshot:
@@ -100,7 +101,7 @@ class LearningLoopFacade(WorkflowBase):
             })
         return signals
 
-    def domain_snapshot_from_project(
+    def capability_snapshot_from_project(
         self,
         project: AccountOperationProject | dict[str, Any] | None,
         *,
@@ -109,7 +110,7 @@ class LearningLoopFacade(WorkflowBase):
         signal_source: str,
         signal_target: str,
         confidence: float = 0.5,
-    ) -> DomainSnapshot:
+    ) -> CapabilitySnapshot:
         normalized = project if isinstance(project, AccountOperationProject) else AccountOperationProject.from_dict(project)
         selected_by_task = dict(selected_candidate_ids or {})
         resolved_task_ids = _project_task_ids(normalized, task_ids)
@@ -128,10 +129,10 @@ class LearningLoopFacade(WorkflowBase):
             )
             for task_id, context_pack in zip(resolved_task_ids, context_packs)
         ]
-        return DomainSnapshot(
-            snapshot_id=f"domain_{normalized.project_id or 'project'}",
+        return CapabilitySnapshot(
+            snapshot_id=f"capability_{normalized.project_id or 'project'}",
             project_id=normalized.project_id,
-            module_names=domain_module_names(),
+            capability_names=capability_module_names(),
             user_profile=UserProfilingFacade().build_from_project(normalized),
             market_analysis=MarketAnalysisFacade().build_from_project(normalized),
             context_packs=context_packs,
@@ -150,6 +151,42 @@ class LearningLoopFacade(WorkflowBase):
             metadata={
                 "project_name": normalized.name,
                 "task_count": len(resolved_task_ids),
+            },
+        )
+
+    def domain_snapshot_from_project(
+        self,
+        project: AccountOperationProject | dict[str, Any] | None,
+        *,
+        task_ids: list[str] | None = None,
+        selected_candidate_ids: dict[str, str] | None = None,
+        signal_source: str,
+        signal_target: str,
+        confidence: float = 0.5,
+    ) -> DomainSnapshot:
+        snapshot = self.capability_snapshot_from_project(
+            project,
+            task_ids=task_ids,
+            selected_candidate_ids=selected_candidate_ids,
+            signal_source=signal_source,
+            signal_target=signal_target,
+            confidence=confidence,
+        )
+        return DomainSnapshot(
+            snapshot_id=_domain_snapshot_id(snapshot.snapshot_id),
+            project_id=snapshot.project_id,
+            module_names=_legacy_module_names(),
+            user_profile=snapshot.user_profile,
+            market_analysis=snapshot.market_analysis,
+            context_packs=list(snapshot.context_packs),
+            candidate_sets=list(snapshot.candidate_sets),
+            performance_snapshots=list(snapshot.performance_snapshots),
+            learning_signals=list(snapshot.learning_signals),
+            source_refs=list(snapshot.source_refs),
+            metadata={
+                **dict(snapshot.metadata),
+                "source_snapshot_id": snapshot.snapshot_id,
+                "architecture": "domain_compat",
             },
         )
 
@@ -172,6 +209,22 @@ def _dedupe_strings(values: list[str]) -> list[str]:
             seen.add(normalized)
             result.append(normalized)
     return result
+
+
+def _domain_snapshot_id(snapshot_id: str) -> str:
+    if snapshot_id.startswith("capability_"):
+        return f"domain_{snapshot_id.removeprefix('capability_')}"
+    return f"domain_{snapshot_id or 'project'}"
+
+
+def _legacy_module_names() -> list[str]:
+    return [
+        "user_profiling",
+        "market_analysis",
+        "context_building",
+        "content_generation",
+        "learning_loop",
+    ]
 
 
 __all__ = ["LearningLoopFacade"]

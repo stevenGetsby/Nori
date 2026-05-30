@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nori Expected Code Architecture</title>
+  <style>
+    :root {
+      --bg: #0d1116;
+      --paper: #f5efe4;
+      --paper-2: #ebe0cd;
+      --ink: #171715;
+      --muted: #676057;
+      --line: rgba(23, 23, 21, 0.18);
+      --white: #fffaf0;
+      --core: #303844;
+      --runtime: #236d63;
+      --context: #365f9a;
+      --agent: #b84a3f;
+      --domain: #b77c20;
+      --support: #6f5798;
+      --soft-core: #d8dde2;
+      --soft-runtime: #cbe4dc;
+      --soft-context: #d3deef;
+      --soft-agent: #efcec8;
+      --soft-domain: #edd7a7;
+      --soft-support: #ded4e9;
+      --mono: "SFMono-Regular", "Menlo", "Consolas", monospace;
+      --sans: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      --serif: "Iowan Old Style", "Songti SC", "STSong", "Noto Serif CJK SC", serif;
+      --shadow: 0 28px 88px rgba(0, 0, 0, 0.34);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 1240px;
+      color: var(--ink);
+      font-family: var(--sans);
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 36px 36px,
+        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 36px 36px,
+        radial-gradient(circle at 14% 8%, rgba(54,95,154,0.34), transparent 28%),
+        radial-gradient(circle at 85% 12%, rgba(184,74,63,0.24), transparent 24%),
+        radial-gradient(circle at 62% 94%, rgba(35,109,99,0.28), transparent 28%),
+        var(--bg);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.022), rgba(255,255,255,0.022) 1px, transparent 1px, transparent 5px),
+        linear-gradient(115deg, rgba(255,255,255,0.11), transparent 36%);
+      opacity: 0.62;
+      mix-blend-mode: screen;
+      z-index: 20;
+    }
+
+    .shell {
+      width: 1180px;
+      margin: 0 auto;
+      padding: 36px 0 64px;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 560px;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 12px;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02) 48%),
+        linear-gradient(122deg, rgba(54,95,154,0.32), rgba(184,74,63,0.22) 48%, rgba(35,109,99,0.32)),
+        #151a22;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 24px;
+      border: 1px solid rgba(255,255,255,0.20);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 38px;
+      padding: 54px 58px 38px;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #f2d89a;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mark {
+      width: 14px;
+      height: 14px;
+      border: 2px solid #f2d89a;
+      transform: rotate(45deg);
+      box-shadow: 0 0 0 6px rgba(242,216,154,0.08);
+    }
+
+    h1 {
+      margin: 22px 0 20px;
+      max-width: 630px;
+      font-family: var(--serif);
+      font-size: 78px;
+      line-height: 0.94;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 620px;
+      margin: 0;
+      color: rgba(255,250,240,0.82);
+      font-size: 18px;
+      line-height: 1.78;
+    }
+
+    .hero-note {
+      margin-top: 24px;
+      padding: 15px 17px;
+      max-width: 620px;
+      border: 1px solid rgba(242,216,154,0.34);
+      border-radius: 8px;
+      background: rgba(242,216,154,0.08);
+      color: rgba(255,250,240,0.88);
+      line-height: 1.58;
+      font-size: 14px;
+    }
+
+    .hero-note b {
+      color: #f2d89a;
+    }
+
+    .blueprint {
+      position: relative;
+      min-height: 430px;
+      border: 1px solid rgba(255,255,255,0.20);
+      border-radius: 10px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px) 0 0 / 24px 24px,
+        linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px) 0 0 / 24px 24px,
+        rgba(7, 10, 15, 0.32);
+      overflow: hidden;
+      padding: 22px;
+    }
+
+    .layer-strip {
+      position: absolute;
+      left: 26px;
+      right: 26px;
+      height: 62px;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 8px;
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      align-items: center;
+      gap: 18px;
+      padding: 0 16px;
+      background: rgba(255,250,240,0.08);
+    }
+
+    .layer-strip b {
+      font-family: var(--mono);
+      color: #f2d89a;
+      font-size: 12px;
+      letter-spacing: 0.06em;
+    }
+
+    .layer-strip span {
+      color: rgba(255,250,240,0.82);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .ls1 { top: 34px; }
+    .ls2 { top: 116px; }
+    .ls3 { top: 198px; }
+    .ls4 { top: 280px; }
+    .ls5 { top: 362px; }
+
+    .section {
+      margin-top: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 12px;
+      background: var(--paper);
+      box-shadow: 0 22px 72px rgba(0,0,0,0.22);
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 0.82fr 1fr;
+      gap: 34px;
+      align-items: end;
+      padding: 30px 34px 24px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.62), rgba(255,255,255,0)),
+        var(--paper);
+    }
+
+    h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 38px;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .board {
+      padding: 30px 34px 34px;
+    }
+
+    .north-star {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .principle {
+      min-height: 190px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(255,255,255,0.48);
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .principle::before {
+      content: attr(data-id);
+      position: absolute;
+      right: 14px;
+      top: 13px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      border: 1px solid rgba(23,23,21,0.14);
+      border-radius: 999px;
+      padding: 4px 7px;
+      background: rgba(245,239,228,0.72);
+    }
+
+    .principle h3 {
+      margin: 0 0 12px;
+      max-width: 210px;
+      font-size: 18px;
+    }
+
+    .principle p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 13px;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 18px;
+    }
+
+    .legend {
+      align-self: start;
+      position: sticky;
+      top: 18px;
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(255,255,255,0.48);
+    }
+
+    .legend h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+    }
+
+    .legend-item {
+      display: grid;
+      grid-template-columns: 14px 1fr;
+      gap: 9px;
+      align-items: start;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      margin-top: 2px;
+      border-radius: 50%;
+      background: var(--c);
+    }
+
+    .arch-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .arch-row {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.44);
+      padding: 16px;
+    }
+
+    .arch-row h3 {
+      margin: 0 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 18px;
+    }
+
+    .arch-row h3 code {
+      font-family: var(--mono);
+      color: var(--color);
+      background: rgba(255,255,255,0.58);
+      border: 1px solid rgba(23,23,21,0.13);
+      border-radius: 6px;
+      padding: 4px 7px;
+      font-size: 12px;
+    }
+
+    .modules {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .module {
+      min-height: 104px;
+      padding: 13px;
+      border-radius: 8px;
+      border: 1px solid rgba(23,23,21,0.14);
+      background: rgba(245,239,228,0.74);
+    }
+
+    .module b {
+      display: block;
+      margin-bottom: 7px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--color);
+    }
+
+    .module span {
+      display: block;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 12px;
+    }
+
+    .core { --color: var(--core); }
+    .runtime { --color: var(--runtime); }
+    .context { --color: var(--context); }
+    .agent { --color: var(--agent); }
+    .domain { --color: var(--domain); }
+    .support { --color: var(--support); }
+
+    .tree-board {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .tree {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background:
+        linear-gradient(90deg, rgba(23,23,21,0.04) 1px, transparent 1px) 0 0 / 28px 28px,
+        linear-gradient(rgba(23,23,21,0.04) 1px, transparent 1px) 0 0 / 28px 28px,
+        rgba(255,255,255,0.44);
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.62;
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    .tree b {
+      color: var(--agent);
+    }
+
+    .tree-side {
+      display: grid;
+      gap: 12px;
+    }
+
+    .callout {
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(255,255,255,0.48);
+      padding: 16px;
+    }
+
+    .callout h3 {
+      margin: 0 0 9px;
+      font-size: 17px;
+    }
+
+    .callout p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 13px;
+    }
+
+    .callout code,
+    .contract-card code {
+      font-family: var(--mono);
+      color: var(--context);
+      background: rgba(54,95,154,0.08);
+      border: 1px solid rgba(54,95,154,0.16);
+      padding: 2px 5px;
+      border-radius: 5px;
+      font-size: 12px;
+    }
+
+    .contracts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .contract-card {
+      min-height: 280px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.48);
+      padding: 18px;
+      position: relative;
+    }
+
+    .contract-card::before {
+      content: attr(data-kind);
+      position: absolute;
+      right: 14px;
+      top: 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(23,23,21,0.14);
+      background: rgba(245,239,228,0.72);
+      padding: 4px 7px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .contract-card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      max-width: 220px;
+    }
+
+    .contract-card p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.56;
+      font-size: 13px;
+    }
+
+    .contract-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: #3e3830;
+      font-size: 12px;
+      line-height: 1.64;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .flow-step {
+      min-height: 170px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.50);
+      padding: 16px;
+      position: relative;
+    }
+
+    .flow-step::after {
+      content: "→";
+      position: absolute;
+      right: -16px;
+      top: 68px;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--white);
+      background: var(--agent);
+      z-index: 1;
+    }
+
+    .flow-step:last-child::after {
+      display: none;
+    }
+
+    .flow-step b {
+      display: block;
+      font-family: var(--mono);
+      color: var(--agent);
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .flow-step h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .flow-step p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.48;
+      font-size: 12px;
+    }
+
+    .migration {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .migration-card {
+      min-height: 260px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.48);
+      padding: 18px;
+    }
+
+    .migration-card h3 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .migration-card ol {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.66;
+      font-size: 13px;
+    }
+
+    .warning {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 16px;
+      border: 1px solid rgba(184,74,63,0.24);
+      border-radius: 10px;
+      background: linear-gradient(90deg, rgba(184,74,63,0.12), rgba(255,255,255,0.48));
+      padding: 18px;
+    }
+
+    .warning b {
+      color: var(--agent);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .warning p {
+      margin: 0;
+      color: #493e36;
+      line-height: 1.64;
+      font-size: 14px;
+    }
+
+    .footer {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      color: rgba(255,250,240,0.62);
+      border-top: 1px solid rgba(255,255,255,0.18);
+      padding-top: 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero" id="top">
+      <div class="hero-grid">
+        <div>
+          <div class="kicker"><span class="mark"></span> Nori expected code architecture</div>
+          <h1>预期代码架构：从业务域拆分到运行时内核</h1>
+          <p class="lead">
+            目标不是把所有 Agent 换目录，而是把“公共能力、运行时状态、上下文组装、三段 Agent 入口、领域实现”拆成清晰层级。
+            这样每个用户可以拥有多个 session，每个 session 又可以拥有多个 task 和 workflow run。
+          </p>
+          <div class="hero-note">
+            <b>架构结论：</b>
+            未来 Nori 应该从当前的业务域 package，进化为 runtime-first 结构：
+            `core` 稳定，`memory/sessions/workflows` 管状态，`agents` 管入口，现有 domain modules 管具体能力实现。
+          </div>
+        </div>
+        <div class="blueprint">
+          <div class="layer-strip ls1"><b>core/</b><span>shared contracts, base classes, LLM gateway, artifact primitives</span></div>
+          <div class="layer-strip ls2"><b>runtime/</b><span>memory, sessions, workflow runs, checkpoints, context resolution</span></div>
+          <div class="layer-strip ls3"><b>agents/</b><span>understanding, generation, evaluation as three public orchestration entrypoints</span></div>
+          <div class="layer-strip ls4"><b>domains/</b><span>profile, market, planning, creation, review implementations behind agent APIs</span></div>
+          <div class="layer-strip ls5"><b>apps/</b><span>CLI, scripts, API handlers, demos and product-facing entrypoints</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="principles">
+      <div class="section-head">
+        <h2>四条重构原则</h2>
+        <p>这些原则决定未来目录怎么拆，也决定哪些模块应该保留在原地，哪些模块应该提升成 runtime 层。</p>
+      </div>
+      <div class="board north-star">
+        <article class="principle" data-id="P1">
+          <h3>Runtime first</h3>
+          <p>先建模 session、task goal、workflow run、artifact，再让 agent 接入。否则系统只能跑单次脚本，不能恢复和审计。</p>
+        </article>
+        <article class="principle" data-id="P2">
+          <h3>Agent as public facade</h3>
+          <p>外部只接触 Understanding、Generation、Evaluation 三个入口；子 Agent 和 domain helper 留在内部。</p>
+        </article>
+        <article class="principle" data-id="P3">
+          <h3>Domain implementation stays modular</h3>
+          <p>市场分析、账号规划、内容生成、审核策略仍是独立实现，不把所有逻辑塞进一个巨大 Agent。</p>
+        </article>
+        <article class="principle" data-id="P4">
+          <h3>Contracts before prompts</h3>
+          <p>先定义 StableProfile、TaskGoal、ContextPack、Artifact 等结构，再设计 prompt 和 LLM 流程。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="layers">
+      <div class="section-head">
+        <h2>目标分层图</h2>
+        <p>这里画的是预期代码层级，不是当前目录的逐行搬迁方案。颜色代表模块职责，而不是业务顺序。</p>
+      </div>
+      <div class="board architecture">
+        <aside class="legend">
+          <h3>Legend</h3>
+          <div class="legend-item"><span class="dot" style="--c:var(--core)"></span><span>foundation: 低层稳定能力</span></div>
+          <div class="legend-item"><span class="dot" style="--c:var(--runtime)"></span><span>runtime: session 和 workflow 状态</span></div>
+          <div class="legend-item"><span class="dot" style="--c:var(--context)"></span><span>context: 上下文解析和聚合</span></div>
+          <div class="legend-item"><span class="dot" style="--c:var(--agent)"></span><span>agents: 对外主入口</span></div>
+          <div class="legend-item"><span class="dot" style="--c:var(--domain)"></span><span>domains: 领域实现</span></div>
+          <div class="legend-item"><span class="dot" style="--c:var(--support)"></span><span>apps/support: 脚本和适配层</span></div>
+        </aside>
+        <div class="arch-grid">
+          <div class="arch-row core">
+            <h3>Foundation Layer <code>nori/core + nori/shared</code></h3>
+            <div class="modules">
+              <div class="module"><b>models.py</b><span>跨层契约：UserAsset、ContentTask、IntentContract 等。</span></div>
+              <div class="module"><b>agent.py</b><span>AgentBase、AgentInputPreparer、AgentPromptBuilder。</span></div>
+              <div class="module"><b>artifacts.py</b><span>ArtifactStore、StableArtifactAssembler，未来扩展 run-scoped manifest。</span></div>
+            </div>
+          </div>
+          <div class="arch-row runtime">
+            <h3>Runtime Layer <code>nori/memory + nori/sessions + nori/workflows</code></h3>
+            <div class="modules">
+              <div class="module"><b>memory/</b><span>StableProfile、SessionMemory、MemoryPatch、promotion policy。</span></div>
+              <div class="module"><b>sessions/</b><span>Session、Turn、TaskGoal、SessionManager、current state。</span></div>
+              <div class="module"><b>workflows/</b><span>WorkflowRun、StageRun、WorkflowRunner、resume and replay。</span></div>
+            </div>
+          </div>
+          <div class="arch-row context">
+            <h3>Context Layer <code>nori/context</code></h3>
+            <div class="modules">
+              <div class="module"><b>resolver.py</b><span>从 profile、session、task、artifacts 挑当前需要的上下文。</span></div>
+              <div class="module"><b>packs.py</b><span>ContextPack、PlatformContext、TopicContext、MetricContext。</span></div>
+              <div class="module"><b>sources.py</b><span>平台策略、热点、历史指标和外部数据源适配。</span></div>
+            </div>
+          </div>
+          <div class="arch-row agent">
+            <h3>Agent Facade Layer <code>nori/agents</code></h3>
+            <div class="modules">
+              <div class="module"><b>understanding/</b><span>建立或更新 StableProfile、TaskGoal、SessionMemory。</span></div>
+              <div class="module"><b>generation/</b><span>统一内容生成入口，按 note/article/image/package 路由。</span></div>
+              <div class="module"><b>evaluation/</b><span>质量、合规、指标和 strategy iteration 的统一入口。</span></div>
+            </div>
+          </div>
+          <div class="arch-row domain">
+            <h3>Domain Implementation Layer <code>nori/domains or existing packages</code></h3>
+            <div class="modules">
+              <div class="module"><b>profile</b><span>当前 user_profiling：intaker、account planner。</span></div>
+              <div class="module"><b>market + planning</b><span>当前 market_analysis 和 context_building。</span></div>
+              <div class="module"><b>creation + learning</b><span>当前 content_generation 和 learning_loop。</span></div>
+            </div>
+          </div>
+          <div class="arch-row support">
+            <h3>Application Layer <code>scripts + APIs + demos</code></h3>
+            <div class="modules">
+              <div class="module"><b>api/</b><span>未来产品 API：create session, send turn, run workflow。</span></div>
+              <div class="module"><b>scripts/</b><span>smoke、live case、migration、debug 工具。</span></div>
+              <div class="module"><b>view/</b><span>架构图、demo、内部对齐页面。</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="tree">
+      <div class="section-head">
+        <h2>预期目录树</h2>
+        <p>这是我建议的目标形态。第一阶段可以先新增 runtime 层，不需要立即把现有业务包全部搬进 domains。</p>
+      </div>
+      <div class="board tree-board">
+        <pre class="tree">nori/
+├── core/
+│   ├── models.py              # shared contracts
+│   ├── agent.py               # AgentBase + preparer/builder bases
+│   ├── artifacts.py           # ArtifactStore + run manifests
+│   ├── workflow.py            # low-level workflow primitives
+│   └── llm.py                 # LLMFactory
+│
+├── memory/
+│   ├── models.py              # StableProfile, SessionMemory, MemoryPatch
+│   ├── store.py               # persistence boundary
+│   └── promotion.py           # session -> stable rules
+│
+├── sessions/
+│   ├── models.py              # Session, Turn, TaskGoal
+│   ├── manager.py             # create/resume/close
+│   └── context.py             # current session context snapshot
+│
+├── workflows/
+│   ├── models.py              # WorkflowRun, StageRun
+│   ├── runner.py              # execute/resume/replay
+│   ├── content_loop.py        # end-to-end generation workflow
+│   └── onboarding_loop.py     # profile setup workflow
+│
+├── context/
+│   ├── packs.py               # ContextPack and sub-context models
+│   ├── resolver.py            # assemble context for current TaskGoal
+│   └── sources.py             # strategy/topic/metric providers
+│
+├── agents/
+│   ├── understanding/
+│   │   └── agent.py           # UnderstandingAgent
+│   ├── generation/
+│   │   └── agent.py           # GenerationAgent / route facade
+│   └── evaluation/
+│       └── agent.py           # PerformanceAnalysisAgent
+│
+├── domains/                   # optional final consolidation
+│   ├── profile/
+│   ├── market/
+│   ├── planning/
+│   ├── creation/
+│   └── learning/
+│
+└── apps/
+    ├── api/
+    ├── cli/
+    └── scripts/</pre>
+        <div class="tree-side">
+          <div class="callout">
+            <h3>第一阶段不建议大搬家</h3>
+            <p>先新增 <code>memory/</code>、<code>sessions/</code>、<code>workflows/</code>、<code>context/</code>，然后让现有 Agent 接入这些 runtime 模型。</p>
+          </div>
+          <div class="callout">
+            <h3>现有 package.py 不是问题</h3>
+            <p>每个 stage 内部的 <code>package.py</code> 仍然合理。它是领域实现内部的类式 contract，不需要再拆回小文件。</p>
+          </div>
+          <div class="callout">
+            <h3>真正要新增的是运行时骨架</h3>
+            <p>现在最缺的不是生成能力，而是 session、task、workflow run、artifact manifest、memory promotion 这些运行时实体。</p>
+          </div>
+          <div class="callout">
+            <h3>apps 层要薄</h3>
+            <p>API、CLI、脚本都应该调用 session/workflow/agent facade，不直接拼接 NoteMaker、CoverDirector 等内部类。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="contracts">
+      <div class="section-head">
+        <h2>关键代码契约</h2>
+        <p>这些模型应该先写清楚。它们会成为后续重构的稳定锚点，避免继续用散 dict 传递状态。</p>
+      </div>
+      <div class="board contracts">
+        <article class="contract-card" data-kind="memory">
+          <h3><code>StableProfile</code></h3>
+          <p>跨 session 复用的账号/品牌长期状态。</p>
+          <ul>
+            <li>workspace_id, profile_id, version</li>
+            <li>brand_facts, audience, positioning</li>
+            <li>content_pillars, platform_strategy</li>
+            <li>guardrails, preferences, learned_skills</li>
+          </ul>
+        </article>
+        <article class="contract-card" data-kind="session">
+          <h3><code>Session</code></h3>
+          <p>一次任务推进的工作空间，不是 chat log。</p>
+          <ul>
+            <li>session_id, workspace_id, user_id</li>
+            <li>entry_type, status, title, summary</li>
+            <li>current_task_goal_id</li>
+            <li>created_at, last_active_at, closed_at</li>
+          </ul>
+        </article>
+        <article class="contract-card" data-kind="task">
+          <h3><code>TaskGoal</code></h3>
+          <p>当前要完成的目标，可以吸收现有 IntentContract。</p>
+          <ul>
+            <li>goal_id, session_id, status</li>
+            <li>deliverables, must_include, constraints</li>
+            <li>success_criteria, source_turn_ids</li>
+            <li>promotion_candidates</li>
+          </ul>
+        </article>
+        <article class="contract-card" data-kind="workflow">
+          <h3><code>WorkflowRun</code></h3>
+          <p>系统实际执行轨迹，支持重跑和 resume。</p>
+          <ul>
+            <li>run_id, session_id, goal_id</li>
+            <li>workflow_type, status, current_stage</li>
+            <li>context_snapshot_id</li>
+            <li>artifact_manifest_path</li>
+          </ul>
+        </article>
+        <article class="contract-card" data-kind="stage">
+          <h3><code>StageRun</code></h3>
+          <p>每个 Agent/stage 的输入、输出和错误边界。</p>
+          <ul>
+            <li>stage_run_id, run_id, stage_name</li>
+            <li>agent_name, input_artifact_ids</li>
+            <li>output_artifact_ids, status</li>
+            <li>error, started_at, ended_at</li>
+          </ul>
+        </article>
+        <article class="contract-card" data-kind="artifact">
+          <h3><code>Artifact</code></h3>
+          <p>所有中间产物和最终产物的索引。</p>
+          <ul>
+            <li>artifact_id, session_id, run_id</li>
+            <li>type, stage_name, version</li>
+            <li>path, data, metadata</li>
+            <li>input_refs, source_refs</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="flow">
+      <div class="section-head">
+        <h2>未来调用关系</h2>
+        <p>产品入口应该走 session runtime，再走三段 Agent facade，而不是直接从 API 调某个内部 stage。</p>
+      </div>
+      <div class="board flow">
+        <div class="flow-step">
+          <b>01 API / CLI</b>
+          <h3>receive turn</h3>
+          <p>用户进入 onboarding 或 interaction，创建或恢复 session。</p>
+        </div>
+        <div class="flow-step">
+          <b>02 SessionManager</b>
+          <h3>resolve state</h3>
+          <p>拿到 StableProfile、SessionMemory、当前 TaskGoal。</p>
+        </div>
+        <div class="flow-step">
+          <b>03 ContextResolver</b>
+          <h3>build context</h3>
+          <p>组装平台策略、热点、指标、历史 artifact 的 ContextPack。</p>
+        </div>
+        <div class="flow-step">
+          <b>04 WorkflowRunner</b>
+          <h3>execute agents</h3>
+          <p>按 workflow graph 调 Understanding、Generation、Evaluation。</p>
+        </div>
+        <div class="flow-step">
+          <b>05 MemoryPromotion</b>
+          <h3>learn safely</h3>
+          <p>从审核、指标和用户确认中提炼稳定 profile 更新。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="migration">
+      <div class="section-head">
+        <h2>迁移路线</h2>
+        <p>为了降低风险，推荐分两条线推进：一条补 runtime，一条逐步收敛 Agent facade。</p>
+      </div>
+      <div class="board">
+        <div class="migration">
+          <article class="migration-card">
+            <h3>Phase A：先补运行时</h3>
+            <ol>
+              <li>新增 <code>nori/sessions/models.py</code> 和 <code>nori/workflows/models.py</code>。</li>
+              <li>把现有 <code>IntentContract</code> 映射成 <code>TaskGoal</code>。</li>
+              <li>扩展 <code>ArtifactStore</code> 支持 run-scoped manifest。</li>
+              <li>写一个 <code>ContentWorkflowRunner</code> 包住现有 GenerationAgent。</li>
+              <li>用测试证明 create/resume/replay 的最小闭环。</li>
+            </ol>
+          </article>
+          <article class="migration-card">
+            <h3>Phase B：再收敛入口</h3>
+            <ol>
+              <li>新增 <code>UnderstandingAgent</code>，包住 Intake + AccountPlanner + TaskGoal 更新。</li>
+              <li>保留 <code>GenerationAgent</code>，但让它吃 TaskGoal + ContextPack。</li>
+              <li>新增 <code>PerformanceAnalysisAgent</code>，包住 ReviewGate + Metrics + StrategyIteration。</li>
+              <li>把脚本和 API 改成只调用 session/workflow facade。</li>
+              <li>最后评估是否需要把现有业务包迁移到 <code>domains/</code>。</li>
+            </ol>
+          </article>
+        </div>
+        <div class="warning">
+          <b>AVOID</b>
+          <p>
+            不要为了“看起来统一”马上把所有目录移动到新层级。先把运行时模型落地；
+            等 Session / Workflow / Artifact 的边界稳定后，再迁移业务包。否则会产生大量路径 churn，但产品能力没有真正变清楚。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>Nori Expected Code Architecture</span>
+      <span>Runtime-first refactor target</span>
+    </div>
+  </main>
+</body>
+</html>

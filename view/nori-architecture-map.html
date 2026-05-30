@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nori Architecture Map</title>
+  <style>
+    :root {
+      --paper: #f7f1e6;
+      --paper-2: #efe3cf;
+      --ink: #211f1b;
+      --muted: #6e675d;
+      --line: rgba(33, 31, 27, 0.18);
+      --red: #bc3e2f;
+      --red-soft: #f0c8bf;
+      --jade: #16866f;
+      --jade-soft: #c7e2d6;
+      --blue: #2d5f9a;
+      --blue-soft: #ccd9ea;
+      --gold: #b67a1a;
+      --gold-soft: #ead4a8;
+      --violet: #7751a8;
+      --violet-soft: #d9cbe8;
+      --shadow: 0 24px 70px rgba(45, 38, 25, 0.16);
+      --mono: "SFMono-Regular", "Menlo", "Consolas", monospace;
+      --serif: "Iowan Old Style", "Songti SC", "STSong", "Noto Serif CJK SC", serif;
+      --sans: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 1180px;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(33, 31, 27, 0.035) 1px, transparent 1px) 0 0 / 34px 34px,
+        linear-gradient(rgba(33, 31, 27, 0.035) 1px, transparent 1px) 0 0 / 34px 34px,
+        radial-gradient(circle at 12% 20%, rgba(188, 62, 47, 0.10), transparent 28%),
+        radial-gradient(circle at 88% 8%, rgba(22, 134, 111, 0.10), transparent 24%),
+        var(--paper);
+      font-family: var(--sans);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.32;
+      background-image:
+        linear-gradient(115deg, rgba(255,255,255,0.22), rgba(255,255,255,0) 42%),
+        repeating-linear-gradient(0deg, rgba(33,31,27,0.024), rgba(33,31,27,0.024) 1px, transparent 1px, transparent 4px);
+      mix-blend-mode: multiply;
+      z-index: 10;
+    }
+
+    .shell {
+      width: 1120px;
+      margin: 0 auto;
+      padding: 34px 0 58px;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 510px;
+      border: 1px solid rgba(33, 31, 27, 0.20);
+      border-radius: 6px;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.62), rgba(255,255,255,0.12)),
+        linear-gradient(90deg, rgba(188, 62, 47, 0.12), rgba(22, 134, 111, 0.10) 52%, rgba(182, 122, 26, 0.12)),
+        var(--paper-2);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 20px;
+      border: 1px solid rgba(33, 31, 27, 0.18);
+      pointer-events: none;
+    }
+
+    .hero-top {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 36px;
+      padding: 48px 52px 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--red);
+      border-bottom: 1px solid rgba(188, 62, 47, 0.38);
+      padding-bottom: 8px;
+    }
+
+    .seal {
+      width: 13px;
+      height: 13px;
+      border: 2px solid var(--red);
+      transform: rotate(45deg);
+      display: inline-block;
+      background: rgba(188, 62, 47, 0.08);
+    }
+
+    h1 {
+      margin: 18px 0 18px;
+      font-family: var(--serif);
+      font-weight: 700;
+      font-size: 74px;
+      line-height: 0.94;
+      letter-spacing: 0;
+      max-width: 650px;
+    }
+
+    .lead {
+      max-width: 610px;
+      font-size: 18px;
+      line-height: 1.75;
+      color: #38332c;
+      margin: 0;
+    }
+
+    .hero-aside {
+      align-self: start;
+      display: grid;
+      gap: 12px;
+      padding-top: 12px;
+    }
+
+    .metric {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      align-items: center;
+      border-top: 1px solid rgba(33, 31, 27, 0.20);
+      padding: 14px 0;
+    }
+
+    .metric strong {
+      font-family: var(--serif);
+      font-size: 34px;
+      line-height: 1;
+      color: var(--ink);
+    }
+
+    .metric span {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .contract-strip {
+      position: relative;
+      z-index: 1;
+      margin: 18px 52px 42px;
+      border: 1px solid rgba(33, 31, 27, 0.22);
+      background: rgba(247, 241, 230, 0.76);
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    .contract {
+      min-height: 92px;
+      padding: 16px 14px;
+      border-right: 1px solid rgba(33, 31, 27, 0.14);
+      position: relative;
+    }
+
+    .contract:last-child {
+      border-right: 0;
+    }
+
+    .contract b {
+      display: block;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 7px;
+    }
+
+    .contract span {
+      display: block;
+      font-weight: 700;
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .contract::after {
+      content: "→";
+      position: absolute;
+      right: -8px;
+      top: 35px;
+      color: var(--red);
+      background: var(--paper);
+      width: 16px;
+      text-align: center;
+      z-index: 2;
+    }
+
+    .contract:last-child::after {
+      content: "";
+    }
+
+    .section {
+      margin-top: 32px;
+      border: 1px solid rgba(33, 31, 27, 0.20);
+      border-radius: 6px;
+      background: rgba(247, 241, 230, 0.82);
+      box-shadow: 0 12px 36px rgba(45, 38, 25, 0.08);
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 26px 30px 20px;
+      border-bottom: 1px solid rgba(33, 31, 27, 0.14);
+      background: linear-gradient(90deg, rgba(255,255,255,0.56), rgba(255,255,255,0));
+    }
+
+    .section h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 34px;
+      line-height: 1.08;
+    }
+
+    .section-head p {
+      margin: 0;
+      max-width: 520px;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .map {
+      padding: 30px;
+    }
+
+    .business-flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      position: relative;
+    }
+
+    .stage-card {
+      min-height: 214px;
+      padding: 18px;
+      border: 1px solid rgba(33, 31, 27, 0.18);
+      border-radius: 5px;
+      background: rgba(255, 252, 245, 0.78);
+      position: relative;
+      overflow: hidden;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    }
+
+    .stage-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 48px rgba(45, 38, 25, 0.15);
+      border-color: rgba(33, 31, 27, 0.34);
+    }
+
+    .stage-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 5px;
+      background: var(--accent);
+    }
+
+    .stage-card small {
+      font-family: var(--mono);
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    .stage-card h3 {
+      margin: 12px 0 8px;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .stage-card p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      border: 1px solid rgba(33, 31, 27, 0.16);
+      background: rgba(255,255,255,0.50);
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #38332c;
+    }
+
+    .stage-card.profile { --accent: var(--red); }
+    .stage-card.market { --accent: var(--gold); }
+    .stage-card.context { --accent: var(--blue); }
+    .stage-card.generation { --accent: var(--jade); }
+    .stage-card.learning { --accent: var(--violet); }
+
+    .route-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .column {
+      display: grid;
+      gap: 14px;
+    }
+
+    .node {
+      border: 1px solid rgba(33, 31, 27, 0.18);
+      border-radius: 5px;
+      background: rgba(255, 252, 245, 0.82);
+      padding: 16px;
+      position: relative;
+    }
+
+    .node h3,
+    .node h4 {
+      margin: 0 0 9px;
+      font-size: 17px;
+    }
+
+    .node p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.58;
+    }
+
+    .node code,
+    .package code,
+    .legend code {
+      font-family: var(--mono);
+      color: #1b4f73;
+      background: rgba(45, 95, 154, 0.09);
+      border: 1px solid rgba(45, 95, 154, 0.16);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .router {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        linear-gradient(135deg, rgba(22, 134, 111, 0.14), rgba(255,255,255,0.45)),
+        rgba(255, 252, 245, 0.82);
+      border-color: rgba(22, 134, 111, 0.40);
+    }
+
+    .router h3 {
+      font-family: var(--serif);
+      font-size: 38px;
+      line-height: 1;
+      margin: 0 0 10px;
+    }
+
+    .router .routes {
+      display: grid;
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .route {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-top: 1px solid rgba(33, 31, 27, 0.14);
+      padding-top: 9px;
+      font-size: 13px;
+    }
+
+    .route b {
+      font-family: var(--mono);
+      color: var(--jade);
+      font-size: 12px;
+    }
+
+    .package-board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .package {
+      border: 1px solid rgba(33, 31, 27, 0.18);
+      border-radius: 5px;
+      background: rgba(255, 252, 245, 0.86);
+      min-height: 212px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .package::before {
+      content: attr(data-domain);
+      position: absolute;
+      top: 11px;
+      right: 11px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      border: 1px solid rgba(33, 31, 27, 0.14);
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: rgba(247, 241, 230, 0.72);
+    }
+
+    .package h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+      max-width: 230px;
+    }
+
+    .package .path {
+      display: block;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      word-break: break-word;
+    }
+
+    .file-list {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .file-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .file-list li::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      opacity: 0.55;
+      flex: 0 0 auto;
+    }
+
+    .file-list b {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #312d27;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .legend-item {
+      border: 1px solid rgba(33, 31, 27, 0.16);
+      background: rgba(255,255,255,0.48);
+      border-radius: 5px;
+      padding: 14px;
+      min-height: 116px;
+    }
+
+    .legend-item b {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .legend-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 12px;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .rail {
+      position: sticky;
+      top: 18px;
+      display: grid;
+      gap: 10px;
+      padding: 12px;
+      border: 1px solid rgba(33, 31, 27, 0.16);
+      border-radius: 5px;
+      background: rgba(255,255,255,0.45);
+    }
+
+    .rail a {
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 7px 8px;
+      border-left: 3px solid transparent;
+    }
+
+    .rail a:hover {
+      background: rgba(188, 62, 47, 0.08);
+      border-left-color: var(--red);
+    }
+
+    .sequence {
+      display: grid;
+      gap: 12px;
+    }
+
+    .step {
+      display: grid;
+      grid-template-columns: 52px 1fr 210px;
+      gap: 14px;
+      align-items: center;
+      border: 1px solid rgba(33, 31, 27, 0.16);
+      background: rgba(255, 252, 245, 0.82);
+      border-radius: 5px;
+      padding: 14px;
+    }
+
+    .step-num {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-weight: 700;
+    }
+
+    .step h3 {
+      margin: 0 0 5px;
+      font-size: 16px;
+    }
+
+    .step p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .step .out {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--jade);
+      border: 1px solid rgba(22, 134, 111, 0.22);
+      background: rgba(22, 134, 111, 0.08);
+      padding: 9px;
+      border-radius: 5px;
+      line-height: 1.45;
+    }
+
+    .note {
+      margin-top: 18px;
+      padding: 18px 20px;
+      border-left: 5px solid var(--red);
+      background: rgba(188, 62, 47, 0.08);
+      color: #46372f;
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .footer {
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--mono);
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid rgba(33, 31, 27, 0.18);
+      padding-top: 16px;
+    }
+
+    @media print {
+      body {
+        min-width: 0;
+        background: var(--paper);
+      }
+      .shell {
+        width: auto;
+        padding: 0;
+      }
+      .section,
+      .hero {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+      .rail {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero" id="top">
+      <div class="hero-top">
+        <div>
+          <div class="kicker"><span class="seal"></span> Nori architecture map</div>
+          <h1>从用户意图到内容闭环</h1>
+          <p class="lead">
+            Nori 现在的核心不是一堆散落 Agent，而是一条有契约的运营内容流水线：
+            先冻结用户意图，再规划账号运营，再路由生成文本或图片，最后用审核和指标回流驱动下一轮策略。
+          </p>
+        </div>
+        <aside class="hero-aside" aria-label="architecture summary">
+          <div class="metric"><strong>5</strong><span>业务域：用户画像、市场分析、上下文建设、内容生成、学习闭环。</span></div>
+          <div class="metric"><strong>11</strong><span>stage package：每个复杂 stage 拥有自己的 entry 和 package contract。</span></div>
+          <div class="metric"><strong>0</strong><span>stage-local schema / prompts / inputs / refs / builder 残留文件。</span></div>
+        </aside>
+      </div>
+      <div class="contract-strip">
+        <div class="contract"><b>01 INPUT</b><span>UserInput / UserAsset</span></div>
+        <div class="contract"><b>02 INTENT</b><span>IntakeResult / IntentContract</span></div>
+        <div class="contract"><b>03 PLAN</b><span>AccountPlan / OperationProject</span></div>
+        <div class="contract"><b>04 TASK</b><span>KPIPlan / ContentTask</span></div>
+        <div class="contract"><b>05 BUILD</b><span>NoteDraft / CoverResult / ContentPackage</span></div>
+        <div class="contract"><b>06 LEARN</b><span>ComplianceReview / StrategyIteration</span></div>
+      </div>
+    </section>
+
+    <section class="section" id="business">
+      <div class="section-head">
+        <h2>业务闭环</h2>
+        <p>业务上 Nori 是账号代运营的内容生产系统，不是单次文案生成器。每个阶段都产出可复用的结构化结果。</p>
+      </div>
+      <div class="map business-flow">
+        <article class="stage-card profile">
+          <small>USER PROFILING</small>
+          <h3>理解用户与账号</h3>
+          <p>把原始文本、图片、链接变成意图、上下文、资产标签和账号定位。</p>
+          <div class="chips">
+            <span class="chip">IntakeAgent</span>
+            <span class="chip">AccountPlannerAgent</span>
+            <span class="chip">UserAsset</span>
+          </div>
+        </article>
+        <article class="stage-card market">
+          <small>MARKET ANALYSIS</small>
+          <h3>学习小红书样本</h3>
+          <p>从热帖或本地样本提炼 NoteSkill、标题规则、正文结构、视觉规则和禁忌。</p>
+          <div class="chips">
+            <span class="chip">XHSNoteAnalyzer</span>
+            <span class="chip">NoteSkill</span>
+            <span class="chip">SessionReport</span>
+          </div>
+        </article>
+        <article class="stage-card context">
+          <small>CONTEXT BUILDING</small>
+          <h3>规划运营周期</h3>
+          <p>把账号定位转成运营项目、KPI、排期与 ContentTask，默认有确定性 fallback。</p>
+          <div class="chips">
+            <span class="chip">OperationPlanner</span>
+            <span class="chip">KPIPlanner</span>
+            <span class="chip">CalendarPlanner</span>
+          </div>
+        </article>
+        <article class="stage-card generation">
+          <small>CONTENT GENERATION</small>
+          <h3>路由生成产物</h3>
+          <p>GenerationAgent 做总入口，子 Agent 分别负责正文、封面、整包装配。</p>
+          <div class="chips">
+            <span class="chip">GenerationAgent</span>
+            <span class="chip">NoteMaker</span>
+            <span class="chip">CoverDirector</span>
+          </div>
+        </article>
+        <article class="stage-card learning">
+          <small>LEARNING LOOP</small>
+          <h3>审核与策略迭代</h3>
+          <p>规则审核、意图质量检查和手动指标沉淀成下一轮策略动作。</p>
+          <div class="chips">
+            <span class="chip">ReviewGate</span>
+            <span class="chip">QualityReviewer</span>
+            <span class="chip">StrategyIteration</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="generation">
+      <div class="section-head">
+        <h2>生成链路</h2>
+        <p>生成层采用“总入口路由 + 专门子 Agent”的结构。总入口不吞掉领域能力，只决定走文本、图片还是完整内容包。</p>
+      </div>
+      <div class="map route-grid">
+        <div class="column">
+          <div class="node">
+            <h4><code>IntentContract</code></h4>
+            <p>冻结目标、必含词、语气、交付物和禁忌，避免后续阶段重新猜用户意图。</p>
+          </div>
+          <div class="node">
+            <h4><code>ArtifactStore</code></h4>
+            <p>长流程可把 stage JSON 写成 checkpoint，并通过 manifest 恢复。</p>
+          </div>
+          <div class="node">
+            <h4><code>LLMFactory</code></h4>
+            <p>所有 Agent 通过注入网关调用 LLM，不直接依赖底层 llms 模块。</p>
+          </div>
+        </div>
+        <div class="node router">
+          <div>
+            <h3>GenerationAgent</h3>
+            <p><code>artifact_type</code> 是粗粒度路由开关。它让产品上有统一入口，同时保留专门 Agent 的边界。</p>
+          </div>
+          <div class="routes">
+            <div class="route"><span>完整小红书内容包</span><b>note_package</b></div>
+            <div class="route"><span>只生成正文草稿</span><b>text</b></div>
+            <div class="route"><span>只生成封面图片</span><b>image</b></div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="node">
+            <h4><code>ContentProducerAgent</code></h4>
+            <p>把 ContentTask、Skill、Assets 装配成 ContentPackage，保存 note / cover 产物快照。</p>
+          </div>
+          <div class="node">
+            <h4><code>NoteMakerAgent</code></h4>
+            <p>负责 skill 选择、素材整理、标题正文标签生成，不读取原始图片 bytes。</p>
+          </div>
+          <div class="node">
+            <h4><code>CoverDirectorAgent</code></h4>
+            <p>负责参考图选择、封面 prompt、生图调用和输出持久化。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="packages">
+      <div class="section-head">
+        <h2>代码包结构</h2>
+        <p>重构后的原则是：entry 文件只编排流程，package.py 放同一 Agent 的输入准备、prompt contract、引用选择、装配类。</p>
+      </div>
+      <div class="map package-board">
+        <article class="package" data-domain="profile">
+          <h3>Intaker</h3>
+          <span class="path">nori/user_profiling/intaker</span>
+          <ul class="file-list">
+            <li><b>intaker.py</b> stage orchestration</li>
+            <li><b>package.py</b> text / vision prompt builders</li>
+            <li><b>normalizer.py</b> deterministic intake fallback</li>
+            <li><b>taxonomy.py</b> controlled labels and aliases</li>
+            <li><b>image_tagger.py</b> per-image semantic tagging</li>
+          </ul>
+        </article>
+        <article class="package" data-domain="profile">
+          <h3>Account Planner</h3>
+          <span class="path">nori/user_profiling/account_planner</span>
+          <ul class="file-list">
+            <li><b>account_planner.py</b> account strategy flow</li>
+            <li><b>package.py</b> input preparer and prompt builder</li>
+            <li><b>search.py</b> pluggable benchmark search</li>
+            <li><b>normalizer.py</b> LLM/search result cleanup</li>
+            <li><b>portrait.py</b> IP portrait normalization</li>
+          </ul>
+        </article>
+        <article class="package" data-domain="market">
+          <h3>XHS Analyzer</h3>
+          <span class="path">nori/market_analysis/xhs_note_analyzer</span>
+          <ul class="file-list">
+            <li><b>xhs_note_analyzer.py</b> analyzer entry</li>
+            <li><b>package.py</b> note/keyword/label prompt builders</li>
+            <li><b>rules.py</b> deterministic note skill draft</li>
+            <li><b>session_llm.py</b> required session LLM stages</li>
+            <li><b>skill_builder.py</b> learned NoteSkill assembly</li>
+          </ul>
+        </article>
+        <article class="package" data-domain="ops">
+          <h3>Operation Planner</h3>
+          <span class="path">nori/context_building/operation_planner</span>
+          <ul class="file-list">
+            <li><b>operation_planner.py</b> project orchestration</li>
+            <li><b>package.py</b> input preparer and SOP prompt</li>
+            <li><b>project_builder.py</b> deterministic project shell</li>
+            <li><b>project_policy.py</b> pure fallback rules</li>
+            <li><b>normalizer.py</b> LLM output merge</li>
+          </ul>
+        </article>
+        <article class="package" data-domain="ops">
+          <h3>KPI + Calendar</h3>
+          <span class="path">nori/context_building/*_planner</span>
+          <ul class="file-list">
+            <li><b>kpi_planner.py</b> KPI stage orchestration</li>
+            <li><b>kpi/package.py</b> plan/context prompt contract</li>
+            <li><b>calendar_planner.py</b> content calendar orchestration</li>
+            <li><b>calendar/package.py</b> run-window and prompt contract</li>
+            <li><b>task_builder.py</b> ContentTask row construction</li>
+          </ul>
+        </article>
+        <article class="package" data-domain="gen">
+          <h3>Note Maker</h3>
+          <span class="path">nori/content_generation/note_maker</span>
+          <ul class="file-list">
+            <li><b>note_maker.py</b> skill -> assets -> note draft</li>
+            <li><b>package.py</b> NoteSkillSelector</li>
+            <li><b>package.py</b> NoteAssetCurator</li>
+            <li><b>package.py</b> NoteComposer</li>
+            <li><b>models.py</b> NoteDraft / AssetBundle owner</li>
+          </ul>
+        </article>
+        <article class="package" data-domain="gen">
+          <h3>Cover Director</h3>
+          <span class="path">nori/content_generation/cover_director</span>
+          <ul class="file-list">
+            <li><b>cover_director.py</b> reference -> prompt -> image</li>
+            <li><b>package.py</b> CoverReferenceSelector</li>
+            <li><b>package.py</b> CoverPromptBuilder</li>
+            <li><b>output.py</b> image persistence</li>
+          </ul>
+        </article>
+        <article class="package" data-domain="gen">
+          <h3>Content Producer</h3>
+          <span class="path">nori/content_generation/content_producer</span>
+          <ul class="file-list">
+            <li><b>content_producer.py</b> package production orchestration</li>
+            <li><b>package.py</b> ContentPackageAssembler</li>
+            <li><b>state.py</b> task/project success and failure state</li>
+            <li><b>generation.py</b> coarse router lives one level up</li>
+          </ul>
+        </article>
+        <article class="package" data-domain="learn">
+          <h3>Learning Loop</h3>
+          <span class="path">nori/learning_loop</span>
+          <ul class="file-list">
+            <li><b>review_gate.py</b> compliance / consistency / quality review</li>
+            <li><b>review/package.py</b> ReviewInputPreparer</li>
+            <li><b>review/policy.py</b> issue rules</li>
+            <li><b>strategy/package.py</b> evidence restoration</li>
+            <li><b>strategy_iteration.py</b> decisions and next actions</li>
+          </ul>
+        </article>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><b>entry</b><p><code>*_agent.py</code> 或 stage 主文件只负责编排和依赖注入。</p></div>
+        <div class="legend-item"><b>package contract</b><p><code>package.py</code> 聚合同一 Agent 的类式输入、prompt、引用或装配逻辑。</p></div>
+        <div class="legend-item"><b>policy / normalizer</b><p>纯规则、fallback、LLM 输出清洗继续拆开，避免 package 变成大杂烩。</p></div>
+        <div class="legend-item"><b>core</b><p><code>nori.core</code> 放跨 stage 契约、LLM 网关、artifact/checkpoint 和 base class。</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="sequence">
+      <div class="section-head">
+        <h2>端到端执行序列</h2>
+        <p>下面是从一次用户需求进入系统，到内容包和下一轮策略产出的实际序列。</p>
+      </div>
+      <div class="map timeline">
+        <nav class="rail">
+          <a href="#top">Overview</a>
+          <a href="#business">Business Loop</a>
+          <a href="#generation">Generation</a>
+          <a href="#packages">Code Packages</a>
+          <a href="#sequence">Sequence</a>
+        </nav>
+        <div class="sequence">
+          <div class="step">
+            <div class="step-num">01</div>
+            <div><h3>IntakeAgent 接收用户输入</h3><p>文本、图片和链接被规范化；图片只在 Intake 阶段做视觉语义标签。</p></div>
+            <div class="out">UserInput -> IntakeResult</div>
+          </div>
+          <div class="step">
+            <div class="step-num">02</div>
+            <div><h3>IntentContract 冻结目标</h3><p>把 business goals、must include、tone、deliverables、taboos 固化成后续验收标准。</p></div>
+            <div class="out">IntentContract</div>
+          </div>
+          <div class="step">
+            <div class="step-num">03</div>
+            <div><h3>Account + Market 构建素材和技能</h3><p>账号定位给出人设和内容方向；XHS Analyzer 学到可执行的 NoteSkill。</p></div>
+            <div class="out">AccountPlanResult + NoteSkill</div>
+          </div>
+          <div class="step">
+            <div class="step-num">04</div>
+            <div><h3>Context Building 生成运营计划</h3><p>Operation / KPI / Calendar 产生周期目标、内容支柱、KPI 和可执行任务。</p></div>
+            <div class="out">AccountOperationProject + ContentTask</div>
+          </div>
+          <div class="step">
+            <div class="step-num">05</div>
+            <div><h3>GenerationAgent 路由生成</h3><p>按 artifact_type 调用 ContentProducer、NoteMaker 或 CoverDirector。</p></div>
+            <div class="out">NoteDraft / CoverResult / ContentPackage</div>
+          </div>
+          <div class="step">
+            <div class="step-num">06</div>
+            <div><h3>ReviewGate 检查结果</h3><p>合规、任务一致性和质量审核检查产物是否真的满足用户意图。</p></div>
+            <div class="out">ComplianceReview[]</div>
+          </div>
+          <div class="step">
+            <div class="step-num">07</div>
+            <div><h3>StrategyIteration 回流下一轮</h3><p>审核问题和人工指标转成诊断、决策和 next actions。</p></div>
+            <div class="out">MetricsSnapshot + StrategyIteration</div>
+          </div>
+          <div class="note">
+            架构重点：复杂 stage 现在不是把函数平铺在多个小文件里，而是用 `package.py` 内的类表达“这个 Agent 的内部契约”；
+            纯规则、状态持久化、normalizer 仍保留独立文件，因为它们是可复用的稳定边界。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <span>Nori Architecture Map</span>
+      <span>Generated from current repo docs and package layout</span>
+    </div>
+  </main>
+</body>
+</html>

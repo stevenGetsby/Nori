@@ -10,7 +10,7 @@ import llms
 import pytest
 
 from nori.content_generation.models import CandidateTitle, CoverResult, NoteDraft
-from nori.core import UserAsset
+from nori.core import ImageCapabilityError, UserAsset
 from nori.content_generation import CoverDirectorAgent
 from nori.content_generation.cover_director import CoverDirectorError
 
@@ -196,6 +196,31 @@ def test_cover_director_falls_back_to_reference_assets_when_draft_empty(tmp_path
     assert result.reference_paths == [str(ref)]
     assert captured["refs"] is not None
     assert len(captured["refs"]) == 1
+
+
+def test_cover_director_retries_without_local_refs_when_provider_rejects_reference_bytes(tmp_path, monkeypatch):
+    ref = tmp_path / "local-ref.jpg"
+    ref.write_bytes(_TINY_PNG_BYTES)
+    draft = _draft(cover_path=str(ref))
+    skill = _planting_skill()
+    calls: list[list | None] = []
+
+    def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
+        calls.append(reference_images)
+        if reference_images:
+            raise ImageCapabilityError("local reference images are not supported")
+        return [_TINY_PNG_DATA_URI]
+
+    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "image", fake_image)
+
+    result = CoverDirectorAgent().run(draft, skill, out_dir=tmp_path)
+
+    assert result.reference_paths == [str(ref)]
+    assert calls[0] is not None
+    assert calls[1] is None
+    assert result.extra["reference_images_sent"] is False
+    assert result.extra["reference_image_fallback"] == "local_refs_not_supported"
 
 
 def test_cover_director_preserves_remote_url_references(tmp_path, monkeypatch):

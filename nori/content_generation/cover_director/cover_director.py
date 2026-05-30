@@ -15,7 +15,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from nori.core import AgentBase, LLMFactory
+from nori.core import AgentBase, ImageCapabilityError, LLMFactory
 from nori.shared.llm_json import call_stage_json
 from nori.content_generation.models import CoverResult, NoteDraft
 from nori.core import UserAsset
@@ -98,6 +98,8 @@ class CoverDirectorAgent(AgentBase):
         ref_inputs = [self.reference_selector.to_image_input(p) for p in ref_paths]
         ref_inputs = [item for item in ref_inputs if item]
 
+        reference_images_sent = bool(ref_inputs)
+        reference_fallback = ""
         try:
             images = self.llm_factory.image(
                 prompt,
@@ -105,6 +107,22 @@ class CoverDirectorAgent(AgentBase):
                 size=size,
                 reference_images=ref_inputs or None,
             )
+        except ImageCapabilityError as exc:
+            if not _has_local_reference_inputs(ref_inputs):
+                raise CoverDirectorError(f"llms.image 失败: {type(exc).__name__}: {exc}") from exc
+            reference_images_sent = False
+            reference_fallback = "local_refs_not_supported"
+            try:
+                images = self.llm_factory.image(
+                    prompt,
+                    usage="image",
+                    size=size,
+                    reference_images=None,
+                )
+            except Exception as retry_exc:  # noqa: BLE001
+                raise CoverDirectorError(
+                    f"llms.image 失败: {type(retry_exc).__name__}: {retry_exc}"
+                ) from retry_exc
         except Exception as exc:  # noqa: BLE001
             raise CoverDirectorError(f"llms.image 失败: {type(exc).__name__}: {exc}") from exc
 
@@ -124,6 +142,10 @@ class CoverDirectorAgent(AgentBase):
             size=size,
             reference_paths=ref_paths,
             source=images[0][:80],
+            extra={
+                "reference_images_sent": reference_images_sent,
+                "reference_image_fallback": reference_fallback,
+            },
         )
 
     def _call_json(self, *, system: str, user: str, timeout: int) -> dict[str, Any]:
@@ -148,3 +170,7 @@ def _normalize_skill(skill: NoteSkill | dict[str, Any]) -> dict[str, Any]:
     if isinstance(skill, dict):
         return skill
     raise TypeError(f"skill 必须是 NoteSkill 或 dict，收到 {type(skill)!r}")
+
+
+def _has_local_reference_inputs(items: list[Any]) -> bool:
+    return any(not (isinstance(item, str) and item.startswith(("http://", "https://"))) for item in items)

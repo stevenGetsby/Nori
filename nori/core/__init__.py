@@ -1,4 +1,4 @@
-"""Shared contracts for Nori's domain architecture."""
+"""Shared contracts for Nori's capability and runtime architecture."""
 from __future__ import annotations
 
 from importlib import import_module
@@ -12,9 +12,12 @@ _LAZY_EXPORTS: Final[dict[str, str]] = {
     "AgentPrompt": "agent",
     "AgentPromptBuilder": "agent",
     "ArtifactStore": "artifacts",
+    "CAPABILITY_MODULES": "architecture",
     "AssetLibrary": "models",
     "AssetRecord": "models",
     "CandidateSet": "models",
+    "CapabilitySnapshot": "models",
+    "CapabilityModule": "architecture",
     "ChatCapabilityError": "contracts",
     "ChatJSONError": "contracts",
     "ChatResultError": "contracts",
@@ -22,10 +25,7 @@ _LAZY_EXPORTS: Final[dict[str, str]] = {
     "ContentCalendar": "models",
     "ContentTask": "models",
     "ContextPack": "models",
-    "DOMAIN_MODULES": "architecture",
     "DecisionPoint": "models",
-    "DomainModule": "architecture",
-    "DomainSnapshot": "models",
     "ExplanationTrace": "models",
     "ImageCapabilityError": "contracts",
     "ImageResultError": "contracts",
@@ -49,8 +49,8 @@ _LAZY_EXPORTS: Final[dict[str, str]] = {
     "UserProfile": "models",
     "WorkflowBase": "workflow",
     "WorkflowStep": "workflow",
-    "domain_module_names": "architecture",
-    "get_domain_module": "architecture",
+    "capability_module_names": "architecture",
+    "get_capability_module": "architecture",
     "named_workflow_steps": "workflow",
     "passthrough_step": "workflow",
 }

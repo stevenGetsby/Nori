@@ -1,7 +1,7 @@
 """Learning-loop module."""
 from __future__ import annotations
 
-from nori.core import DomainSnapshot, LearningSignal, PerformanceSnapshot
+from nori.core import LearningSignal, PerformanceSnapshot
 from nori.core.lazy_exports import lazy_export
 
 from .models import ComplianceReview, MetricsSnapshot, StrategyIteration
@@ -22,7 +22,6 @@ _LAZY_EXPORTS = {
 __all__ = [
     "ComplianceReview",
     "ConsistencyReviewerAgent",
-    "DomainSnapshot",
     "LearningLoopFacade",
     "LearningSignal",
     "MetricsSnapshot",

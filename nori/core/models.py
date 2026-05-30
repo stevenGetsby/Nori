@@ -810,6 +810,70 @@ class LearningSignal:
 
 
 @dataclass(slots=True)
+class CapabilitySnapshot:
+    """Complete capability-level view for one operation project or workflow run."""
+
+    snapshot_id: str = ""
+    project_id: str = ""
+    capability_names: list[str] = field(default_factory=list)
+    user_profile: UserProfile = field(default_factory=UserProfile)
+    market_analysis: MarketAnalysis = field(default_factory=MarketAnalysis)
+    context_packs: list[ContextPack] = field(default_factory=list)
+    candidate_sets: list[CandidateSet] = field(default_factory=list)
+    performance_snapshots: list[PerformanceSnapshot] = field(default_factory=list)
+    learning_signals: list[LearningSignal] = field(default_factory=list)
+    source_refs: list[dict[str, Any]] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "snapshot_id": self.snapshot_id,
+            "project_id": self.project_id,
+            "capability_names": list(self.capability_names),
+            "user_profile": self.user_profile.to_dict(),
+            "market_analysis": self.market_analysis.to_dict(),
+            "context_packs": [pack.to_dict() for pack in self.context_packs],
+            "candidate_sets": [candidate_set.to_dict() for candidate_set in self.candidate_sets],
+            "performance_snapshots": [snapshot.to_dict() for snapshot in self.performance_snapshots],
+            "learning_signals": [signal.to_dict() for signal in self.learning_signals],
+            "source_refs": _dict_rows(self.source_refs),
+            "metadata": dict(self.metadata),
+        }
+
+    def validate(self) -> list[dict[str, Any]]:
+        issues: list[dict[str, Any]] = []
+        _validate_required_capabilities(issues, self.capability_names)
+        _validate_candidate_context(issues, self.context_packs, self.candidate_sets)
+        return issues
+
+    def is_valid(self) -> bool:
+        return not self.validate()
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any] | None) -> "CapabilitySnapshot":
+        data = _mapping(data)
+        return cls(
+            snapshot_id=str(data.get("snapshot_id") or ""),
+            project_id=str(data.get("project_id") or ""),
+            capability_names=_string_list(data.get("capability_names") or data.get("module_names")),
+            user_profile=UserProfile.from_dict(data.get("user_profile")),
+            market_analysis=MarketAnalysis.from_dict(data.get("market_analysis")),
+            context_packs=[ContextPack.from_dict(item) for item in _mapping_list(data.get("context_packs"))],
+            candidate_sets=[CandidateSet.from_dict(item) for item in _mapping_list(data.get("candidate_sets"))],
+            performance_snapshots=[
+                PerformanceSnapshot.from_dict(item)
+                for item in _mapping_list(data.get("performance_snapshots"))
+            ],
+            learning_signals=[
+                LearningSignal.from_dict(item)
+                for item in _mapping_list(data.get("learning_signals"))
+            ],
+            source_refs=_mapping_list(data.get("source_refs")),
+            metadata=_mapping(data.get("metadata")),
+        )
+
+
+@dataclass(slots=True)
 class DomainSnapshot:
     """Complete projected domain view for one operation project or workflow run."""
 
@@ -843,24 +907,7 @@ class DomainSnapshot:
     def validate(self) -> list[dict[str, Any]]:
         issues: list[dict[str, Any]] = []
         _validate_required_modules(issues, self.module_names)
-        context_task_ids = _context_task_ids(self.context_packs)
-        for index, candidate_set in enumerate(self.candidate_sets):
-            path = f"candidate_sets[{index}]"
-            if candidate_set.task_id and candidate_set.task_id not in context_task_ids:
-                issues.append(_issue(
-                    "candidate_set_without_context",
-                    path,
-                    f"CandidateSet task_id '{candidate_set.task_id}' has no matching ContextPack task_id.",
-                    task_id=candidate_set.task_id,
-                ))
-            candidate_ids = _candidate_ids(candidate_set.candidates)
-            if candidate_set.selected_candidate_id and candidate_set.selected_candidate_id not in candidate_ids:
-                issues.append(_issue(
-                    "selected_candidate_missing",
-                    path,
-                    f"selected_candidate_id '{candidate_set.selected_candidate_id}' is not present in candidates.",
-                    selected_candidate_id=candidate_set.selected_candidate_id,
-                ))
+        _validate_candidate_context(issues, self.context_packs, self.candidate_sets)
         return issues
 
     def is_valid(self) -> bool:
@@ -921,6 +968,50 @@ def _validate_required_modules(issues: list[dict[str, Any]], module_names: list[
             ))
 
 
+def _validate_required_capabilities(issues: list[dict[str, Any]], capability_names: list[str]) -> None:
+    required = [
+        "user_profiling",
+        "market_analysis",
+        "planning",
+        "content_generation",
+        "learning_loop",
+    ]
+    present = set(capability_names)
+    for capability_name in required:
+        if capability_name not in present:
+            issues.append(_issue(
+                "missing_required_capability",
+                "capability_names",
+                f"CapabilitySnapshot is missing required capability '{capability_name}'.",
+                capability_name=capability_name,
+            ))
+
+
+def _validate_candidate_context(
+    issues: list[dict[str, Any]],
+    context_packs: list[ContextPack],
+    candidate_sets: list[CandidateSet],
+) -> None:
+    context_task_ids = _context_task_ids(context_packs)
+    for index, candidate_set in enumerate(candidate_sets):
+        path = f"candidate_sets[{index}]"
+        if candidate_set.task_id and candidate_set.task_id not in context_task_ids:
+            issues.append(_issue(
+                "candidate_set_without_context",
+                path,
+                f"CandidateSet task_id '{candidate_set.task_id}' has no matching ContextPack task_id.",
+                task_id=candidate_set.task_id,
+            ))
+        candidate_ids = _candidate_ids(candidate_set.candidates)
+        if candidate_set.selected_candidate_id and candidate_set.selected_candidate_id not in candidate_ids:
+            issues.append(_issue(
+                "selected_candidate_missing",
+                path,
+                f"selected_candidate_id '{candidate_set.selected_candidate_id}' is not present in candidates.",
+                selected_candidate_id=candidate_set.selected_candidate_id,
+            ))
+
+
 def _context_task_ids(context_packs: list[ContextPack]) -> set[str]:
     task_ids = set()
     for pack in context_packs:
@@ -962,6 +1053,7 @@ __all__ = [
     "AssetLibrary",
     "AssetRecord",
     "CandidateSet",
+    "CapabilitySnapshot",
     "ClientBrief",
     "ContentCalendar",
     "ContextPack",

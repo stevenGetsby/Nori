@@ -15,19 +15,15 @@ if str(ROOT) not in sys.path:
 
 import llms
 from data_collect.adapter import HotNote, TopNotesResult
-from nori.content_generation.content_producer import ContentProducerAgent
-from nori.context_building.calendar_planner import CalendarPlannerAgent
-from nori.context_building.kpi_planner import KPIPlannerAgent
-from nori.context_building.operation_planner import OperationPlannerAgent
+from nori.agents.content_generation import ContentProducerAgent
+from nori.agents.learning_loop import ReviewGateAgent
+from nori.agents.market_analysis import SessionSkillReport, XHSNoteAnalyzer
+from nori.agents.market_analysis import session_reporter as xhs_session_reporter
+from nori.agents.market_analysis import skill_builder as xhs_skill_builder
+from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
+from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
 from nori.core import ClientBrief, LLMFactory
-from nori.learning_loop.review import ReviewGateAgent
-from nori.market_analysis.models import SessionSkillReport
-from nori.market_analysis.xhs_note_analyzer import XHSNoteAnalyzer
-from nori.market_analysis.xhs_note_analyzer import session_reporter as xhs_session_reporter
-from nori.market_analysis.xhs_note_analyzer import skill_builder as xhs_skill_builder
-from nori.user_profiling.account_planner import AccountPlannerAgent
-from nori.user_profiling.intaker import IntakeAgent
-from nori.user_profiling.models import AccountPlannerInput, UserInput
+from nori.workflows import RuntimeRunRecorder
 
 
 CASE_DIR = ROOT / "data" / "Holly"
@@ -57,19 +53,40 @@ def main() -> int:
 
     brief_text = (CASE_DIR / "设计理念.md").read_text(encoding="utf-8")
     asset_paths = _selected_assets()
+    runtime_recorder = RuntimeRunRecorder(
+        user_id="holly",
+        profile_id="holly",
+        workflow_name="holly_live_content_generation",
+        goal="用 Holly 真实素材和小红书市场证据生成一篇图文内容，并生成封面图片。",
+    )
+    runtime = runtime_recorder.start(
+        user_input={"brief_text": brief_text, "case_dir": str(CASE_DIR)},
+        run_dir=run_dir,
+        source="设计理念.md",
+        acceptance=[
+            "生成 content_package.json",
+            "生成 cover png",
+            "生成 summary.md",
+        ],
+        metadata={"case_dir": str(CASE_DIR)},
+    )
+    runtime_recorder.write_snapshot(runtime, run_dir)
 
     top_result = _collect_xhs_notes(market_dir)
     _write_json(run_dir / "xhs_top_notes_result.json", top_result.to_dict())
+    runtime_recorder.record_stage(runtime, "xhs_top_notes", run_dir / "xhs_top_notes_result.json")
 
     analyzer = XHSNoteAnalyzer(use_llm=True, llm_factory=llm_factory)
     market_report = _build_market_report(analyzer, top_result, brief_text)
     _write_json(run_dir / "market_session_skill_report.json", market_report.to_dict())
     _write_json(run_dir / "note_skill_guides.json", xhs_session_reporter.skills_output(market_report))
+    runtime_recorder.record_stage(runtime, "market_skill_report", run_dir / "market_session_skill_report.json")
 
     intake = IntakeAgent(use_llm=True, use_vision=True, llm_factory=llm_factory).run(
         UserInput(text=brief_text, images=[str(path) for path in asset_paths])
     )
     _write_json(run_dir / "intake_result.json", intake.to_dict())
+    runtime_recorder.record_stage(runtime, "intake", run_dir / "intake_result.json")
 
     account_plan = AccountPlannerAgent(use_llm=True, llm_factory=llm_factory).run(
         AccountPlannerInput.from_intaker(
@@ -81,9 +98,11 @@ def main() -> int:
         )
     )
     _write_json(run_dir / "account_plan.json", account_plan.to_dict())
+    runtime_recorder.record_stage(runtime, "account_plan", run_dir / "account_plan.json")
 
     client_brief = _client_brief(brief_text, account_plan, top_result)
     _write_json(run_dir / "client_brief.json", client_brief.to_dict())
+    runtime_recorder.record_stage(runtime, "client_brief", run_dir / "client_brief.json")
 
     project = OperationPlannerAgent(use_llm=True, llm_factory=llm_factory).run(
         client_brief,
@@ -94,9 +113,11 @@ def main() -> int:
         horizon_days=7,
     )
     _write_json(run_dir / "operation_project.json", project.to_dict())
+    runtime_recorder.record_stage(runtime, "operation_project", run_dir / "operation_project.json")
 
     kpi_plan = KPIPlannerAgent(use_llm=True, llm_factory=llm_factory).run(project)
     _write_json(run_dir / "kpi_plan.json", kpi_plan.to_dict())
+    runtime_recorder.record_stage(runtime, "kpi_plan", run_dir / "kpi_plan.json")
 
     calendar = CalendarPlannerAgent(use_llm=True, llm_factory=llm_factory).run(
         project,
@@ -106,9 +127,11 @@ def main() -> int:
         horizon_days=7,
     )
     _write_json(run_dir / "content_calendar.json", calendar.to_dict())
+    runtime_recorder.record_stage(runtime, "content_calendar", run_dir / "content_calendar.json")
 
     task = _select_task(calendar)
     _write_json(run_dir / "selected_task.json", task.to_dict())
+    runtime_recorder.record_stage(runtime, "selected_task", run_dir / "selected_task.json")
 
     package = ContentProducerAgent(llm_factory=llm_factory).run(
         task,
@@ -120,9 +143,11 @@ def main() -> int:
         use_cover=True,
     )
     _write_json(run_dir / "content_package.json", package.to_dict())
+    runtime_recorder.record_stage(runtime, "content_package", run_dir / "content_package.json")
 
     reviews = ReviewGateAgent().run(package, task=task, client_brief=client_brief, project=project)
     _write_json(run_dir / "reviews.json", [review.to_dict() for review in reviews])
+    runtime_recorder.record_stage(runtime, "reviews", run_dir / "reviews.json")
 
     summary = _summary_markdown(
         run_dir=run_dir,
@@ -134,6 +159,9 @@ def main() -> int:
         reviews=reviews,
     )
     (run_dir / "summary.md").write_text(summary, encoding="utf-8")
+    runtime_recorder.record_stage(runtime, "summary", run_dir / "summary.md")
+    runtime_recorder.finish(runtime)
+    runtime_recorder.write_snapshot(runtime, run_dir)
     print(json.dumps({"run_dir": str(run_dir), "summary": str(run_dir / "summary.md")}, ensure_ascii=False))
     return 0
 

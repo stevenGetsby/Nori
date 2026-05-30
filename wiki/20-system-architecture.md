@@ -7,8 +7,14 @@
 | Path | Role |
 | --- | --- |
 | `nori/` | Product workflow modules, shared contracts, runtime helpers, and config loader. |
-| `nori/domain.py` | Public aggregate entrypoint for the domain architecture: `build_domain_snapshot()` and `validate_domain_snapshot()`. |
-| `nori/core/` | Shared domain contracts, runtime base classes, public LLM/config contracts, architecture registry, and package-root lazy-export helper for public module APIs. |
+| `nori/capabilities.py` | Public aggregate entrypoint for the current capability architecture: `build_capability_snapshot()` and `validate_capability_snapshot()`. |
+| `nori/domain.py` | Legacy compatibility entrypoint that adapts capability snapshots to `DomainSnapshot` for older callers. |
+| `nori/core/` | Shared capability contracts, runtime base classes, public LLM/config contracts, architecture registry, and package-root lazy-export helper for public module APIs. |
+| `nori/agents/` | Business capability boundary for public agent groups: user profiling, planning, market analysis, content generation, and learning loop. |
+| `nori/context/` | Runtime context assembly for one agent call. |
+| `nori/memory/` | Stable/session/task memory contracts, retrieval, store, and promotion policy. |
+| `nori/sessions/` | Session, turn, task-goal, and session-manager contracts. |
+| `nori/workflows/` | Workflow run/stage contracts, runner, and `RuntimeRunRecorder` for session/context/workflow snapshots. |
 | `nori/user_profiling/` | `facade.py` for long-lived user/account/brand/preference profile construction; package `__init__` keeps lightweight model exports eager and routes stage/facade exports through `nori.core.lazy_exports`. |
 | `nori/market_analysis/` | `facade.py` for competitor/hot-example/trend evidence as market analysis; package `__init__` keeps lightweight model exports eager and routes analyzer/facade exports through `nori.core.lazy_exports`. |
 | `nori/context_building/` | Canonical context-building module: operation/KPI/calendar planning, planner critics, content task construction, and unified `ContextPack` assembly. |
@@ -42,31 +48,32 @@ Input / assets
   -> nori.learning_loop.models.ComplianceReview / MetricsSnapshot / StrategyIteration
 ```
 
-## Domain Architecture
+## Capability Architecture
 
-Nori's high-level product architecture is organized as one shared layer plus five business modules. The canonical implementation now lives in these five packages; the old agent/model roots have been removed.
+Nori's high-level product architecture is organized as one shared runtime layer plus five agent-owned capability groups. The canonical public surface is now `nori.capabilities` and `nori.agents.*`; the old agent/model roots have been removed and `nori.domain` is compatibility only.
 
 ```text
 nori.core
-  -> nori.user_profiling
-  -> nori.market_analysis
-  -> nori.context_building
-  -> nori.content_generation
-  -> nori.learning_loop
+  -> nori.sessions / nori.context / nori.memory / nori.workflows
+  -> nori.agents.user_profiling
+  -> nori.agents.market_analysis
+  -> nori.agents.planning
+  -> nori.agents.content_generation
+  -> nori.agents.learning_loop
 ```
 
-| Domain module | Public contract | Current facade | Backing implementation |
+| Capability | Public contract | Current public agent surface | Backing implementation |
 | --- | --- | --- | --- |
-| Shared core | `UserProfile`, `UserAsset`, `AssetRecord`, `AssetLibrary`, `ClientBrief`, `IntentContract`, `OperationPlan`, `KPIPlan`, `ContentTask`, `ContentCalendar`, `AccountOperationProject`, `MarketAnalysis`, `ContextPack`, `DecisionPoint`, `ExplanationTrace`, `CandidateSet`, `PerformanceSnapshot`, `LearningSignal`, `DomainSnapshot` | `nori.core` | Provider-free dataclasses with `to_dict/from_dict`; `IntentContract` freezes user goals, required terms, tone, deliverables, and taboos before generation; `ArtifactStore` provides JSON checkpoint/resume for long live runs; `ExplanationTrace` writes `stage_steps` and only reads legacy `agent_steps`; `DomainSnapshot` includes `validate()` / `is_valid()` quality gates; `nori.core.architecture` exposes `DOMAIN_MODULES`, `DomainModule`, `domain_module_names()`, and `get_domain_module()`. |
-| User profiling | Long-lived user/account/brand/preference profile | `nori.user_profiling.facade.UserProfilingFacade` | `nori.user_profiling.models` owns `UserInput`, `IntakeResult`, `AccountPlannerInput`, `AccountPlanResult`, and `AccountPositioning`. Image tagging returns `nori.core.UserAsset` without importing content generation. |
-| Market analysis | Competitor samples, hot examples, trend/audience insights | `nori.market_analysis.facade.MarketAnalysisFacade` | `nori.market_analysis.models` owns `CompetitorResearch`, `CompetitorSample`, `XHSNoteSample`, `XHSSeedSkillDraft`, `NoteEvidence`, `NoteSkill`, and `SessionSkillReport`; evidence can come from `DataCollector` and `XHSNoteAnalyzer`. |
-| Context building | Operation project assembly, KPI/calendar planning, unified generation context, and xAI evidence trace | `nori.context_building.{OperationPlannerAgent,KPIPlannerAgent,CalendarPlannerAgent,ContextPackBuilder}` | Context-building stages import cross-stage contracts directly from `nori.core`; shared `ContextPack` also lives in `nori.core`. |
-| Content generation | Routed text/image/package generation and candidate set before final human selection | `nori.content_generation.{GenerationAgent,ContentProducerAgent,ContentGenerationFacade}` | `GenerationAgent` is the coarse system stage; it routes `text` to `NoteMakerAgent`, `image` to `CoverDirectorAgent`, and `note_package` to `ContentProducerAgent`. Specialized child agents remain separate because text, image, and future video generation have different inputs and provider contracts. |
-| Learning loop | Review gates, product-quality checks, monitoring snapshots, and preference/strategy update signals | `nori.learning_loop.{ReviewGateAgent,QualityReviewerAgent,MetricsSnapshotAgent,StrategyIterationAgent,LearningLoopFacade}` | `nori.learning_loop.models` owns `ComplianceReview`, `MetricsSnapshot`, `StrategyIteration`; `QualityReviewerAgent` checks generated packages against `IntentContract` so publish readiness is not limited to compliance/consistency. |
+| Shared core/runtime | `UserProfile`, `UserAsset`, `ClientBrief`, `AccountOperationProject`, `ContextPack`, `CandidateSet`, `CapabilitySnapshot`, `Session`, `ContextBundle`, `WorkflowRun` | `nori.core`, `nori.sessions`, `nori.context`, `nori.memory`, `nori.workflows` | Provider-free dataclasses with `to_dict/from_dict`; `CapabilitySnapshot` is the current aggregate quality gate; `DomainSnapshot` remains legacy compatibility; `RuntimeRunRecorder` writes session/context/workflow snapshots for long live runs. |
+| User profiling | Long-lived user/account/brand/preference profile | `nori.agents.user_profiling` | Backed by `nori.user_profiling` models and intaker/account planner stage packages. |
+| Market analysis | Competitor samples, hot examples, trend/audience insights | `nori.agents.market_analysis` | Backed by `nori.market_analysis` models and `XHSNoteAnalyzer`; evidence can come from `DataCollector`. |
+| Planning | Operation project assembly, KPI/calendar planning, and content task construction | `nori.agents.planning` | Backed by existing `nori.context_building` planner packages while system-level runtime context lives in `nori.context`. |
+| Content generation | Routed text/image/package generation and candidate set before final human selection | `nori.agents.content_generation` | `NoteMakerAgent`, `CoverDirectorAgent`, and `ContentProducerAgent` remain specialized because text, image, and future video generation have different inputs and provider contracts. |
+| Learning loop | Review gates, product-quality checks, monitoring snapshots, and preference/strategy update signals | `nori.agents.learning_loop` | Backed by `nori.learning_loop` review/strategy packages; `LearningLoopFacade.capability_snapshot_from_project()` builds the current aggregate view. |
 
-Design rule: new cross-stage behavior should add a shared `nori.core` contract or one of the five domain facades before adding another standalone agent.
+Design rule: new cross-stage behavior should add a shared runtime contract or one of the five capability groups before adding another standalone agent.
 
-Upper-layer rule: CLI/API/UI code should prefer `nori.domain.build_domain_snapshot()` and `nori.domain.validate_domain_snapshot()` when it needs the complete five-module view. Use individual facades only when the caller is intentionally working inside one domain module.
+Upper-layer rule: CLI/API/UI code should prefer `nori.capabilities.build_capability_snapshot()` and `nori.capabilities.validate_capability_snapshot()` when it needs the complete capability view. Use `nori.domain.*` only for legacy callers that still expect `DomainSnapshot`.
 
 Projection bridge: the five domain facades can project an existing `AccountOperationProject` into the current architecture. `AccountOperationProject` lives in `nori.core.project`; `UserProfilingFacade` and `MarketAnalysisFacade` consume project-like dict/object shapes without importing context-building internals, keeping upstream modules independent from the context-building implementation.
 
@@ -78,9 +85,9 @@ Projection bridge: the five domain facades can project an existing `AccountOpera
 | `ContentGenerationFacade.candidate_set_from_project(project, task_id=...)` | Converts task packages into a `CandidateSet` linked to context trace input refs. |
 | `LearningLoopFacade.performance_snapshots_from_project(project)` | Converts project metrics into `PerformanceSnapshot[]`. |
 | `LearningLoopFacade.learning_signals_from_project(project, ...)` | Converts strategy iterations into `LearningSignal[]`. |
-| `LearningLoopFacade.domain_snapshot_from_project(project, ...)` | Aggregates the full five-module projected view into a round-trippable `DomainSnapshot`. |
+| `LearningLoopFacade.capability_snapshot_from_project(project, ...)` | Aggregates the full capability view into a round-trippable `CapabilitySnapshot`. |
 
-`DomainSnapshot.validate()` currently guards required module coverage, candidate-set/context alignment, and selected-candidate integrity. This is the shared quality gate for future CLI/API/UI consumers of the new architecture.
+`CapabilitySnapshot.validate()` currently guards required capability coverage, candidate-set/context alignment, and selected-candidate integrity. This is the shared quality gate for future CLI/API/UI consumers of the new architecture.
 
 ## LLM Gateway
 

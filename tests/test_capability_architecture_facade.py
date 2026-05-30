@@ -12,14 +12,15 @@ from nori.user_profiling.models import AccountPositioning
 from nori.user_profiling import UserProfilingFacade
 from nori.core import (
     CandidateSet,
+    CapabilitySnapshot,
     ContextPack,
     DecisionPoint,
-    DomainSnapshot,
     ExplanationTrace,
     LearningSignal,
     UserProfile,
     WorkflowBase,
 )
+from nori.core.models import DomainSnapshot
 
 
 def test_shared_core_contracts_exist_and_round_trip():
@@ -75,7 +76,7 @@ def test_facades_are_importable_and_composable():
     assert learning.module_name == "learning_loop"
 
 
-def test_domain_facades_share_workflow_base_contract():
+def test_business_facades_share_workflow_base_contract():
     facades = [
         UserProfilingFacade(),
         MarketAnalysisFacade(),
@@ -97,41 +98,36 @@ def test_domain_facades_share_workflow_base_contract():
         ["competitor_research", "market_analysis"],
         ["profile", "task", "market", "assets", "context_pack"],
         ["context_pack", "content_packages", "candidate_set"],
-        ["performance", "strategy", "domain_snapshot"],
+        ["performance", "strategy", "capability_snapshot"],
     ]
 
 
-def test_domain_architecture_registry_exposes_five_stable_modules():
-    from nori.core import DOMAIN_MODULES, DomainModule, domain_module_names, get_domain_module
+def test_capability_architecture_registry_exposes_agent_owned_modules():
+    from nori.core import CAPABILITY_MODULES, CapabilityModule, capability_module_names, get_capability_module
 
-    assert domain_module_names() == [
+    assert capability_module_names() == [
         "user_profiling",
         "market_analysis",
-        "context_building",
+        "planning",
         "content_generation",
         "learning_loop",
     ]
-    assert all(isinstance(module, DomainModule) for module in DOMAIN_MODULES)
+    assert all(isinstance(module, CapabilityModule) for module in CAPABILITY_MODULES)
 
-    context = get_domain_module("context_building")
-    assert context.package == "nori.context_building"
-    assert context.facade == "ContextPackBuilder"
-    assert context.contracts == ("ContextPack", "DecisionPoint", "ExplanationTrace")
+    planning = get_capability_module("planning")
+    assert planning.package == "nori.agents.planning"
+    assert planning.agents == ("OperationPlannerAgent", "KPIPlannerAgent", "CalendarPlannerAgent")
+    assert "ContentCalendar" in planning.contracts
 
-    generation = get_domain_module("content_generation")
-    assert generation.depends_on == ("context_building",)
-    assert "CandidateSet" in generation.contracts
+    generation = get_capability_module("content_generation")
+    assert generation.depends_on == ("planning", "market_analysis")
+    assert "ContentProducerAgent" in generation.agents
 
-    learning = get_domain_module("learning_loop")
-    assert "DomainSnapshot" in learning.contracts
-    assert learning.depends_on == (
-        "user_profiling",
-        "market_analysis",
-        "context_building",
-        "content_generation",
-    )
+    learning = get_capability_module("learning_loop")
+    assert "StrategyIterationAgent" in learning.agents
+    assert learning.depends_on == ("content_generation",)
 
-    assert get_domain_module("missing") is None
+    assert get_capability_module("missing") is None
 
 
 def test_five_modules_compose_existing_project_models():
@@ -228,7 +224,7 @@ def test_five_modules_compose_existing_project_models():
     assert signal.update_suggestion["next_actions"] == ["下一条内容强化首段钩子"]
 
 
-def test_account_operation_project_projects_into_five_domain_modules():
+def test_account_operation_project_projects_into_five_capability_modules():
     task = ContentTask(
         task_id="task_001",
         topic="母亲节花束搭配",
@@ -329,7 +325,7 @@ def test_upstream_facades_accept_persisted_project_dicts_without_project_model_d
     assert market.metadata["project_name"] == "春日花房运营"
 
 
-def test_learning_loop_builds_round_trippable_domain_snapshot_from_project():
+def test_learning_loop_builds_round_trippable_capability_snapshot_from_project():
     project = AccountOperationProject(
         project_id="project_001",
         name="春日花房运营",
@@ -355,20 +351,20 @@ def test_learning_loop_builds_round_trippable_domain_snapshot_from_project():
         strategy_iterations=[StrategyIteration(iteration_id="iter_001", next_actions=["强化首段钩子"])],
     )
 
-    snapshot = LearningLoopFacade().domain_snapshot_from_project(
+    snapshot = LearningLoopFacade().capability_snapshot_from_project(
         project,
         selected_candidate_ids={"task_001": "pkg_001"},
         signal_source="metrics",
         signal_target="preference",
     )
 
-    assert isinstance(snapshot, DomainSnapshot)
-    assert snapshot.snapshot_id == "domain_project_001"
+    assert isinstance(snapshot, CapabilitySnapshot)
+    assert snapshot.snapshot_id == "capability_project_001"
     assert snapshot.project_id == "project_001"
-    assert snapshot.module_names == [
+    assert snapshot.capability_names == [
         "user_profiling",
         "market_analysis",
-        "context_building",
+        "planning",
         "content_generation",
         "learning_loop",
     ]
@@ -377,16 +373,16 @@ def test_learning_loop_builds_round_trippable_domain_snapshot_from_project():
     assert snapshot.candidate_sets[0].selected_candidate_id == "pkg_001"
     assert snapshot.performance_snapshots[0].snapshot_id == "metric_001"
     assert snapshot.learning_signals[0].signal_id == "signal_iter_001"
-    assert DomainSnapshot.from_dict(snapshot.to_dict()).to_dict() == snapshot.to_dict()
+    assert CapabilitySnapshot.from_dict(snapshot.to_dict()).to_dict() == snapshot.to_dict()
     assert snapshot.validate() == []
     assert snapshot.is_valid()
 
 
-def test_domain_snapshot_validation_reports_structural_issues():
-    snapshot = DomainSnapshot(
-        snapshot_id="domain_bad",
+def test_capability_snapshot_validation_reports_structural_issues():
+    snapshot = CapabilitySnapshot(
+        snapshot_id="capability_bad",
         project_id="project_001",
-        module_names=["user_profiling"],
+        capability_names=["user_profiling"],
         context_packs=[
             ContextPack(
                 context_pack_id="ctx_task_001",
@@ -406,14 +402,38 @@ def test_domain_snapshot_validation_reports_structural_issues():
     issues = snapshot.validate()
     issue_codes = [issue["code"] for issue in issues]
 
-    assert "missing_required_module" in issue_codes
+    assert "missing_required_capability" in issue_codes
     assert "candidate_set_without_context" in issue_codes
     assert "selected_candidate_missing" in issue_codes
     assert not snapshot.is_valid()
 
 
-def test_public_domain_entrypoint_builds_and_validates_snapshot():
+def test_public_capability_entrypoint_builds_and_validates_snapshot():
     from nori import __all__ as nori_exports
+    from nori.capabilities import build_capability_snapshot, validate_capability_snapshot
+
+    project = AccountOperationProject(
+        project_id="project_001",
+        name="春日花房运营",
+        client_brief=ClientBrief(client_name="花店主理人", brand_name="春日花房"),
+        account_positioning=AccountPositioning(recommended_positioning="社区花艺顾问"),
+        content_tasks=[ContentTask(task_id="task_001", topic="母亲节花束搭配")],
+        content_packages=[ContentPackage(package_id="pkg_001", task_id="task_001", title="母亲节花别乱买")],
+    )
+
+    snapshot = build_capability_snapshot(
+        project,
+        selected_candidate_ids={"task_001": "pkg_001"},
+    )
+
+    assert "capabilities" in nori_exports
+    assert snapshot.snapshot_id == "capability_project_001"
+    assert snapshot.is_valid()
+    assert validate_capability_snapshot(snapshot) == []
+    assert validate_capability_snapshot(snapshot.to_dict()) == []
+
+
+def test_legacy_domain_entrypoint_builds_and_validates_compat_snapshot():
     from nori.domain import build_domain_snapshot, validate_domain_snapshot
 
     project = AccountOperationProject(
@@ -430,8 +450,7 @@ def test_public_domain_entrypoint_builds_and_validates_snapshot():
         selected_candidate_ids={"task_001": "pkg_001"},
     )
 
-    assert "domain" in nori_exports
+    assert isinstance(snapshot, DomainSnapshot)
     assert snapshot.snapshot_id == "domain_project_001"
     assert snapshot.is_valid()
     assert validate_domain_snapshot(snapshot) == []
-    assert validate_domain_snapshot(snapshot.to_dict()) == []

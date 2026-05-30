@@ -8,13 +8,18 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 ALLOWED_NORI_TOP_LEVEL_DIRS = {
+    "agents",
     "content_generation",
+    "context",
     "context_building",
     "core",
     "learning_loop",
     "market_analysis",
+    "memory",
+    "sessions",
     "shared",
     "user_profiling",
+    "workflows",
 }
 
 
@@ -291,7 +296,7 @@ def test_workflow_runtime_uses_core_llm_factory_instead_of_direct_llms_imports()
                     assert node.module != "llms", rel_path
 
 
-def test_nori_top_level_packages_are_domain_or_shared_boundaries():
+def test_nori_top_level_packages_are_runtime_agent_or_shared_boundaries():
     package_dirs = {
         path.name
         for path in (ROOT / "nori").iterdir()
