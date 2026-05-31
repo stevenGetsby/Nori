@@ -13,7 +13,7 @@
 | `nori/context/` | Runtime context assembly for one agent call. |
 | `nori/memory/` | Stable/session/task memory contracts, retrieval, store, and promotion policy. |
 | `nori/sessions/` | Session, turn, task-goal, and session-manager contracts. |
-| `nori/workflows/` | Workflow run/stage contracts, runner, and `RuntimeRunRecorder` for session/context/workflow snapshots. |
+| `nori/workflows/` | Workflow run/stage contracts, LangGraph-backed runner, and `RuntimeRunRecorder` for session/context/workflow snapshots. |
 | `nori/agents/user_profiling/` | `facade.py` for long-lived user/account/brand/preference profile construction; package `__init__` keeps lightweight model exports eager and routes stage/facade exports through `nori.core.lazy_exports`. |
 | `nori/agents/market_analysis/` | `facade.py` for competitor/hot-example/trend evidence as market analysis; package `__init__` keeps lightweight model exports eager and routes analyzer/facade exports through `nori.core.lazy_exports`. |
 | `nori/agents/planning/` | Canonical context-building module: operation/KPI/calendar planning, planner critics, content task construction, and unified `ContextPack` assembly. |
@@ -27,6 +27,17 @@
 | `scripts/` | Smoke scripts for live/session-level workflows. |
 | `文档/` | Historical design notes and project-specific skill source. Wiki is now the canonical project map. |
 | `view/` | Static demo artifact; not current product architecture. |
+
+## Frameworks
+
+Nori uses LangGraph and LangChain Core at the runtime orchestration boundary:
+
+| Framework | Where | Role |
+| --- | --- | --- |
+| LangGraph | `nori.workflows.LangGraphWorkflowRunner` | Compiles `WorkflowSpec` into a `StateGraph`, executes stages through `START -> ... -> END`, and records `WorkflowRun` / `StageRun` status. |
+| LangChain Core | `nori.workflows.LangGraphWorkflowRunner` | Wraps each stage handler as a `RunnableLambda`, keeping workflow stages compatible with LangChain runnable semantics. |
+
+Business agents still own Nori-specific behavior under `nori.agents.*`; LangGraph owns cross-stage execution, not domain logic.
 
 ## Runtime Layers
 
@@ -63,7 +74,7 @@ nori.core
 
 | Capability | Public contract | Current public agent surface | Backing implementation |
 | --- | --- | --- | --- |
-| Shared core/runtime | `UserProfile`, `UserAsset`, `ClientBrief`, `AccountOperationProject`, `ContextPack`, `CandidateSet`, `CapabilitySnapshot`, `Session`, `ContextBundle`, `WorkflowRun` | `nori.core`, `nori.sessions`, `nori.context`, `nori.memory`, `nori.workflows` | Provider-free dataclasses with `to_dict/from_dict`; `CapabilitySnapshot` is the current aggregate quality gate; `RuntimeRunRecorder` writes session/context/workflow snapshots for long live runs. |
+| Shared core/runtime | `UserProfile`, `UserAsset`, `ClientBrief`, `AccountOperationProject`, `ContextPack`, `CandidateSet`, `CapabilitySnapshot`, `Session`, `ContextBundle`, `WorkflowRun` | `nori.core`, `nori.sessions`, `nori.context`, `nori.memory`, `nori.workflows` | Provider-free dataclasses with `to_dict/from_dict`; `CapabilitySnapshot` is the current aggregate quality gate; `WorkflowRunner` delegates execution to LangGraph and `RuntimeRunRecorder` writes session/context/workflow snapshots for long live runs. |
 | User profiling | Long-lived user/account/brand/preference profile | `nori.agents.user_profiling` | Backed by `nori.agents.user_profiling` models and intaker/account planner stage packages. |
 | Market analysis | Competitor samples, hot examples, trend/audience insights | `nori.agents.market_analysis` | Backed by `nori.agents.market_analysis` models and `XHSNoteAnalyzer`; evidence can come from `DataCollector`. |
 | Planning | Operation project assembly, KPI/calendar planning, and content task construction | `nori.agents.planning` | Backed by existing `nori.agents.planning` planner packages while system-level runtime context lives in `nori.context`. |

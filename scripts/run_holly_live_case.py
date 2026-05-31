@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+from dataclasses import replace
 from datetime import date, datetime
 from pathlib import Path
 from typing import Any
@@ -23,7 +24,7 @@ from nori.agents.market_analysis.xhs_note_analyzer import skill_builder as xhs_s
 from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
 from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
 from nori.core import ClientBrief, LLMFactory
-from nori.workflows import RuntimeRunRecorder
+from nori.workflows import RuntimeRunRecorder, StageSpec, WorkflowRunner, WorkflowSpec
 
 
 CASE_DIR = ROOT / "data" / "Holly"
@@ -72,98 +73,196 @@ def main() -> int:
     )
     runtime_recorder.write_snapshot(runtime, run_dir)
 
-    top_result = _collect_xhs_notes(market_dir)
-    _write_json(run_dir / "xhs_top_notes_result.json", top_result.to_dict())
-    runtime_recorder.record_stage(runtime, "xhs_top_notes", run_dir / "xhs_top_notes_result.json")
-
-    analyzer = XHSNoteAnalyzer(use_llm=True, llm_factory=llm_factory)
-    market_report = _build_market_report(analyzer, top_result, brief_text)
-    _write_json(run_dir / "market_session_skill_report.json", market_report.to_dict())
-    _write_json(run_dir / "note_skill_guides.json", xhs_session_reporter.skills_output(market_report))
-    runtime_recorder.record_stage(runtime, "market_skill_report", run_dir / "market_session_skill_report.json")
-
-    intake = IntakeAgent(use_llm=True, use_vision=True, llm_factory=llm_factory).run(
-        UserInput(text=brief_text, images=[str(path) for path in asset_paths])
+    state = {
+        "run_dir": run_dir,
+        "market_dir": market_dir,
+        "covers_dir": covers_dir,
+        "llm_factory": llm_factory,
+        "brief_text": brief_text,
+        "asset_paths": asset_paths,
+        "_artifact_refs": {},
+    }
+    spec = WorkflowSpec(
+        name="holly_live_content_generation",
+        stages=[
+            StageSpec("xhs_top_notes", _stage_xhs_top_notes),
+            StageSpec("market_skill_report", _stage_market_skill_report),
+            StageSpec("intake", _stage_intake),
+            StageSpec("account_plan", _stage_account_plan),
+            StageSpec("client_brief", _stage_client_brief),
+            StageSpec("operation_project", _stage_operation_project),
+            StageSpec("kpi_plan", _stage_kpi_plan),
+            StageSpec("content_calendar", _stage_content_calendar),
+            StageSpec("selected_task", _stage_selected_task),
+            StageSpec("content_package", _stage_content_package),
+            StageSpec("reviews", _stage_reviews),
+            StageSpec("summary", _stage_summary),
+        ],
     )
-    _write_json(run_dir / "intake_result.json", intake.to_dict())
-    runtime_recorder.record_stage(runtime, "intake", run_dir / "intake_result.json")
+    try:
+        _final_state, workflow_run = WorkflowRunner().run(
+            spec,
+            state,
+            session_id=runtime.session.session_id,
+            task_id=runtime.task_goal.task_id,
+        )
+    except Exception as exc:
+        failed_run = getattr(exc, "workflow_run", None)
+        if failed_run is not None:
+            runtime_recorder.write_snapshot(replace(runtime, workflow_run=failed_run), run_dir)
+        raise
+    runtime = replace(runtime, workflow_run=workflow_run)
+    runtime_recorder.write_snapshot(runtime, run_dir)
+    print(json.dumps({"run_dir": str(run_dir), "summary": str(run_dir / "summary.md")}, ensure_ascii=False))
+    return 0
 
-    account_plan = AccountPlannerAgent(use_llm=True, llm_factory=llm_factory).run(
+
+def _stage_xhs_top_notes(state: dict[str, Any]) -> dict[str, Any]:
+    top_result = _collect_xhs_notes(state["market_dir"])
+    path = state["run_dir"] / "xhs_top_notes_result.json"
+    _write_json(path, top_result.to_dict())
+    state = {**state, "top_result": top_result}
+    return _with_artifact(state, "xhs_top_notes", path)
+
+
+def _stage_market_skill_report(state: dict[str, Any]) -> dict[str, Any]:
+    analyzer = XHSNoteAnalyzer(use_llm=True, llm_factory=state["llm_factory"])
+    market_report = _build_market_report(analyzer, state["top_result"], state["brief_text"])
+    report_path = state["run_dir"] / "market_session_skill_report.json"
+    guides_path = state["run_dir"] / "note_skill_guides.json"
+    _write_json(report_path, market_report.to_dict())
+    _write_json(guides_path, xhs_session_reporter.skills_output(market_report))
+    state = {**state, "market_report": market_report}
+    return _with_artifact(state, "market_skill_report", report_path)
+
+
+def _stage_intake(state: dict[str, Any]) -> dict[str, Any]:
+    intake = IntakeAgent(use_llm=True, use_vision=True, llm_factory=state["llm_factory"]).run(
+        UserInput(text=state["brief_text"], images=[str(path) for path in state["asset_paths"]])
+    )
+    path = state["run_dir"] / "intake_result.json"
+    _write_json(path, intake.to_dict())
+    state = {**state, "intake": intake}
+    return _with_artifact(state, "intake", path)
+
+
+def _stage_account_plan(state: dict[str, Any]) -> dict[str, Any]:
+    account_plan = AccountPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(
         AccountPlannerInput.from_intaker(
-            intake,
-            text=brief_text,
-            images=[str(path) for path in asset_paths],
+            state["intake"],
+            text=state["brief_text"],
+            images=[str(path) for path in state["asset_paths"]],
             platform="xhs",
             enable_search=False,
         )
     )
-    _write_json(run_dir / "account_plan.json", account_plan.to_dict())
-    runtime_recorder.record_stage(runtime, "account_plan", run_dir / "account_plan.json")
+    path = state["run_dir"] / "account_plan.json"
+    _write_json(path, account_plan.to_dict())
+    state = {**state, "account_plan": account_plan}
+    return _with_artifact(state, "account_plan", path)
 
-    client_brief = _client_brief(brief_text, account_plan, top_result)
-    _write_json(run_dir / "client_brief.json", client_brief.to_dict())
-    runtime_recorder.record_stage(runtime, "client_brief", run_dir / "client_brief.json")
 
-    project = OperationPlannerAgent(use_llm=True, llm_factory=llm_factory).run(
-        client_brief,
-        account_plan,
-        project_id=f"holly_live_{run_dir.name}",
+def _stage_client_brief(state: dict[str, Any]) -> dict[str, Any]:
+    client_brief = _client_brief(state["brief_text"], state["account_plan"], state["top_result"])
+    path = state["run_dir"] / "client_brief.json"
+    _write_json(path, client_brief.to_dict())
+    state = {**state, "client_brief": client_brief}
+    return _with_artifact(state, "client_brief", path)
+
+
+def _stage_operation_project(state: dict[str, Any]) -> dict[str, Any]:
+    project = OperationPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(
+        state["client_brief"],
+        state["account_plan"],
+        project_id=f"holly_live_{state['run_dir'].name}",
         project_name="Holly Shit 小红书冷启动",
         start_date=date.today(),
         horizon_days=7,
     )
-    _write_json(run_dir / "operation_project.json", project.to_dict())
-    runtime_recorder.record_stage(runtime, "operation_project", run_dir / "operation_project.json")
+    path = state["run_dir"] / "operation_project.json"
+    _write_json(path, project.to_dict())
+    state = {**state, "project": project}
+    return _with_artifact(state, "operation_project", path)
 
-    kpi_plan = KPIPlannerAgent(use_llm=True, llm_factory=llm_factory).run(project)
-    _write_json(run_dir / "kpi_plan.json", kpi_plan.to_dict())
-    runtime_recorder.record_stage(runtime, "kpi_plan", run_dir / "kpi_plan.json")
 
-    calendar = CalendarPlannerAgent(use_llm=True, llm_factory=llm_factory).run(
-        project,
-        kpi_plan=kpi_plan,
-        client_brief=client_brief,
+def _stage_kpi_plan(state: dict[str, Any]) -> dict[str, Any]:
+    kpi_plan = KPIPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(state["project"])
+    path = state["run_dir"] / "kpi_plan.json"
+    _write_json(path, kpi_plan.to_dict())
+    state = {**state, "kpi_plan": kpi_plan}
+    return _with_artifact(state, "kpi_plan", path)
+
+
+def _stage_content_calendar(state: dict[str, Any]) -> dict[str, Any]:
+    calendar = CalendarPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(
+        state["project"],
+        kpi_plan=state["kpi_plan"],
+        client_brief=state["client_brief"],
         start_date=date.today(),
         horizon_days=7,
     )
-    _write_json(run_dir / "content_calendar.json", calendar.to_dict())
-    runtime_recorder.record_stage(runtime, "content_calendar", run_dir / "content_calendar.json")
+    path = state["run_dir"] / "content_calendar.json"
+    _write_json(path, calendar.to_dict())
+    state = {**state, "calendar": calendar}
+    return _with_artifact(state, "content_calendar", path)
 
-    task = _select_task(calendar)
-    _write_json(run_dir / "selected_task.json", task.to_dict())
-    runtime_recorder.record_stage(runtime, "selected_task", run_dir / "selected_task.json")
 
-    package = ContentProducerAgent(llm_factory=llm_factory).run(
-        task,
-        skills=market_report.skills,
-        assets=intake.assets,
-        out_dir=covers_dir,
-        client_brief=client_brief,
-        project=project,
+def _stage_selected_task(state: dict[str, Any]) -> dict[str, Any]:
+    task = _select_task(state["calendar"])
+    path = state["run_dir"] / "selected_task.json"
+    _write_json(path, task.to_dict())
+    state = {**state, "task": task}
+    return _with_artifact(state, "selected_task", path)
+
+
+def _stage_content_package(state: dict[str, Any]) -> dict[str, Any]:
+    package = ContentProducerAgent(llm_factory=state["llm_factory"]).run(
+        state["task"],
+        skills=state["market_report"].skills,
+        assets=state["intake"].assets,
+        out_dir=state["covers_dir"],
+        client_brief=state["client_brief"],
+        project=state["project"],
         use_cover=True,
     )
-    _write_json(run_dir / "content_package.json", package.to_dict())
-    runtime_recorder.record_stage(runtime, "content_package", run_dir / "content_package.json")
+    path = state["run_dir"] / "content_package.json"
+    _write_json(path, package.to_dict())
+    state = {**state, "package": package}
+    return _with_artifact(state, "content_package", path)
 
-    reviews = ReviewGateAgent().run(package, task=task, client_brief=client_brief, project=project)
-    _write_json(run_dir / "reviews.json", [review.to_dict() for review in reviews])
-    runtime_recorder.record_stage(runtime, "reviews", run_dir / "reviews.json")
 
-    summary = _summary_markdown(
-        run_dir=run_dir,
-        top_result=top_result,
-        market_report=market_report,
-        account_plan=account_plan,
-        task=task,
-        package=package,
-        reviews=reviews,
+def _stage_reviews(state: dict[str, Any]) -> dict[str, Any]:
+    reviews = ReviewGateAgent().run(
+        state["package"],
+        task=state["task"],
+        client_brief=state["client_brief"],
+        project=state["project"],
     )
-    (run_dir / "summary.md").write_text(summary, encoding="utf-8")
-    runtime_recorder.record_stage(runtime, "summary", run_dir / "summary.md")
-    runtime_recorder.finish(runtime)
-    runtime_recorder.write_snapshot(runtime, run_dir)
-    print(json.dumps({"run_dir": str(run_dir), "summary": str(run_dir / "summary.md")}, ensure_ascii=False))
-    return 0
+    path = state["run_dir"] / "reviews.json"
+    _write_json(path, [review.to_dict() for review in reviews])
+    state = {**state, "reviews": reviews}
+    return _with_artifact(state, "reviews", path)
+
+
+def _stage_summary(state: dict[str, Any]) -> dict[str, Any]:
+    summary = _summary_markdown(
+        run_dir=state["run_dir"],
+        top_result=state["top_result"],
+        market_report=state["market_report"],
+        account_plan=state["account_plan"],
+        task=state["task"],
+        package=state["package"],
+        reviews=state["reviews"],
+    )
+    path = state["run_dir"] / "summary.md"
+    path.write_text(summary, encoding="utf-8")
+    return _with_artifact(state, "summary", path)
+
+
+def _with_artifact(state: dict[str, Any], stage_name: str, path: Path) -> dict[str, Any]:
+    refs = dict(state.get("_artifact_refs") or {})
+    refs[stage_name] = str(path)
+    return {**state, "_artifact_refs": refs}
 
 
 def _assert_active_models() -> None:
@@ -238,8 +337,33 @@ print(json.dumps({{'count': len(result.hot_notes), 'insufficient': result.insuff
     )
     (market_dir / "crawler_stdout.log").write_text(proc.stdout, encoding="utf-8")
     if proc.returncode != 0:
+        cached = _cached_top_notes_result()
+        if os.getenv("NORI_HOLLY_ALLOW_CACHED_XHS") == "1" and cached is not None:
+            _write_json(market_dir / "xhs_top_notes_result.json", cached.to_dict())
+            (market_dir / "crawler_stdout.log").write_text(
+                f"{proc.stdout}\n\n[Nori] XHS live collection failed; reused cached top notes because "
+                "NORI_HOLLY_ALLOW_CACHED_XHS=1.\n",
+                encoding="utf-8",
+            )
+            return cached
         raise RuntimeError(f"XHS collection failed with code {proc.returncode}; see {market_dir / 'crawler_stdout.log'}")
     data = json.loads(output_path.read_text(encoding="utf-8"))
+    return _top_notes_result_from_dict(data)
+
+
+def _cached_top_notes_result() -> TopNotesResult | None:
+    candidates = []
+    for path in sorted((CASE_DIR / "live_runs").glob("*_holly_live/xhs_top_notes_result.json"), reverse=True):
+        try:
+            result = _top_notes_result_from_dict(json.loads(path.read_text(encoding="utf-8")))
+        except Exception:
+            continue
+        if result.hot_notes and not result.insufficient:
+            candidates.append(result)
+    return candidates[0] if candidates else None
+
+
+def _top_notes_result_from_dict(data: dict[str, Any]) -> TopNotesResult:
     notes = [HotNote(**item) for item in data.get("hot_notes", [])]
     return TopNotesResult(
         platform=str(data.get("platform") or "xhs"),

@@ -49,6 +49,8 @@ There is no `nori.domain` compatibility layer; the product has not shipped yet, 
 | `nori.memory` | `StableProfile`, `SessionMemory`, `TaskMemory`, stores, retrieval, promotion. |
 | `nori.workflows` | `WorkflowRun`, `StageRun`, `WorkflowRunner`, `RuntimeRunRecorder`. |
 
+`WorkflowRunner` is backed by LangGraph. It compiles `WorkflowSpec` into a `StateGraph`, wraps each `StageSpec.handler` with LangChain Core `RunnableLambda`, and records stage status plus artifact references into `WorkflowRun`.
+
 ## Snapshot Quality Gates
 
 `CapabilitySnapshot.validate()` returns structured issue dictionaries with `code`, `path`, `message`, `severity`, and `metadata`.
@@ -66,6 +68,7 @@ Current gates catch:
 | Rule | Meaning |
 | --- | --- |
 | Runtime first | New scripts/apps should create session/context/workflow state through `RuntimeRunRecorder`. |
+| Graph execution | Multi-stage workflows should enter through `WorkflowSpec` + `WorkflowRunner`; do not recreate manual stage loops in scripts. |
 | Agents own business behavior | Business entrypoints go through `nori.agents.*`; avoid adding a separate `domains/` package. |
 | Context is separate from planning | System-level context assembly belongs in `nori.context`; planning agents remain under the planning capability. |
 | Memory is separate from context | Durable facts and promotion policy belong in `nori.memory`; context only assembles what a specific call needs. |

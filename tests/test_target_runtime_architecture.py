@@ -63,7 +63,14 @@ def test_runtime_state_contracts_are_owned_by_first_class_packages():
     from nori.context import ContextBundle, ContextResolver
     from nori.memory import MemoryStore, StableProfile, TaskMemory
     from nori.sessions import Session, SessionManager, TaskGoal
-    from nori.workflows import RuntimeRun, RuntimeRunRecorder, StageRun, WorkflowRun, WorkflowRunner
+    from nori.workflows import (
+        LangGraphWorkflowRunner,
+        RuntimeRun,
+        RuntimeRunRecorder,
+        StageRun,
+        WorkflowRun,
+        WorkflowRunner,
+    )
 
     assert StableProfile.__module__ == "nori.memory.models"
     assert TaskMemory.__module__ == "nori.memory.models"
@@ -75,6 +82,7 @@ def test_runtime_state_contracts_are_owned_by_first_class_packages():
     assert SessionManager.__module__ == "nori.sessions.manager"
     assert WorkflowRun.__module__ == "nori.workflows.models"
     assert StageRun.__module__ == "nori.workflows.models"
+    assert LangGraphWorkflowRunner.__module__ == "nori.workflows.langgraph_runner"
     assert WorkflowRunner.__module__ == "nori.workflows.runner"
     assert RuntimeRun.__module__ == "nori.workflows.runtime"
     assert RuntimeRunRecorder.__module__ == "nori.workflows.runtime"
@@ -275,7 +283,9 @@ def test_holly_live_case_delegates_runtime_bookkeeping_to_workflows_package():
     path = ROOT / "scripts" / "run_holly_live_case.py"
     source = path.read_text()
 
-    assert "from nori.workflows import RuntimeRunRecorder" in source
+    assert "from nori.workflows import RuntimeRunRecorder, StageSpec, WorkflowRunner, WorkflowSpec" in source
+    assert "WorkflowRunner().run(" in source
+    assert "WorkflowSpec(" in source
     assert "class HollyRuntimeRun" not in source
     assert "def _create_runtime_run" not in source
     assert "def _record_stage" not in source

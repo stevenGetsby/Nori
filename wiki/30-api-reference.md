@@ -188,6 +188,10 @@ This project currently exposes Python contracts, not stable HTTP routes.
 | --- | --- |
 | `nori.core.WorkflowBase(workflow_name="", steps=None)` | Shared base for agents and domain facades that need a stable workflow name and ordered step metadata. `run_steps(initial)` executes registered callables in order. |
 | `nori.core.named_workflow_steps(*names)` | Build named no-op steps for facades whose public methods own execution but still need inspectable `step_names`. |
+| `nori.workflows.WorkflowSpec(name, stages)` | LangGraph workflow definition made of ordered `StageSpec` rows. |
+| `nori.workflows.StageSpec(name, handler)` | One workflow stage; `WorkflowRunner` wraps `handler` with LangChain Core `RunnableLambda`. |
+| `nori.workflows.WorkflowRunner().run(spec, initial, session_id=..., task_id=...)` | Executes the workflow through `LangGraphWorkflowRunner`, returning `(output, WorkflowRun)`. |
+| `nori.workflows.LangGraphWorkflowRunner` | Builds a LangGraph `StateGraph`, wires `START -> stages -> END`, records `StageRun` status, and preserves artifact refs returned in state. |
 
 Domain facade workflow names and declared steps:
 

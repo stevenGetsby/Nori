@@ -14,6 +14,7 @@
 | Upstream facade dependencies | `UserProfilingFacade` and `MarketAnalysisFacade` should consume project-like dict/object shapes and must not import downstream business modules such as `nori.agents.planning`; architecture tests enforce this. |
 | Workflow stage package layout | Each concrete runtime stage owns a package folder with a specifically named entry module plus its helper modules. Do not keep physical flat helper modules in canonical domains, and do not reintroduce compatibility aliases for removed roots. Add implementation only inside the owning stage folder. |
 | Workflow stage package exports | Stage package `__init__.py` files should expose only explicit public entrypoints through `__all__`; tests that patch `llms` or other internals should import the concrete entry module, not the package root. |
+| Workflow execution | Multi-stage runtime flows should use `nori.workflows.WorkflowSpec` and `WorkflowRunner`; the runner is LangGraph-backed and wraps each stage handler as a LangChain Core `RunnableLambda`. |
 | LLM calls | Route through `llms.*`; do not instantiate OpenAI clients inside workflow stages. |
 | JSON LLM output | Prefer `llms.chat_json(...)` unless a helper intentionally returns structured error instead of exception. |
 | JSON LLM stages | Required workflow stages that should raise domain-specific errors should use `nori.shared.call_stage_json(...)` instead of local `try/except llms.ChatJSONError` wrappers. |
