@@ -1,4 +1,4 @@
-<!-- Last verified: 2026-05-26 | Current stage: P1 Account-Ops Backend -->
+<!-- Last verified: 2026-06-01 | Current stage: P1 Account-Ops Backend -->
 
 # Backlog
 
@@ -9,7 +9,7 @@
 | Default suite | `python -m pytest tests -q` |
 | Project status | `python 文档/codex-skills/nori-project-operator/scripts/nori_status.py .` |
 
-Latest default test run on 2026-05-31: `python -m pytest tests -q` -> 480 passed, 3 skipped. Project skill exists; public capability entrypoints now live under `nori.agents.*` and `nori.capabilities`; runtime state lives under `nori.sessions`, `nori.context`, `nori.memory`, and `nori.workflows`; `WorkflowRunner` now executes `WorkflowSpec` through LangGraph, wraps coarse stage handlers with LangChain Core `RunnableLambda`, and supports default-skipped `HumanGateSpec` approval points; `LearningLoopFacade.capability_snapshot_from_project()` builds the current aggregate view. The pre-launch codebase no longer keeps `nori.domain`, `DomainSnapshot`, or old top-level business roots. Concrete stages own package folders with prompt files only when they own prompt text/construction and explicit public exports; runtime stages use `nori.core.LLMFactory` instead of direct `llms` imports; local `api_config.yaml` exists and status output redacts it to active model names.
+Latest default test run on 2026-06-01: `python -m pytest tests -q` -> 503 passed, 3 skipped. Project skill exists; public capability entrypoints now live under `nori.agents.*` and `nori.capabilities`; runtime state lives under `nori.sessions`, `nori.context`, `nori.memory`, and `nori.workflows`; `WorkflowRunner` now executes `WorkflowSpec` through LangGraph, wraps coarse stage handlers with LangChain Core `RunnableLambda`, and supports default-skipped `HumanGateSpec` approval points; `main.py` reports real CLI/workflow entrypoints instead of importing a missing web server; live smoke scripts import only canonical module roots; `LearningLoopFacade.capability_snapshot_from_project()` builds the current aggregate view. The pre-launch codebase no longer keeps `nori.domain`, `DomainSnapshot`, or old top-level business roots. Concrete stages own package folders with prompt files only when they own prompt text/construction and explicit public exports; runtime stages use `nori.core.LLMFactory` instead of direct `llms` imports; local `api_config.yaml` exists and status output redacts it to active model names.
 
 ## Capability / Runtime Architecture Refactor
 
@@ -17,10 +17,10 @@ Latest default test run on 2026-05-31: `python -m pytest tests -q` -> 480 passed
 | --- | --- | --- |
 | Define capability/runtime architecture | Done | Spec written at `wiki/specs/spec-capability-architecture.md`; old domain spec retained as historical compatibility background. |
 | Add capability architecture registry | Done | `nori/core/architecture.py` exposes `CapabilityModule`, `CAPABILITY_MODULES`, `capability_module_names()`, and `get_capability_module()`. |
-| Add shared capability/runtime contracts | Done | `nori/core/models.py` defines `CapabilitySnapshot`; runtime contracts live in `nori/sessions`, `nori/context`, `nori/memory`, and `nori/workflows`. |
+| Add shared capability/runtime contracts | Done | Focused core model owners now live in `nori/core/{profile_models,asset_models,planning_models,capability_models}.py`; runtime contracts live in `nori/sessions`, `nori/context`, `nori/memory`, and `nori/workflows`. |
 | Add user profiling facade | Done | `nori/agents/user_profiling/facade.py` maps `ClientBrief` + `AccountPositioning` into `UserProfile`. |
 | Add market analysis facade | Done | `nori/agents/market_analysis/facade.py` maps `CompetitorResearch` into `MarketAnalysis`. |
-| Add context-building facade | Done | `nori/agents/planning/facade.py` combines profile, task, market evidence, assets, and decisions. |
+| Add context orchestration layer | Done | `nori/context/compiler.py` compiles profile, task, market evidence, assets, skills, platform rules, and constraints; `nori/agents/planning/facade.py` is only a compatibility re-export for the old builder import. |
 | Add content-generation facade | Done | `nori/agents/content_generation/facade.py` groups generated packages into `CandidateSet`. |
 | Add learning-loop facade | Done | `nori/agents/learning_loop/facade.py` maps metrics/strategy artifacts into monitoring and learning contracts. |
 | Keep package `__init__` files as public exports | Done | `nori.agents.*` exposes capability-level public agent groups. |
@@ -32,10 +32,10 @@ Latest default test run on 2026-05-31: `python -m pytest tests -q` -> 480 passed
 | Introduce LangChain Core stage runnable boundary | Done | Each `StageSpec.handler` is wrapped with `RunnableLambda`, keeping workflow stages compatible with LangChain runnable semantics. |
 | Centralize business-module lazy exports | Done | Added `nori.core.lazy_exports.lazy_export`; five business package roots now use one shared lazy-export helper for facade/stage public APIs while keeping lightweight model exports eager. |
 | Rename explanation trace stage history | Done | `ExplanationTrace` now serializes workflow history as `stage_steps`; legacy `agent_steps` payloads still read in and normalize row key `agent` to `stage`. |
-| Decouple upstream facades from context-building models | Done | `UserProfilingFacade` and `MarketAnalysisFacade` now consume persisted project dict/object shapes without importing `AccountOperationProject`; architecture tests guard the upstream dependency direction. |
+| Decouple upstream facades from project aggregate internals | Done | `UserProfilingFacade` and `MarketAnalysisFacade` now consume persisted project dict/object shapes without importing `AccountOperationProject`; architecture tests guard the upstream dependency direction. |
 | PR1 learning-loop module migration | Done | Review gate, review policy/scoring/state, metrics snapshot, and strategy iteration implementations now live under `nori/agents/learning_loop`. |
 | PR2 content-generation module migration | Done | Content producer, package input/builder/provenance helpers, and production state now live under `nori/agents/content_generation`. |
-| PR3 context-building module migration | Done | Operation/KPI/calendar planners, planner prompts/normalizers/policies/task builders, and planner critics now live under `nori/agents/planning`. |
+| PR3 planning module migration | Done | Operation/KPI/calendar planners, planner prompts/normalizers/policies/task builders, and planner critics now live under `nori/agents/planning`. |
 | PR4 user-profiling and market-analysis migration | Done | Intake, image tagging, account planning, and XHS note analysis implementations now live under `nori/agents/user_profiling` and `nori/agents/market_analysis`. |
 | PR5 content-generation consolidation | Done | NoteMaker and CoverDirector implementations now live under `nori/agents/content_generation`. |
 | Migrate new feature entrypoints to five modules | Done | New product features now enter `nori/agents/user_profiling`, `nori/agents/market_analysis`, `nori/agents/planning`, `nori/agents/content_generation`, or `nori/agents/learning_loop`. |
@@ -46,8 +46,8 @@ Latest default test run on 2026-05-31: `python -m pytest tests -q` -> 480 passed
 | Trim XHS analyzer orchestration file | Done | Removed private pass-through helper functions from `xhs_note_analyzer.py`; the file now orchestrates loader/rules/LLM/session modules directly. |
 | Trim stage entry orchestration wrappers | Done | Removed no-value private pass-through helpers from NoteMaker, CoverDirector, Intaker, AccountPlanner, ContentProducer, ReviewGate, StrategyIteration, Operation/KPI/Calendar planners, and XHS analyzer entry modules. |
 | Move user-profiling model ownership | Done | `UserInput`, `IntakeResult`, `AccountPlannerInput`, and `AccountPlanResult` now live in `nori.agents.user_profiling.models`; architecture tests block imports from the removed old owner path. |
-| Move content-generation model ownership | Done | `AssetBundle`, `CandidateTitle`, `NoteDraft`, and `CoverResult` now live in `nori.agents.content_generation.models`; architecture tests block imports from the removed old owner path. `UserAsset` was later promoted to `nori.core.models` as a cross-stage asset contract. |
-| Promote UserAsset to shared core contract | Done | `UserAsset` now lives in `nori.core.models`; `user_profiling` no longer imports `content_generation`, and `nori.agents.content_generation.models` re-exports the same class for existing generation call sites. |
+| Move content-generation model ownership | Done | `AssetBundle`, `CandidateTitle`, `NoteDraft`, and `CoverResult` now live in `nori.agents.content_generation.models`; architecture tests block imports from the removed old owner path. `UserAsset` was later promoted to `nori.core.asset_models` as a cross-stage asset contract. |
+| Promote UserAsset to shared core contract | Done | `UserAsset` now lives in `nori.core.asset_models`; `user_profiling` no longer imports `content_generation`, and `nori.agents.content_generation.models` re-exports the same class for existing generation call sites. |
 | Move market-analysis model ownership | Done | `XHSNoteSample`, `XHSSeedSkillDraft`, `NoteEvidence`, `NoteSkill`, and `SessionSkillReport` now live in `nori.agents.market_analysis.models`; architecture tests block imports from the removed old owner path. |
 | Remove agent model compatibility root | Done | Removed `nori/agent_models` after all model owners moved to business modules; `tests/test_domain_model_contracts.py` now covers canonical model serialization. |
 | Move shared runtime utilities | Done | Moved case logging, image IO, and JSON LLM helpers from `nori/agent_utils` to `nori/shared`; `tests/test_shared_utils.py` covers the canonical utility surface. |
@@ -153,7 +153,7 @@ Latest default test run on 2026-05-31: `python -m pytest tests -q` -> 480 passed
 | Operation/KPI/Calendar agents | Done | LLM path + fallback path covered by tests. |
 | Ops planner fallback observability | Done | Operation/KPI/Calendar optional LLM calls now route through `try_stage_json`, request JSON mode, and record redacted `metadata.llm_error` on fallback. |
 | Extract shared planner critic policy | Done | Canonical path is `nori.agents.planning.planner_critics`. |
-| Asset library model | Done | `AssetRecord` / `AssetLibrary` now live in `nori.core.models`; context-building code imports them from core. |
+| Asset library model | Done | `AssetRecord` / `AssetLibrary` now live in `nori.core.asset_models`; planning and context code import them from core. |
 | Competitor research model | Done | Added `CompetitorSample` / `CompetitorResearch` with top-sample and task-reference helpers. |
 | Account positioning model | Done | Added typed `AccountPositioning` with legacy dict compatibility and planner integration. |
 

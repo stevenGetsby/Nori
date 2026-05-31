@@ -14,8 +14,8 @@ def attach_context_pack(
 ) -> ContextBundle:
     """Return a runtime ContextBundle with a business ContextPack attached.
 
-    ``ContextPack`` is the business-generation context produced by planning
-    facades. ``ContextBundle`` is the runtime envelope for one agent call.
+    ``ContextPack`` is the business-generation context compiled by the context
+    layer. ``ContextBundle`` is the runtime envelope for one agent call.
     This adapter makes the nesting explicit instead of treating them as
     competing context systems.
     """

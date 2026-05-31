@@ -1,4 +1,4 @@
-<!-- Last verified: 2026-05-24 | Current stage: P1 Account-Ops Backend -->
+<!-- Last verified: 2026-06-01 | Current stage: P1 Account-Ops Backend -->
 
 # Stage 61: Account-Ops Backend
 
@@ -78,15 +78,15 @@ AccountOperationProject
 | Test | Coverage |
 | --- | --- |
 | `tests/test_workflow_models.py` | Defaults, deep-copy behavior, project round trips, package exports. |
-| `tests/test_context_building_operation_planner_project_builder.py` | OperationPlanner deterministic fallback project, calendar, tasks, derived KPI snapshot, safe defaults, asset requirements, and benchmark references. |
-| `tests/test_context_building_operation_planner_normalizer.py` | OperationPlanner LLM output merge, task-row normalization, date clamping, fallback-task preservation, and derived KPI snapshot behavior. |
-| `tests/test_context_building_operation_planner.py` | Fallback, dict input, mocked LLM JSON, JSON-mode routing, failure fallback metadata. |
-| `tests/test_context_building_kpi_planner_normalizer.py` | KPI fallback defaults, LLM KPI merge, milestone clamping, measurement-note fallback, and metadata behavior. |
-| `tests/test_context_building_kpi_planner.py` | Operation plan/project inputs, mocked LLM JSON, JSON-mode routing, critic and fallback metadata. |
-| `tests/test_context_building_calendar_planner_normalizer.py` | Calendar fallback scheduling, LLM task-row normalization, scheduled-day clamping, content-pillar repair, empty-list fallback, and metadata behavior. |
-| `tests/test_context_building_calendar_planner.py` | Calendar task scheduling, project/dict inputs, mocked LLM JSON, JSON-mode routing, failure fallback metadata. |
-| `tests/test_context_building_asset_research.py` | Asset/competitor model round trips, helper behavior, and project nesting. |
-| `tests/test_context_building_account_positioning.py` | Account positioning extraction, legacy dict compatibility, and planner integration. |
+| `tests/test_planning_operation_planner_project_builder.py` | OperationPlanner deterministic fallback project, calendar, tasks, derived KPI snapshot, safe defaults, asset requirements, and benchmark references. |
+| `tests/test_planning_operation_planner_normalizer.py` | OperationPlanner LLM output merge, task-row normalization, date clamping, fallback-task preservation, and derived KPI snapshot behavior. |
+| `tests/test_planning_operation_planner.py` | Fallback, dict input, mocked LLM JSON, JSON-mode routing, failure fallback metadata. |
+| `tests/test_planning_kpi_planner_normalizer.py` | KPI fallback defaults, LLM KPI merge, milestone clamping, measurement-note fallback, and metadata behavior. |
+| `tests/test_planning_kpi_planner.py` | Operation plan/project inputs, mocked LLM JSON, JSON-mode routing, critic and fallback metadata. |
+| `tests/test_planning_calendar_planner_normalizer.py` | Calendar fallback scheduling, LLM task-row normalization, scheduled-day clamping, content-pillar repair, empty-list fallback, and metadata behavior. |
+| `tests/test_planning_calendar_planner.py` | Calendar task scheduling, project/dict inputs, mocked LLM JSON, JSON-mode routing, failure fallback metadata. |
+| `tests/test_market_analysis_asset_research.py` | Asset/competitor model round trips, helper behavior, and project nesting. |
+| `tests/test_user_profiling_account_positioning.py` | Account positioning extraction, legacy dict compatibility, and planner integration. |
 | `tests/test_user_profiling_account_planner_normalizer.py` | AccountPlanner LLM result normalization, keyword cleaning, benchmark creator derivation, and fallback preservation. |
 | `tests/test_model_coercion.py` | Shared model coercion defaults used by ops and agent model `from_dict()` methods. |
 | `tests/test_domain_model_contracts.py` | `AccountPlannerInput` / `AccountPlanResult` serialization and restoration used before ops handoff. |

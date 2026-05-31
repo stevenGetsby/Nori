@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from nori.agents.planning.facade import ContextPackBuilder
+from nori.context import ContextPackBuilder
 from nori.core import (
     AccountOperationProject,
     CandidateSet,

@@ -43,7 +43,14 @@ class NoteSkillSelector:
                 f"用户意图：\n{json_prompt(intent)}\n\n"
                 f"上下文：\n{json_prompt(context)}\n\n"
                 f"候选 skill：\n{json_block(summary)}\n\n"
-                '选 1 个最契合用户意图的 skill。输出 {"skill_id": "..."}。'
+                "按这些维度选 1 个最契合用户意图的 skill：\n"
+                "  - 热点证据：上下文里是否有可追溯的热点、趋势、样本或用户明确提供的趋势 brief\n"
+                "  - 账号可信度：这个账号/品牌能不能自然参与，不要为了追热点选择不可信的 skill\n"
+                "  - 受众匹配：目标用户是否真的会关心这个角度\n"
+                "  - 内容缺口：是否能提供新的判断、方法或清单，而不是复述热词\n"
+                "  - 图文可视化：是否能拆成清晰封面和 5-9 页图文结构\n"
+                "  - 风险：是否容易造成夸大、蹭热点、假体验或敏感声明\n"
+                '输出 {"skill_id": "..."}。'
             ),
             timeout=30,
         )
@@ -178,19 +185,26 @@ class NoteComposer:
                 f"素材卖点：{json_prompt(bundle.text_points)}\n"
                 f"品牌信息：{json_prompt(bundle.brand_facts)}\n"
                 f"数据点：{json_prompt(bundle.data_points)}\n\n"
+                "热点证据：从用户意图或上下文里读取 hotspot / trend / market evidence；"
+                "如果没有真实来源，必须当成假设写，不要伪装成已验证热点。\n"
+                "账号可信度：只有当产品、品牌、人设或使用场景能自然接住热点时才借势；"
+                "不要为了追热点牺牲可信度。\n"
+                "首图一眼看懂：标题和开场要支持封面在 1 秒内讲清利益点。\n\n"
                 f"标题规则：\n{json_block(skill.get('title_rules') or [])}\n\n"
                 f"开场规则：\n{json_block(skill.get('opening_rules') or [])}\n\n"
                 f"正文结构：\n{json_block(skill.get('body_structure') or [])}\n\n"
                 f"互动规则：\n{json_block(skill.get('interaction_rules') or [])}\n\n"
                 f"禁止项：{json_prompt(skill.get('avoid_rules') or [])}\n\n"
                 "按规则写一篇可发布的小红书 note：\n"
-                "  - title：推荐标题，<=24 字\n"
+                "  - title：推荐标题，<=20 字；热点标题不能只堆热词，要有账号角度\n"
                 "  - candidate_titles：3-5 个候选，每个含 text / rule_name（命中的 title_rules.name）/ rationale\n"
-                "  - body：开场 → 主体段落 → 互动钩子，<=300 字\n"
+                "  - body：开场 → 主体段落 → 互动钩子，<=1000 字；优先写可保存的判断/清单/步骤\n"
                 "  - tags：3-5 个，每个 <=8 字\n"
                 "  - comment_hook：评论引导一句话\n"
                 "  - validation：{status: pass|needs_human_review, issues: [...]}"
-                "，命中禁止项时 status=needs_human_review\n\n"
+                "，命中禁止项、缺热点证据、账号角度牵强或首图不够清楚时 status=needs_human_review\n"
+                "真实性边界：不要伪造用户体验、截图、官方背书或前后对比证据；"
+                "医疗、金融、法律、投资类表述必须降级为谨慎建议。\n\n"
                 '输出 JSON：{"title":"","candidate_titles":[],'
                 '"body":"","tags":[],"comment_hook":"","validation":{"status":"","issues":[]}}'
             ),

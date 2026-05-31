@@ -5,7 +5,7 @@
   -> XHSNoteAnalyzer.collect_for_session 聚类 -> NoteSkill + case log
 
 用法:
-    PYTHONPATH=. python scripts/smoke_session_skill.py
+    python scripts/smoke_session_skill.py
 """
 from __future__ import annotations
 
@@ -16,7 +16,11 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from nori.ana_agents.xhs_note_analyzer import XHSNoteAnalyzer
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from nori.agents.market_analysis import XHSNoteAnalyzer
 
 
 DEFAULT_DATA_DIR = "nori/skill_base/data/xhs_note_analyzer/holly"

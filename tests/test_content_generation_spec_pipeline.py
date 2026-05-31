@@ -84,6 +84,55 @@ def test_content_spec_agent_turns_task_skills_and_brief_into_a_design_spec():
     assert "避免：不虚构价格" in spec.acceptance_checks
 
 
+def test_content_spec_agent_builds_hotspot_image_post_strategy_from_context_view():
+    from nori.context import ContextCompiler, ContextResolver
+    from nori.core import MarketAnalysis, UserProfile
+
+    pack = ContextCompiler().build(
+        task=_task(content_type="image_text_post"),
+        user_profile=UserProfile(
+            user_id="flower_shop",
+            brand_profile={"brand_name": "春日花房", "account_positioning": "本地花艺主理人"},
+            constraints=["不蹭无关热点"],
+        ),
+        market_analysis=MarketAnalysis(
+            analysis_id="market_mothers_day",
+            platform="xhs",
+            keywords=["母亲节花束", "送妈妈的花"],
+            hot_examples=[{"title": "母亲节花别乱买", "likes": 3800}],
+            trend_insights=["节日前 7 天避坑型封面更容易被收藏"],
+            source_refs=[{"source": "xhs_hot_note", "note_id": "xhs_001"}],
+        ),
+        skills=[_skill()],
+        platform_rules=[{"rule": "首图必须在 1 秒内讲清送礼利益点"}],
+        content_strategy={"creative_angle": "借母亲节送礼焦虑做本地花店选择指南"},
+    )
+    view = ContextResolver().for_agent("ContentSpecAgent", pack)
+
+    spec = ContentSpecAgent().run(context_view=view, client_brief=_brief())
+
+    slots = [row["slot"] for row in spec.structure]
+    assert spec.artifact_type == "image_text_post"
+    assert spec.metadata["hotspot_strategy"]["mode"] == "hotspot_image_post"
+    assert spec.metadata["hotspot_strategy"]["keywords"] == ["母亲节花束", "送妈妈的花"]
+    assert spec.metadata["human_review_checklist"] == [
+        "热点证据可追溯或已明确标注假设",
+        "账号参与角度可信，不显得硬蹭",
+        "首图能在一眼内说明利益点",
+        "没有伪造体验、截图、官方背书或夸大承诺",
+    ]
+    assert slots == [
+        "cover",
+        "hotspot_bridge",
+        "account_fit",
+        "proof_or_example",
+        "method_or_choice",
+        "save_or_comment_cta",
+    ]
+    assert "校验热点证据来源或明确标注假设" in spec.acceptance_checks
+    assert "首图必须一眼看懂，不只做氛围图" in spec.acceptance_checks
+
+
 def test_artifact_generation_agent_executes_from_spec_without_exposing_all_skills():
     producer = FakeContentProducer()
     spec = ContentDesignSpec(

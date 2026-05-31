@@ -1,4 +1,4 @@
-<!-- Last verified: 2026-05-25 | Current stage: P1 Account-Ops Backend -->
+<!-- Last verified: 2026-06-01 | Current stage: P1 Account-Ops Backend -->
 
 # Nori Project Roadmap
 
@@ -39,16 +39,16 @@
 | Manual metrics snapshot workflow | Done / exposed through learning-loop capability | `nori/agents/learning_loop` | [64](./64-stage-review-and-iteration.md) |
 | Strategy iteration agent | Done / exposed through learning-loop capability | `nori/agents/learning_loop` | [64](./64-stage-review-and-iteration.md) |
 | Automatic metrics ingestion | Deferred | TBD | [85](./85-backlog.md#deferred) |
-| Shared capability/runtime contracts | Done | `nori/core/models.py`, `nori/sessions`, `nori/context`, `nori/memory`, `nori/workflows` | [spec](./specs/spec-capability-architecture.md) |
+| Shared capability/runtime contracts | Done | `nori/core/{profile_models,asset_models,planning_models,capability_models}.py`, `nori/sessions`, `nori/context`, `nori/memory`, `nori/workflows` | [spec](./specs/spec-capability-architecture.md) |
 | Capability architecture registry | Done | `nori/core/architecture.py`, `nori/capabilities.py` | [spec](./specs/spec-capability-architecture.md) |
 | User profiling facade | Done | `nori/agents/user_profiling/facade.py` | [spec](./specs/spec-domain-architecture.md) |
 | Market analysis facade | Done | `nori/agents/market_analysis/facade.py` | [spec](./specs/spec-domain-architecture.md) |
-| ContextPack builder | Done | `nori/agents/planning/facade.py` | [spec](./specs/spec-domain-architecture.md) |
+| Context orchestration layer | Done | `nori/context/compiler.py`, `nori/context/resolver.py` | [spec](./specs/spec-capability-architecture.md) |
 | CandidateSet generation facade | Done | `nori/agents/content_generation/facade.py` | [spec](./specs/spec-domain-architecture.md) |
 | Learning loop facade | Done | `nori/agents/learning_loop/facade.py` | [spec](./specs/spec-domain-architecture.md) |
 | AccountOperationProject capability projection | Done | `LearningLoopFacade.capability_snapshot_from_project()` | [spec](./specs/spec-capability-architecture.md) |
 | CapabilitySnapshot aggregation | Done | `nori/agents/learning_loop/facade.py` | [spec](./specs/spec-capability-architecture.md) |
-| CapabilitySnapshot validation | Done | `nori/core/models.py` | [spec](./specs/spec-capability-architecture.md) |
+| CapabilitySnapshot validation | Done | `nori/core/capability_models.py` | [spec](./specs/spec-capability-architecture.md) |
 | Public capability entrypoint | Done | `nori/capabilities.py` | [spec](./specs/spec-capability-architecture.md) |
 
 ## Milestones

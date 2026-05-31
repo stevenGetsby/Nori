@@ -55,30 +55,50 @@ class ContentSpecAgent(AgentBase):
         normalized_skills = [_normalize_skill(skill) for skill in (skills or []) if skill]
         selected = _select_skills(normalized_skills, normalized_task)
         selected_refs = [_skill_ref(skill) for skill in selected]
+        artifact_type = _artifact_type(normalized_task)
+        hotspot_strategy = _hotspot_strategy(context, normalized_task)
+        acceptance_checks = _acceptance_checks(contract, brief, selected)
+        if hotspot_strategy:
+            acceptance_checks = _dedupe([
+                *acceptance_checks,
+                "校验热点证据来源或明确标注假设",
+                "确认账号参与角度可信，不硬蹭热点",
+                "首图必须一眼看懂，不只做氛围图",
+                "避免伪造体验、截图、官方背书或夸大承诺",
+            ])
+        metadata = {
+            "designer": self.__class__.__name__,
+            "skill_count": len(normalized_skills),
+            "selected_skill_count": len(selected),
+            **({"context_view": {"agent_name": view.agent_name, "slice_kinds": view.kinds}} if view else {}),
+        }
+        if hotspot_strategy:
+            metadata["hotspot_strategy"] = hotspot_strategy
+            metadata["human_review_checklist"] = [
+                "热点证据可追溯或已明确标注假设",
+                "账号参与角度可信，不显得硬蹭",
+                "首图能在一眼内说明利益点",
+                "没有伪造体验、截图、官方背书或夸大承诺",
+            ]
 
         return ContentDesignSpec(
             spec_id=f"spec_{normalized_task.task_id or 'default'}",
             task_id=normalized_task.task_id,
             platform=normalized_task.platform or brief.platform,
-            artifact_type=_artifact_type(normalized_task),
+            artifact_type=artifact_type,
             content_type=normalized_task.content_type,
             goal=normalized_task.objective or (brief.goals[0] if brief.goals else ""),
             audience=list(brief.audience),
             creative_angle=_creative_angle(selected, normalized_task, intent),
             selected_skill_refs=selected_refs,
             evidence_refs=_evidence_refs(normalized_task, selected),
-            structure=_structure(selected, normalized_task),
+            structure=_structure(selected, normalized_task, context),
             media_plan=_media_plan(selected, normalized_task, _normalize_assets(assets)),
             copy_rules=_copy_rules(selected),
             visual_rules=_visual_rules(selected),
             constraints=_constraints(brief, normalized_task, context),
-            acceptance_checks=_acceptance_checks(contract, brief, selected),
-            metadata={
-                "designer": self.__class__.__name__,
-                "skill_count": len(normalized_skills),
-                "selected_skill_count": len(selected),
-                **({"context_view": {"agent_name": view.agent_name, "slice_kinds": view.kinds}} if view else {}),
-            },
+            acceptance_checks=acceptance_checks,
+            metadata=metadata,
         )
 
 
@@ -190,8 +210,20 @@ def _evidence_refs(task: ContentTask, skills: list[dict[str, Any]]) -> list[dict
     return refs
 
 
-def _structure(skills: list[dict[str, Any]], task: ContentTask) -> list[dict[str, Any]]:
+def _structure(skills: list[dict[str, Any]], task: ContentTask, context: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     skill = skills[0] if skills else {}
+    if _artifact_type(task) == "image_text_post":
+        market = _context_mapping(context, "market_hotspots")
+        strategy = _context_mapping(context, "content_strategy")
+        topic = task.topic or strategy.get("creative_angle") or task.title
+        return [
+            {"slot": "cover", "purpose": "首图一眼看懂热点/利益点，封面文字 6-14 字。"},
+            {"slot": "hotspot_bridge", "purpose": _hotspot_bridge_purpose(market, topic)},
+            {"slot": "account_fit", "purpose": "说明账号、产品或场景为什么有资格参与这个热点。"},
+            {"slot": "proof_or_example", "purpose": _first_rule(skill.get("body_structure"), fallback="用真实素材、样本证据或用户场景支撑观点。")},
+            {"slot": "method_or_choice", "purpose": "给出可保存的选择方法、步骤、清单或避坑判断。"},
+            {"slot": "save_or_comment_cta", "purpose": _first_rule(skill.get("interaction_rules"), fallback="用收藏、评论或到店动作收口。")},
+        ]
     rows = [
         {"slot": "title", "purpose": _first_rule(skill.get("title_rules"), fallback=task.title or task.topic)},
         {"slot": "opening", "purpose": _first_rule(skill.get("opening_rules"), fallback="先承接用户场景或痛点。")},
@@ -264,6 +296,36 @@ def _acceptance_checks(contract: IntentContract, brief: ClientBrief, skills: lis
         for item in skill.get("avoid_rules") or []:
             checks.append(f"避免：{item}")
     return _dedupe(checks)
+
+
+def _hotspot_strategy(context: dict[str, Any] | None, task: ContentTask) -> dict[str, Any]:
+    if _artifact_type(task) != "image_text_post":
+        return {}
+    market = _context_mapping(context, "market_hotspots")
+    strategy = _context_mapping(context, "content_strategy")
+    platform = _context_mapping(context, "platform_strategy")
+    if not market and not strategy and not platform:
+        return {}
+    return {
+        "mode": "hotspot_image_post",
+        "keywords": [str(item) for item in market.get("keywords") or [] if str(item or "")],
+        "hot_examples": [dict(item) for item in market.get("hot_examples") or [] if isinstance(item, dict)][:5],
+        "trend_insights": [str(item) for item in market.get("trend_insights") or [] if str(item or "")][:5],
+        "platform_rules": [dict(item) for item in platform.get("rules") or [] if isinstance(item, dict)][:5],
+        "creative_angle": str(strategy.get("creative_angle") or ""),
+    }
+
+
+def _context_mapping(context: dict[str, Any] | None, key: str) -> dict[str, Any]:
+    value = (context or {}).get(key) if isinstance(context, dict) else None
+    return dict(value) if isinstance(value, dict) else {}
+
+
+def _hotspot_bridge_purpose(market: dict[str, Any], topic: str) -> str:
+    insights = [str(item) for item in market.get("trend_insights") or [] if str(item or "")]
+    if insights:
+        return f"用热点洞察承接主题：{insights[0]}"
+    return f"把热点语境自然转到账号主题：{topic}"
 
 
 def _first_rule(rows: Any, *, fallback: str) -> str:

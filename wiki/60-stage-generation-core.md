@@ -1,4 +1,4 @@
-<!-- Last verified: 2026-05-24 | Current stage: P1 Account-Ops Backend -->
+<!-- Last verified: 2026-06-01 | Current stage: P1 Account-Ops Backend -->
 
 # Stage 60: Generation Core
 
@@ -9,6 +9,7 @@ Stabilize the executable XHS generation chain:
 ```text
 UserInput(text/images)
 -> IntakeResult(intention/context/assets)
+-> ContextPack / ContextView(platform, market, skills, content strategy, assets, constraints)
 -> ContentDesignSpec(structure/rules/media plan/acceptance checks)
 -> NoteDraft(title/body/tags/asset bundle)
 -> CoverResult(cover image path/prompt/reference paths)
@@ -21,8 +22,9 @@ UserInput(text/images)
 | 1. Input orchestration | `nori/agents/user_profiling/intaker/intaker.py` | Implemented | `IntakeResult` |
 | 2. Text intake normalization | `nori/agents/user_profiling/intaker/normalizer.py` | Implemented | intention/context/missing/questions |
 | 3. Vision tagging | `nori/agents/user_profiling/intaker/image_tagger.py` | Implemented | `UserAsset` with `vision_*` fields |
-| 4. Content design spec | `nori/agents/content_generation/spec_designer/spec_designer.py::ContentSpecAgent` | Implemented | `ContentDesignSpec` |
-| 5. Artifact execution | `nori/agents/content_generation/artifact_generator/artifact_generator.py::ArtifactGenerationAgent` | Implemented | routes spec to concrete generator |
+| 4. Context compilation | `nori/context/compiler.py::ContextCompiler` + `nori/context/resolver.py::ContextResolver` | Implemented | `ContextPack` / `ContextView` |
+| 5. Content design spec | `nori/agents/content_generation/spec_designer/spec_designer.py::ContentSpecAgent` | Implemented | `ContentDesignSpec` |
+| 6. Artifact execution | `nori/agents/content_generation/artifact_generator/artifact_generator.py::ArtifactGenerationAgent` | Implemented | routes spec to concrete generator |
 | 6. Skill selection | `nori/agents/content_generation/note_maker/package.py::NoteSkillSelector` | Implemented | chosen `NoteSkill` when executor needs note copy |
 | 7. Asset curation | `nori/agents/content_generation/note_maker/package.py::NoteAssetCurator` | Implemented | `AssetBundle` |
 | 8. Note composition | `nori/agents/content_generation/note_maker/package.py::NoteComposer` | Implemented | `NoteDraft` |
@@ -36,8 +38,9 @@ UserInput(text/images)
 | Contract | Source |
 | --- | --- |
 | `UserInput`, `IntakeResult` | `nori/agents/user_profiling/models.py`; front-pipeline inputs/results support `to_dict()` / `from_dict()` round trips. |
-| `UserAsset` | `nori/core/models.py`; cross-stage asset contract produced by Intake and consumed by NoteMaker/CoverDirector/ContentProducer. `nori.agents.content_generation.models` re-exports the same class for existing generation call sites. |
+| `UserAsset` | `nori/core/asset_models.py`; cross-stage asset contract produced by Intake and consumed by NoteMaker/CoverDirector/ContentProducer. `nori.agents.content_generation.models` re-exports the same class for existing generation call sites. |
 | `AssetBundle`, `CandidateTitle`, `NoteDraft` | `nori/agents/content_generation/models.py`; generation artifacts support `to_dict()` / `from_dict()` round trips, and `UserAsset.from_dict()` is the canonical dict-asset normalization path for NoteMaker/ContentProducer. |
+| `ContextSlice`, `ContextView` | `nori/context/models.py`; agent-facing context projections for platform strategy, market hotspots, learned skills, content strategy, asset context, and constraints. |
 | `ContentDesignSpec` | `nori/agents/content_generation/models.py`; bridge contract between skill/context decisions and artifact execution. It stores selected skill refs, evidence refs, structure, media plan, copy/visual rules, constraints, and acceptance checks. |
 | `CoverResult` | `nori/agents/content_generation/models.py`; cover artifacts support `to_dict()` / `from_dict()` round trips. |
 | `NoteSkill` | `nori/agents/market_analysis/models.py` |
@@ -48,10 +51,25 @@ UserInput(text/images)
 | Agent | Owns | Must not own |
 | --- | --- | --- |
 | Intake | Text normalization, image vision tags, missing questions. | Account strategy, note copy, image generation. |
-| ContentSpec | Artifact type, selected skill refs, structure, media plan, copy/visual rules, acceptance checks. | Final copy, image generation, package persistence. |
+| ContextCompiler/Resolver | Platform, market, skill, content-strategy, asset, and constraint context assembly; agent-specific context projection. | Writing final generation specs or artifact copy. |
+| ContentSpec | Artifact type, selected skill refs, structure, media plan, copy/visual rules, acceptance checks from `ContextView`. | Final copy, image generation, package persistence. |
 | ArtifactGeneration | Instantiating a spec into concrete artifacts and passing spec context to executors. | Re-selecting strategy or rewriting the spec. |
 | NoteMaker | Skill pick, asset bundle, title/body/tags. | Raw image reading, cover rendering, account planning. |
 | CoverDirector | Reference selection for cover, prompt writing, image generation. | Body copy, skill learning, platform publishing. |
+
+## XHS Hotspot Prompt Ownership
+
+The external `xhs-hotspot-image-post-generator` skill maps into Nori through existing agents instead of becoming a separate generator. Its prompt responsibilities are split this way:
+
+| Skill requirement | Nori owner | Implementation |
+| --- | --- | --- |
+| Hotspot evidence, account fit, content gap, imageability, and risk scoring | `NoteSkillSelector` | The skill-selection prompt now chooses a learned skill using hotspot evidence, account credibility, audience fit, content gap, visualizability, and risk. |
+| Design spec / page rhythm | `ContentSpecAgent` | XHS image-post specs produce a six-part page sequence: cover, hotspot bridge, account fit, proof/example, method/choice, save/comment CTA. |
+| Copy, title, tags, and authenticity boundaries | `NoteComposer` | The copy prompt now asks for source-aware hotspot assumptions, account credibility, one-glance first-image support, <=20-character titles, <=1000-character body, and no fake experience/screenshots/endorsement. |
+| Cover direction and image-generation prompt | `CoverPromptBuilder` | The cover prompt now enforces one-glance clarity, hotspot/account fit, 6-14 character cover text, and bans fake UI, official notices, testimonials, and medical/financial proof. |
+| Human review checklist | `ContentDesignSpec.metadata.human_review_checklist` | Hotspot image-post specs include checks for evidence traceability, credible account angle, first-image clarity, and no fabricated claims. |
+
+Market-analysis agents still collect and distill XHS evidence. Generation agents consume that evidence; they should not pretend to know live hotspots unless a collector, user brief, or other source has supplied the evidence.
 
 ## LLM Failure Policy
 
@@ -112,16 +130,16 @@ Fallback metadata:
 | `tests/test_user_profiling_intaker_normalizer.py` | Deterministic text fallback, optional LLM output alias normalization, image context repair, missing/question fallback, and metadata preservation. |
 | `tests/test_user_profiling_intaker.py` | Text/image intake, fallback metadata, mocked vision, and multimodal JSON helper routing through the image-tagger boundary. |
 | `tests/test_user_profiling_intaker_image_tagger.py` | Vision tag filtering, no-vision asset construction, and single-image multimodal JSON helper routing. |
-| `tests/test_content_generation_note_maker_skill_picker.py` | Compact skill-summary prompt contract and unknown skill-id domain error translation. |
+| `tests/test_content_generation_note_maker_skill_picker.py` | Compact skill-summary prompt contract, hotspot-fit skill-selection rubric, and unknown skill-id domain error translation. |
 | `tests/test_content_generation_note_maker_asset_curator.py` | Asset-curation prompt contract, selected-index normalization, empty-asset skip, and cover/gallery path selection. |
-| `tests/test_content_generation_note_maker_note_composer.py` | Note-composition prompt contract, field normalization, fallback candidate title, and missing title/body domain error translation. |
+| `tests/test_content_generation_note_maker_note_composer.py` | Note-composition prompt contract, XHS hotspot/authenticity guidance, field normalization, fallback candidate title, and missing title/body domain error translation. |
 | `tests/test_content_generation_note_maker.py` | Skill selection, asset curation, note composition behavior. |
-| `tests/test_content_generation_spec_pipeline.py` | Spec-agent contract, artifact-executor skill filtering/spec injection, and explicit spec -> executor composition. |
+| `tests/test_content_generation_spec_pipeline.py` | Spec-agent contract, hotspot image-post strategy/page rhythm, artifact-executor skill filtering/spec injection, and explicit spec -> executor composition. |
 | `tests/test_content_generation_entrypoints.py` | Guards the removal of the old `GenerationAgent` router and verifies live Holly workflows create a design spec before artifact execution. |
 | `tests/test_shared_utils.py` | Shared `call_stage_json` / `call_stage_messages_json` / `try_stage_messages_json` / `try_stage_json` routing, error translation/classification, and utility exports. |
 | `tests/test_note_skill_fixture.py` | Learned skill fixture loading into NoteMaker-compatible `NoteSkill` objects. |
 | `tests/test_content_generation_cover_director_refs.py` | Cover reference path collection, tagged-asset prompt contract, selected-index normalization, missing-path filtering, dedupe, and reference caps. |
-| `tests/test_content_generation_cover_director_prompt.py` | Cover prompt JSON-call contract, asset fact/text-point summarization, reference-count context, and empty prompt domain errors. |
+| `tests/test_content_generation_cover_director_prompt.py` | Cover prompt JSON-call contract, one-glance XHS cover constraints, asset fact/text-point summarization, reference-count context, and empty prompt domain errors. |
 | `tests/test_content_generation_cover_director_output.py` | Cover output persistence for data-uri/http payloads, safe filename construction, user-agent download requests, and output domain errors. |
 | `tests/test_content_generation_cover_director.py` | Reference selection, shared JSON prompt routing, prompt generation, image output path handling. |
 | `tests/test_domain_model_contracts.py` | Front-pipeline and generation artifact serialization plus `from_dict()` restoration for intake/account-plan/note/cover snapshots. |

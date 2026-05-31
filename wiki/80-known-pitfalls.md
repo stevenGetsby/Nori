@@ -1,10 +1,9 @@
-<!-- Last verified: 2026-05-24 | Current stage: P1 Account-Ops Backend -->
+<!-- Last verified: 2026-06-01 | Current stage: P1 Account-Ops Backend -->
 
 # Known Pitfalls
 
 | Symptom | Cause | Fix |
 | --- | --- | --- |
-| `main.py` says service module is missing | It imports `nori.nori.server`, which is not present in the current tree. | Treat `main.py` server mode as stale until a server module is implemented. Use tests/scripts for validation. |
 | Live LLM calls fail with missing active model | No private `api_config.yaml` was found; status script reports empty active models. | Copy `api_config.example.yaml` to a private ignored config or set `NORI_CONFIG`; use `api_key_env` and see [refs/api-config.md](./refs/api-config.md). |
 | Live LLM calls fail with `Using SOCKS proxy, but the 'socksio' package is not installed` | The local environment routes HTTPX/OpenAI-compatible SDK traffic through a SOCKS proxy, but `socksio` is not installed. | Install `socksio` or install HTTPX with SOCKS support before live API smoke runs: `python -m pip install 'socksio>=1.0.0'`. |
 | Live image calls fail with `image 模型 relay::gpt-image-2 的 api_key 为空` | Active image usage points at `relay::gpt-image-2`, but the relay provider did not resolve an API key from `RELAY_API_KEY` or literal local config. | Set `RELAY_API_KEY` or put a private ignored literal key in `api_config.yaml`; also replace example relay `base_url` with the real OpenAI-compatible image relay endpoint. |

@@ -1,4 +1,4 @@
-<!-- Last verified: 2026-05-25 | Current stage: P1 Account-Ops Backend -->
+<!-- Last verified: 2026-06-01 | Current stage: P1 Account-Ops Backend -->
 
 # API Reference
 
@@ -113,7 +113,10 @@ This project currently exposes Python contracts, not stable HTTP routes.
 | `nori.agents.planning.planner_critics.critic_operation_project(project, brief, account_plan) -> dict` | Internal ops helper for OperationPlanner critic metadata. Checks objectives, pillars, tasks, calendar, risk controls, platform alignment, and rule-fallback status. |
 | `nori.agents.planning.planner_critics.critic_kpi_plan(plan, operation_plan) -> dict` | Internal ops helper for KPIPlanner critic metadata. Checks targets, milestones, measurement notes, short-horizon cadence, and rule-fallback status. |
 | `nori.agents.planning.planner_critics.critic_calendar(calendar, plan, kpi) -> dict` | Internal ops helper for CalendarPlanner critic metadata. Checks themes, task count, date range, planned status, task briefs, KPI target coverage, content-pillar coverage, and rule-fallback status. |
-| `ContentSpecAgent().run(task, skills, assets=None, client_brief=None, project=None, intent_contract=None, intent=None, context=None) -> ContentDesignSpec` | Freeze generation strategy before execution: artifact type, selected skill refs, evidence refs, structure, media plan, copy/visual rules, constraints, and acceptance checks. |
+| `ContextCompiler().build(...) -> ContextPack` | Compile task, profile, platform strategy, market hotspots, learned skills, content strategy, assets, and constraints into typed `ContextSlice` rows. |
+| `ContextResolver().for_agent(agent_name, context_pack) -> ContextView` | Project a task `ContextPack` into the slice set a specific agent should consume. |
+| `ContentSpecAgent().run(context_view=...) -> ContentDesignSpec` | Preferred production path. Freeze generation strategy from an agent-specific context view: artifact type, selected skill refs, evidence refs, structure, media plan, copy/visual rules, constraints, and acceptance checks. |
+| `ContentSpecAgent().run(task, skills, assets=None, client_brief=None, project=None, intent_contract=None, intent=None, context=None) -> ContentDesignSpec` | Focused-test/manual path for direct inputs when a compiled `ContextView` is not available. |
 | `ArtifactGenerationAgent().run(spec, task, skills, assets, out_dir, client_brief=None, project=None, intent=None, context=None, intent_contract=None, use_cover=True) -> ContentPackage` | Execute a frozen `ContentDesignSpec`, filter skills to selected refs, inject the spec into intent/context, and delegate package production to concrete generators. |
 | `ContentProducerAgent().run(task, skills, assets, out_dir, client_brief=None, project=None, intent=None, context=None, use_cover=True) -> ContentPackage` | Produce a draft package from a planned task; attaches structured failure metadata before raising `ContentProductionError`. This is an execution detail behind `ArtifactGenerationAgent` for production workflows. |
 | `produce_content_package(task, **kwargs) -> ContentPackage` | Convenience wrapper; accepts fake `note_maker` / `cover_director` dependencies for tests. |
@@ -207,7 +210,7 @@ This project currently exposes Python contracts, not stable HTTP routes.
 | `nori.context.ContextPackBuilder` | Alias of `ContextCompiler`; this is the canonical owner. `nori.agents.planning.ContextPackBuilder` re-exports the same class for compatibility. |
 | `nori.context.ContextResolver` | Builds a `ContextBundle` from current input, memory, and artifact references. |
 | `nori.context.ContextResolver().for_agent(agent_name, context_pack)` | Projects a sliced `ContextPack` into an agent-specific `ContextView`, so stages consume relevant context slices instead of loose dicts. |
-| `nori.context.attach_context_pack(bundle, context_pack, ref="")` | Attaches the business `ContextPack` produced by planning into a runtime `ContextBundle` as a `ContextSource` and `payload["context_pack"]`. This is the explicit bridge between generation-planning context and one-call runtime context. |
+| `nori.context.attach_context_pack(bundle, context_pack, ref="")` | Attaches the business `ContextPack` compiled by the context layer into a runtime `ContextBundle` as a `ContextSource` and `payload["context_pack"]`. This is the explicit bridge between business context and one-call runtime context. |
 
 Domain facade workflow names and declared steps:
 
@@ -215,11 +218,11 @@ Domain facade workflow names and declared steps:
 | --- | --- | --- |
 | `UserProfilingFacade` | `user_profiling` | `client_brief`, `account_positioning`, `user_profile` |
 | `MarketAnalysisFacade` | `market_analysis` | `competitor_research`, `market_analysis` |
-| `ContextPackBuilder` | `planning` | `profile`, `task`, `market`, `assets`, `context_pack` |
+| `ContextPackBuilder` | `context` | `profile`, `task`, `market`, `assets`, `skills`, `context_pack` |
 | `ContentGenerationFacade` | `content_generation` | `context_pack`, `content_packages`, `candidate_set` |
 | `LearningLoopFacade` | `learning_loop` | `performance`, `strategy`, `capability_snapshot` |
 
-Business-module model files should support `to_dict()` where the object crosses a stage boundary. Cross-stage contracts such as `UserAsset`, `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, and `ContentCalendar` live in `nori.core.models`; the cross-module project aggregate `AccountOperationProject` lives in `nori.core.project`. Public runtime contracts that are shared with the LLM gateway live in `nori.core.contracts`, including config dataclasses, gateway errors, structured-helper result dataclasses, and shared model coercion helpers. `UserInput`, `IntakeResult`, `AccountPlannerInput`, and `AccountPlanResult` live in `nori.agents.user_profiling.models`; `ContentDesignSpec`, `AssetBundle`, `CandidateTitle`, `NoteDraft`, `CoverResult`, and `ContentPackage` live in `nori.agents.content_generation.models`; `XHSNoteSample`, `XHSSeedSkillDraft`, `NoteSkill`, `NoteEvidence`, and `SessionSkillReport` live in `nori.agents.market_analysis.models`. The old `nori.agent_models` compatibility root has been removed; import models from the owning business module. Model `from_dict()` methods should use `nori.core.contracts` for shared mapping/list/string/int/bool cleanup.
+Business-module model files should support `to_dict()` where the object crosses a stage boundary. Cross-stage contracts are split by owner: `UserAsset`, `AssetRecord`, and `AssetLibrary` live in `nori.core.asset_models`; `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, and `ContentCalendar` live in `nori.core.planning_models`; `UserProfile` lives in `nori.core.profile_models`; `ContextPack`, `CandidateSet`, `LearningSignal`, and `CapabilitySnapshot` live in `nori.core.capability_models`. `nori.core.models` remains a compatibility facade for the historical single-module API, and `AccountOperationProject` lives in `nori.core.project`. Public runtime contracts that are shared with the LLM gateway live in `nori.core.contracts`, including config dataclasses, gateway errors, structured-helper result dataclasses, and shared model coercion helpers. `UserInput`, `IntakeResult`, `AccountPlannerInput`, and `AccountPlanResult` live in `nori.agents.user_profiling.models`; `ContentDesignSpec`, `AssetBundle`, `CandidateTitle`, `NoteDraft`, `CoverResult`, and `ContentPackage` live in `nori.agents.content_generation.models`; `XHSNoteSample`, `XHSSeedSkillDraft`, `NoteSkill`, `NoteEvidence`, and `SessionSkillReport` live in `nori.agents.market_analysis.models`. The old `nori.agent_models` compatibility root has been removed; import models from the owning business module. Model `from_dict()` methods should use `nori.core.contracts` for shared mapping/list/string/int/bool cleanup.
 
 Canonical business model ownership:
 
@@ -227,7 +230,11 @@ Canonical business model ownership:
 | --- | --- |
 | `nori.agents.user_profiling.models` | `UserInput`, `IntakeResult`, `AccountPlannerInput`, `AccountPlanResult`, `AccountPositioning` |
 | `nori.agents.market_analysis.models` | `CompetitorSample`, `CompetitorResearch`, `XHSNoteSample`, `XHSSeedSkillDraft`, `NoteEvidence`, `NoteSkill`, `SessionSkillReport` |
-| `nori.core.models` | `UserAsset`, `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, `ContentCalendar`, plus shared architecture contracts such as `UserProfile`, `ContextPack`, `CandidateSet`, `LearningSignal`, and `CapabilitySnapshot` |
+| `nori.core.asset_models` | `UserAsset`, `AssetRecord`, `AssetLibrary` |
+| `nori.core.planning_models` | `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, `ContentCalendar`, `IntentContract` |
+| `nori.core.profile_models` | `UserProfile` |
+| `nori.core.capability_models` | `ContextPack`, `CandidateSet`, `LearningSignal`, `CapabilitySnapshot`, and related evidence/trace models |
+| `nori.core.models` | Compatibility facade re-exporting the public core model contracts above |
 | `nori.core.project` | `AccountOperationProject` cross-module aggregate; lazily coerces nested dicts into user/context/market/content/learning concrete models |
 | `nori.agents.content_generation.models` | `ContentDesignSpec`, `AssetBundle`, `CandidateTitle`, `NoteDraft`, `CoverResult`, `ContentPackage` |
 | `nori.agents.learning_loop.models` | `ComplianceReview`, `MetricsSnapshot`, `StrategyIteration` |

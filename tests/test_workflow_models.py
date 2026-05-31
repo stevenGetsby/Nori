@@ -139,8 +139,8 @@ def test_account_operation_project_round_trips_core_contract():
 
 def test_workflow_models_are_owned_by_canonical_modules():
     assert AccountOperationProject.__module__ == "nori.core.project"
-    assert ContentTask.__module__ == "nori.core.models"
-    assert KPIPlan.__module__ == "nori.core.models"
+    assert ContentTask.__module__ == "nori.core.planning_models"
+    assert KPIPlan.__module__ == "nori.core.planning_models"
     assert ContentPackage.__module__ == "nori.agents.content_generation.models"
     assert ComplianceReview.__module__ == "nori.agents.learning_loop.models"
     assert MetricsSnapshot.__module__ == "nori.agents.learning_loop.models"

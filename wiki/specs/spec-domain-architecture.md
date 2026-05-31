@@ -1,4 +1,4 @@
-<!-- Last verified: 2026-05-25 | Current stage: Architecture Refactor -->
+<!-- Last verified: 2026-06-01 | Current stage: Architecture Refactor -->
 
 # Historical Spec: Domain Architecture Refactor
 
@@ -32,7 +32,7 @@ The purpose is to make the shared layer and five domain modules the canonical im
 
 | Layer | Modules | Responsibility |
 | --- | --- | --- |
-| `shared` | `nori/core/models.py`, `nori/core/architecture.py` | Common contract types, canonical domain registry, context packs, decision traces, evidence references, learning signals. |
+| `shared` | `nori/core/{profile_models,asset_models,planning_models,capability_models}.py`, `nori/core/models.py`, `nori/core/architecture.py` | Common contract owners, compatibility facade, canonical domain registry, context packs, decision traces, evidence references, learning signals. |
 | `user profiling` | `nori/agents/user_profiling/facade.py` | Long-lived user/account/brand/preferences/constraints profiles. |
 | `market analysis` | `nori/agents/market_analysis/facade.py` | Benchmark samples, market snapshots, trend insights, audience insights. |
 | `context building` | `nori/agents/planning/facade.py`, operation/KPI/calendar planner modules, planner critics | Build operation project context, KPI plans, content calendars, `ContentTask` rows, and `ContextPack` from profile + task + market + assets + history. |
@@ -81,7 +81,7 @@ The first compatibility bridge from the existing ops world into the new domain a
 | --- | --- | --- |
 | `user_profiling` | `UserProfilingFacade.build_from_project(project)` | `UserProfile` with project metadata and profile source refs. |
 | `market_analysis` | `MarketAnalysisFacade.build_from_project(project)` | `MarketAnalysis` with competitor evidence and project metadata. |
-| `planning` | `ContextPackBuilder.build_from_project(project, task_id=...)` | `ContextPack` assembled from project profile, market evidence, task, assets, and decisions. |
+| `context` | `ContextPackBuilder.build_from_project(project, task_id=...)` | `ContextPack` assembled from project profile, platform strategy, market evidence, task, skills, content strategy, assets, and decisions. |
 | `content_generation` | `ContentGenerationFacade.candidate_set_from_project(project, task_id=...)` | `CandidateSet` filtered to the task and linked back to the `ContextPack` trace. |
 | `learning_loop` | `LearningLoopFacade.performance_snapshots_from_project(project)` / `learning_signals_from_project(project, ...)` | Normalized monitoring snapshots and learning signals. |
 | `learning_loop` | `LearningLoopFacade.capability_snapshot_from_project(project, ...)` | `CapabilitySnapshot` containing profile, market, context packs, candidate sets, monitoring snapshots, and learning signals. |
@@ -112,7 +112,7 @@ The first compatibility bridge from the existing ops world into the new domain a
 | Phase | Change |
 | --- | --- |
 | P0 | Add shared `nori/core` contracts and facades that wrap existing models. |
-| P1 | Add `user_profiling`, `market_analysis`, `context_building`, `content_generation`, `learning_loop` packages as thin orchestrators. |
+| P1 | Add `user_profiling`, `market_analysis`, `planning`, `content_generation`, `learning_loop` packages as thin orchestrators. |
 | P2 | Move review/monitoring/strategy implementation into `nori.agents.learning_loop`. |
 | P3 | Move content producer/package helpers into `nori.agents.content_generation`. |
 | P4 | Move intake/account planning and XHS analyzer implementation into `nori.agents.user_profiling` and `nori.agents.market_analysis`. |

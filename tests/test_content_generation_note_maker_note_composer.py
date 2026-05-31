@@ -65,6 +65,12 @@ def test_note_composer_prompts_json_call_and_normalizes_output():
     assert "素材卖点" in calls[0]["user"]
     assert "通勤香薰很治愈" in calls[0]["user"]
     assert "不要硬广" in calls[0]["user"]
+    assert "热点证据" in calls[0]["user"]
+    assert "账号可信度" in calls[0]["user"]
+    assert "首图一眼看懂" in calls[0]["user"]
+    assert "title：推荐标题，<=20 字" in calls[0]["user"]
+    assert "body：开场 → 主体段落 → 互动钩子，<=1000 字" in calls[0]["user"]
+    assert "不要伪造用户体验、截图、官方背书或前后对比证据" in calls[0]["user"]
 
 
 def test_note_composer_adds_fallback_candidate_title():

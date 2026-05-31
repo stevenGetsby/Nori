@@ -72,6 +72,10 @@ def test_design_prompt_llm_builds_cover_prompt_contract():
     assert "下班通勤香气治愈" in user_prompt
     assert "第四个卖点不进入 prompt" not in user_prompt
     assert "参考图数量：2" in user_prompt
+    assert "首图一眼看懂" in user_prompt
+    assert "热点/账号适配" in user_prompt
+    assert "封面文字 6-14 字" in user_prompt
+    assert "不要伪造 UI 截图、官方通知、用户背书、医疗金融证明" in user_prompt
     assert "只输出 JSON" in user_prompt
 
 

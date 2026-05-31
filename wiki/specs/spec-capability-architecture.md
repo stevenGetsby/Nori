@@ -55,7 +55,7 @@ There is no `nori.domain` compatibility layer; the product has not shipped yet, 
 
 `nori.core.WorkflowBase` is the backend-free base abstraction for capability facades. It owns `workflow_name`, ordered step metadata, and simple in-process `run_steps(...)`. Runtime execution is separate: `nori.workflows.workflow_spec_from_base(...)` converts a `WorkflowBase` into `WorkflowSpec`, and `WorkflowRunner` executes that spec through the configured backend.
 
-`ContextPack` and `ContextBundle` are different layers. `ContextPack` is a business-generation input compiled by `nori.context.ContextCompiler` from profile, task, market, skills, strategy, and assets. `ContextResolver.for_agent(...)` projects it into a `ContextView` for a specific agent. `ContextBundle` is the runtime envelope for one agent call. Use `nori.context.attach_context_pack(...)` to attach the business pack into the runtime bundle as a source and payload entry.
+`ContextPack` and `ContextBundle` are different layers. `ContextPack` is a business-generation input compiled by `nori.context.ContextCompiler` from profile, task, platform strategy, market hotspots, learned skills, content strategy, assets, and constraints. It stores typed `ContextSlice` rows. `ContextResolver.for_agent(...)` projects it into a `ContextView` for a specific agent. `ContextBundle` is the runtime envelope for one agent call. Use `nori.context.attach_context_pack(...)` to attach the business pack into the runtime bundle as a source and payload entry.
 
 `ArtifactStore` and `WorkflowRun.artifact_refs` are also bridged explicitly. Stage handlers can return `StoredArtifact`, `_artifact_ref`, or `_artifact_refs`; the LangGraph runner records normalized paths into `StageRun.output_ref` and `WorkflowRun.artifact_refs`.
 

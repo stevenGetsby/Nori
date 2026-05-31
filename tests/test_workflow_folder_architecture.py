@@ -102,6 +102,28 @@ SHARED_WORKFLOW_CONTRACTS = {
 }
 
 
+CORE_MODEL_OWNERS = {
+    "UserProfile": "profile_models",
+    "UserAsset": "asset_models",
+    "AssetRecord": "asset_models",
+    "AssetLibrary": "asset_models",
+    "ClientBrief": "planning_models",
+    "OperationPlan": "planning_models",
+    "KPIPlan": "planning_models",
+    "ContentTask": "planning_models",
+    "IntentContract": "planning_models",
+    "ContentCalendar": "planning_models",
+    "MarketAnalysis": "capability_models",
+    "DecisionPoint": "capability_models",
+    "ExplanationTrace": "capability_models",
+    "ContextPack": "capability_models",
+    "CandidateSet": "capability_models",
+    "PerformanceSnapshot": "capability_models",
+    "LearningSignal": "capability_models",
+    "CapabilitySnapshot": "capability_models",
+}
+
+
 REMOVED_FLAT_WRAPPER_FILES = [
     "nori/user_profiling/intake_normalizer.py",
     "nori/user_profiling/intake_taxonomy.py",
@@ -341,6 +363,47 @@ def test_legacy_packages_are_removed():
 def test_legacy_alias_helpers_are_removed():
     for rel_path in REMOVED_COMPAT_FILES:
         assert not (ROOT / rel_path).exists(), rel_path
+
+
+def test_tests_use_current_capability_names_not_context_building_prefix():
+    stale_tests = sorted((ROOT / "tests").glob("test_context_building_*.py"))
+
+    assert stale_tests == []
+
+
+def test_core_model_contracts_have_owned_modules_and_facade_only():
+    import nori.core as core
+    import nori.core.models as model_facade
+
+    for name, module_name in CORE_MODEL_OWNERS.items():
+        owner_module = importlib.import_module(f"nori.core.{module_name}")
+        owner_value = getattr(owner_module, name)
+        assert getattr(model_facade, name) is owner_value
+        assert getattr(core, name) is owner_value
+        assert owner_value.__module__ == f"nori.core.{module_name}"
+
+    source = ast.parse((ROOT / "nori/core/models.py").read_text())
+    dataclass_defs = [
+        node.name
+        for node in source.body
+        if isinstance(node, ast.ClassDef)
+        and any(
+            isinstance(decorator, ast.Name) and decorator.id == "dataclass"
+            for decorator in node.decorator_list
+        )
+    ]
+    assert dataclass_defs == []
+
+
+def test_system_architecture_links_to_reference_module_map_instead_of_file_inventory():
+    system_architecture = (ROOT / "wiki/20-system-architecture.md").read_text()
+    module_map = ROOT / "wiki/refs/module-map.md"
+
+    assert module_map.exists()
+    assert "./refs/module-map.md" in system_architecture
+    assert "Workflow stage package layout:" not in system_architecture
+    assert "Shared generation utilities:" not in system_architecture
+    assert "## Account-Ops Module Map" not in system_architecture
 
 
 def test_shared_layer_does_not_import_business_modules():

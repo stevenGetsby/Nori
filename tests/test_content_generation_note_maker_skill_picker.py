@@ -54,6 +54,11 @@ def test_skill_picker_uses_compact_summary_and_json_call():
     assert "候选 skill" in calls[0]["user"]
     assert "产品种草" in calls[0]["user"]
     assert "planting" in calls[0]["user"]
+    assert "热点证据" in calls[0]["user"]
+    assert "账号可信度" in calls[0]["user"]
+    assert "受众匹配" in calls[0]["user"]
+    assert "图文可视化" in calls[0]["user"]
+    assert "不要为了追热点选择不可信的 skill" in calls[0]["user"]
     assert "large field should not enter summary" not in calls[0]["user"]
 
 

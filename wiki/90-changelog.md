@@ -1,6 +1,18 @@
-<!-- Last verified: 2026-05-26 | Current stage: P1 Account-Ops Backend -->
+<!-- Last verified: 2026-06-01 | Current stage: P1 Account-Ops Backend -->
 
 # Changelog
+
+## 2026-06-01
+
+| Change | Notes |
+| --- | --- |
+| Repaired runtime entrypoints | `main.py` now reports supported CLI/workflow entrypoints and can dispatch the Holly live workflow instead of importing the missing `nori.nori.server`. |
+| Repaired live smoke imports | `scripts/smoke_note_maker.py` and `scripts/smoke_session_skill.py` now bootstrap the repo root and import canonical `nori.agents.*` / `nori.core` modules. |
+| Added runtime entrypoint guards | Added subprocess tests for `main.py` and smoke-script `--help`, plus a stale-root scan covering removed legacy imports. |
+| Renamed planning tests | Renamed `tests/test_context_building_*` files to current `planning_*`, `user_profiling_*`, and `market_analysis_*` names and added a guard against reintroducing the stale prefix. |
+| Split core model ownership | Replaced the large `nori.core.models` implementation with focused owner modules: `profile_models`, `asset_models`, `planning_models`, and `capability_models`; `nori.core.models` is now a compatibility facade. |
+| Moved module inventory to reference docs | Reduced `wiki/20-system-architecture.md` to runtime-layer decisions and moved detailed package/helper maps to `wiki/refs/module-map.md`. |
+| Updated verification baseline | `python -m pytest tests -q` reports `503 passed, 3 skipped`. |
 
 ## 2026-05-26
 
@@ -14,7 +26,7 @@
 | Standardized domain facades as workflows | `UserProfilingFacade`, `MarketAnalysisFacade`, `ContextPackBuilder`, `ContentGenerationFacade`, and `LearningLoopFacade` now inherit `WorkflowBase` and expose stable `workflow_name` / `step_names` values. |
 | Enforced core LLM injection boundary | Removed direct `llms` imports from workflow runtime stages; tests now patch the project gateway or inject factories, and architecture guards require stage code to route LLM access through `nori.core.LLMFactory`. |
 | Promoted shared workflow contracts to core | Moved `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentTask`, and `ContentCalendar` to `nori.core.models`; runtime code imports them from core. |
-| Promoted project aggregate to core | Moved `AccountOperationProject` to `nori.core.project`; context-building stages import it from core and no longer carry a model re-export layer. |
+| Promoted project aggregate to core | Moved `AccountOperationProject` to `nori.core.project`; planning stages import it from core and no longer carry a model re-export layer. |
 | Standardized stage package contracts | Stage-local `inputs.py`, `prompts.py`, and `refs.py` support files are now consolidated into class-owned `package.py` contracts where they only serve one agent; model contracts stay in canonical `models.py` files or `nori.core`. |
 | Updated verification baseline | `python -m pytest tests -q` now reports `448 passed, 3 skipped` after adding core runtime abstraction tests, stage-support-module guards, the no-direct-`llms` runtime guard, shared workflow-contract ownership guards, project-aggregate ownership guards, and domain-facade workflow guards. |
 | Removed legacy agent/model roots | Deleted `nori/gen_agents`, `nori/ops_agents`, `nori/ana_agents`, `nori/ops_models`, `nori/agent_models`, and `nori/agent_utils`; tests now assert those import roots are absent. |
@@ -32,7 +44,7 @@
 | Renamed shared runtime helper surface | Replaced historical `call_agent_*`, `try_agent_*`, and `write_agent_log` names with stage-oriented `call_stage_*`, `try_stage_*`, and `write_stage_log`; renamed the architecture guard to `tests/test_workflow_folder_architecture.py`. |
 | Centralized package-root lazy exports | Added `nori.core.lazy_exports.lazy_export` and routed five business package roots through one shared helper for facade/stage exports, preserving public imports without reintroducing domain-module cycles. |
 | Renamed trace stage history field | `ExplanationTrace` now writes `stage_steps` and normalizes legacy `agent_steps` / row-level `agent` keys to `stage` during `from_dict()`. |
-| Decoupled upstream facades from context-building models | `UserProfilingFacade` and `MarketAnalysisFacade` now consume project-like dict/object shapes instead of importing `AccountOperationProject`; added dependency-direction guards. |
+| Decoupled upstream facades from project aggregate internals | `UserProfilingFacade` and `MarketAnalysisFacade` now consume project-like dict/object shapes instead of importing `AccountOperationProject`; added dependency-direction guards. |
 | Updated legacy-cleanup verification baseline | `python -m pytest tests -q` reported `434 passed, 3 skipped` after deleting legacy compatibility tests and adding export-boundary/lazy-export/trace-field/shared-boundary/dependency-direction/core-asset guards. |
 
 ## 2026-05-24
