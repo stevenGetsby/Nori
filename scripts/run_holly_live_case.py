@@ -16,15 +16,16 @@ if str(ROOT) not in sys.path:
 
 import llms
 from data_collect.adapter import HotNote, TopNotesResult
-from nori.agents.content_generation import ContentProducerAgent
+from nori.agents.content_generation import ContentSpecAgent, ArtifactGenerationAgent
 from nori.agents.learning_loop import ReviewGateAgent
 from nori.agents.market_analysis import SessionSkillReport, XHSNoteAnalyzer
 from nori.agents.market_analysis.xhs_note_analyzer import session_reporter as xhs_session_reporter
 from nori.agents.market_analysis.xhs_note_analyzer import skill_builder as xhs_skill_builder
 from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
 from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
-from nori.core import ClientBrief, LLMFactory
-from nori.workflows import RuntimeRunRecorder, StageSpec, WorkflowRunner, WorkflowSpec
+from nori.context import ContextPackBuilder, ContextResolver
+from nori.core import AssetLibrary, AssetRecord, ClientBrief, LLMFactory
+from nori.workflows import HumanGateSpec, RuntimeRunRecorder, StageSpec, WorkflowRunner, WorkflowSpec
 
 
 CASE_DIR = ROOT / "data" / "Holly"
@@ -65,6 +66,7 @@ def main() -> int:
         run_dir=run_dir,
         source="设计理念.md",
         acceptance=[
+            "生成 content_design_spec.json",
             "生成 content_package.json",
             "生成 cover png",
             "生成 summary.md",
@@ -94,7 +96,17 @@ def main() -> int:
             StageSpec("kpi_plan", _stage_kpi_plan),
             StageSpec("content_calendar", _stage_content_calendar),
             StageSpec("selected_task", _stage_selected_task),
-            StageSpec("content_package", _stage_content_package),
+            StageSpec("content_context", _stage_content_context),
+            StageSpec("content_design_spec", _stage_content_design_spec),
+            StageSpec(
+                "content_package",
+                _stage_content_package,
+                human_gate=HumanGateSpec(
+                    name="approve_content_design_spec",
+                    prompt="Review content_design_spec.json before generating final copy and cover.",
+                    metadata={"artifact": "content_design_spec.json"},
+                ),
+            ),
             StageSpec("reviews", _stage_reviews),
             StageSpec("summary", _stage_summary),
         ],
@@ -105,6 +117,7 @@ def main() -> int:
             state,
             session_id=runtime.session.session_id,
             task_id=runtime.task_goal.task_id,
+            human_gate_mode=os.getenv("NORI_HUMAN_GATE_MODE", "skip"),
         )
     except Exception as exc:
         failed_run = getattr(exc, "workflow_run", None)
@@ -215,9 +228,36 @@ def _stage_selected_task(state: dict[str, Any]) -> dict[str, Any]:
     return _with_artifact(state, "selected_task", path)
 
 
+def _stage_content_context(state: dict[str, Any]) -> dict[str, Any]:
+    context_pack = ContextPackBuilder().build_from_project(
+        state["project"],
+        task=state["task"],
+        asset_library=_asset_library_from_user_assets(state["intake"].assets),
+        skills=state["market_report"].skills,
+        platform_rules=_platform_rules("xhs"),
+        content_strategy=_content_strategy(state["task"]),
+    )
+    context_view = ContextResolver().for_agent("ContentSpecAgent", context_pack)
+    path = state["run_dir"] / "content_context_pack.json"
+    _write_json(path, context_pack.to_dict())
+    state = {**state, "content_context_pack": context_pack, "content_context_view": context_view}
+    return _with_artifact(state, "content_context", path)
+
+
+def _stage_content_design_spec(state: dict[str, Any]) -> dict[str, Any]:
+    content_spec = ContentSpecAgent(llm_factory=state["llm_factory"]).run(
+        context_view=state["content_context_view"],
+    )
+    path = state["run_dir"] / "content_design_spec.json"
+    _write_json(path, content_spec.to_dict())
+    state = {**state, "content_spec": content_spec}
+    return _with_artifact(state, "content_design_spec", path)
+
+
 def _stage_content_package(state: dict[str, Any]) -> dict[str, Any]:
-    package = ContentProducerAgent(llm_factory=state["llm_factory"]).run(
-        state["task"],
+    package = ArtifactGenerationAgent(llm_factory=state["llm_factory"]).run(
+        spec=state["content_spec"],
+        task=state["task"],
         skills=state["market_report"].skills,
         assets=state["intake"].assets,
         out_dir=state["covers_dir"],
@@ -457,6 +497,41 @@ def _select_task(calendar: Any) -> Any:
     if not calendar.tasks:
         raise RuntimeError("calendar has no content tasks")
     return sorted(calendar.tasks, key=lambda task: (task.priority, task.scheduled_date or ""))[0]
+
+
+def _platform_rules(platform: str) -> list[dict[str, str]]:
+    if platform == "xhs":
+        return [
+            {"rule": "小红书图文首屏必须一眼看出情绪利益点和收藏理由。"},
+            {"rule": "标题、封面和正文开头要围绕同一个点击钩子。"},
+        ]
+    return []
+
+
+def _content_strategy(task: Any) -> dict[str, Any]:
+    return {
+        "artifact_type": task.content_type,
+        "creative_angle": task.brief.get("angle") or task.objective or task.topic,
+        "objective": task.objective,
+    }
+
+
+def _asset_library_from_user_assets(assets: list[Any]) -> AssetLibrary:
+    return AssetLibrary(
+        assets=[
+            AssetRecord(
+                asset_id=f"intake_asset_{index + 1}",
+                kind=asset.kind,
+                path=asset.path,
+                text=asset.text,
+                usage=list(asset.usable_for),
+                tags=[*asset.vision_roles, *asset.brand_signals],
+                source="intake",
+                metadata={"subject": asset.subject, "quality": asset.quality},
+            )
+            for index, asset in enumerate(assets)
+        ]
+    )
 
 
 def _summary_markdown(

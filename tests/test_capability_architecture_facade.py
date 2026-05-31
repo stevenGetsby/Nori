@@ -2,7 +2,7 @@ from nori.core import AssetLibrary, AssetRecord
 from nori.core import AccountOperationProject
 from nori.core import ContentTask, ClientBrief
 from nori.agents.content_generation import ContentGenerationFacade
-from nori.agents.planning import ContextPackBuilder
+from nori.context import ContextPackBuilder
 from nori.agents.learning_loop import LearningLoopFacade
 from nori.agents.market_analysis import MarketAnalysisFacade
 from nori.agents.content_generation.models import ContentPackage
@@ -70,7 +70,7 @@ def test_facades_are_importable_and_composable():
 
     assert user.module_name == "user_profiling"
     assert market.module_name == "market_analysis"
-    assert builder.module_name == "planning"
+    assert builder.module_name == "context"
     assert generation.module_name == "content_generation"
     assert learning.module_name == "learning_loop"
 
@@ -88,14 +88,14 @@ def test_business_facades_share_workflow_base_contract():
     assert [facade.workflow_name for facade in facades] == [
         "user_profiling",
         "market_analysis",
-        "planning",
+        "context",
         "content_generation",
         "learning_loop",
     ]
     assert [facade.step_names for facade in facades] == [
         ["client_brief", "account_positioning", "user_profile"],
         ["competitor_research", "market_analysis"],
-        ["profile", "task", "market", "assets", "context_pack"],
+        ["profile", "task", "market", "assets", "skills", "context_pack"],
         ["context_pack", "content_packages", "candidate_set"],
         ["performance", "strategy", "capability_snapshot"],
     ]

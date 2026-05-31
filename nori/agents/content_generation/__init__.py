@@ -4,11 +4,12 @@ from __future__ import annotations
 from nori.core import CandidateSet
 from nori.core.lazy_exports import lazy_export
 
-from .models import AssetBundle, CandidateTitle, ContentPackage, CoverResult, NoteDraft
+from .models import AssetBundle, CandidateTitle, ContentDesignSpec, ContentPackage, CoverResult, NoteDraft
 
 _LAZY_EXPORTS = {
+    "ArtifactGenerationAgent": "artifact_generator",
     "ContentGenerationFacade": "facade",
-    "GenerationAgent": "generation",
+    "ContentSpecAgent": "spec_designer",
     "ContentProducerAgent": "content_producer",
     "ContentProductionError": "content_producer",
     "produce_content_package": "content_producer",
@@ -24,11 +25,13 @@ __all__ = [
     "AssetBundle",
     "CandidateSet",
     "CandidateTitle",
+    "ContentDesignSpec",
     "ContentPackage",
     "ContentGenerationFacade",
     "ContentProducerAgent",
     "ContentProductionError",
-    "GenerationAgent",
+    "ContentSpecAgent",
+    "ArtifactGenerationAgent",
     "CoverDirectorAgent",
     "CoverDirectorError",
     "CoverResult",

@@ -3,788 +3,582 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nori Session Runtime Model</title>
+  <title>Nori Session Runtime Map</title>
   <style>
     :root {
-      --bg: #101318;
-      --panel: #f4efe4;
-      --panel-deep: #e7dcc7;
-      --ink: #171717;
-      --muted: #6d665c;
-      --line: rgba(23, 23, 23, 0.18);
-      --white: #fbf8ef;
-      --blue: #315d9b;
-      --blue-2: #d7e2ef;
-      --green: #2b8b72;
-      --green-2: #d3e8df;
-      --amber: #c28a2e;
-      --amber-2: #f0dcaa;
-      --rose: #b64c52;
-      --rose-2: #efd0cd;
-      --violet: #694f95;
-      --violet-2: #ddd4eb;
-      --slate: #3e4651;
+      --bg: #f4efe6;
+      --panel: #fffaf0;
+      --panel-2: #eadfce;
+      --ink: #171615;
+      --muted: #6a6258;
+      --line: rgba(23,22,21,0.16);
+      --strong-line: rgba(23,22,21,0.28);
+      --blue: #345f9a;
+      --blue-soft: #d9e2ef;
+      --green: #287b66;
+      --green-soft: #d4e8df;
+      --amber: #b77920;
+      --amber-soft: #f1dcad;
+      --red: #b5483d;
+      --red-soft: #f0d2cc;
+      --violet: #6d5698;
+      --violet-soft: #ded6ea;
+      --slate: #3f4852;
+      --slate-soft: #dde1e5;
       --mono: "SFMono-Regular", "Menlo", "Consolas", monospace;
       --sans: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-      --serif: "Iowan Old Style", "Songti SC", "STSong", "Noto Serif CJK SC", serif;
-      --shadow: 0 28px 90px rgba(0, 0, 0, 0.32);
+      --serif: "Iowan Old Style", "Songti SC", "STSong", serif;
+      --shadow: 0 22px 64px rgba(42,34,23,0.14);
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
       margin: 0;
-      min-width: 1220px;
       color: var(--ink);
       font-family: var(--sans);
+      overflow-x: hidden;
       background:
-        linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 38px 38px,
-        linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px) 0 0 / 38px 38px,
-        radial-gradient(circle at 16% 8%, rgba(49,93,155,0.34), transparent 30%),
-        radial-gradient(circle at 80% 18%, rgba(194,138,46,0.22), transparent 24%),
-        radial-gradient(circle at 68% 92%, rgba(43,139,114,0.26), transparent 25%),
-        var(--bg);
-    }
-
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background:
-        linear-gradient(115deg, rgba(255,255,255,0.12), transparent 36%),
-        repeating-linear-gradient(0deg, rgba(255,255,255,0.024), rgba(255,255,255,0.024) 1px, transparent 1px, transparent 5px);
-      mix-blend-mode: screen;
-      opacity: 0.55;
-      z-index: 20;
+        linear-gradient(90deg, rgba(23,22,21,0.04) 1px, transparent 1px) 0 0 / 34px 34px,
+        linear-gradient(rgba(23,22,21,0.04) 1px, transparent 1px) 0 0 / 34px 34px,
+        linear-gradient(135deg, #fbf7ef, var(--bg) 52%, #eee4d5);
     }
 
     .shell {
-      width: 1160px;
+      width: min(1180px, calc(100% - 40px));
       margin: 0 auto;
-      padding: 36px 0 62px;
+      padding: 34px 0 56px;
     }
 
     .hero {
-      position: relative;
-      min-height: 560px;
       overflow: hidden;
-      color: var(--white);
-      border: 1px solid rgba(255,255,255,0.24);
+      border: 1px solid var(--strong-line);
       border-radius: 10px;
       background:
-        linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02) 46%),
-        linear-gradient(120deg, rgba(49,93,155,0.34), rgba(182,76,82,0.18) 46%, rgba(43,139,114,0.30)),
-        #171b22;
+        linear-gradient(135deg, rgba(255,255,255,0.84), rgba(255,255,255,0.34)),
+        linear-gradient(90deg, rgba(52,95,154,0.14), rgba(40,123,102,0.10) 50%, rgba(181,72,61,0.11)),
+        var(--panel-2);
       box-shadow: var(--shadow);
     }
 
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: 24px;
-      border: 1px solid rgba(255,255,255,0.22);
-      pointer-events: none;
-    }
-
     .hero-grid {
-      position: relative;
-      z-index: 1;
       display: grid;
-      grid-template-columns: 1.04fr 0.96fr;
-      gap: 38px;
-      padding: 54px 58px 34px;
+      grid-template-columns: 1fr 430px;
+      gap: 36px;
+      padding: 46px 48px 38px;
+      align-items: stretch;
     }
 
     .kicker {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      color: #f1d494;
       font-family: var(--mono);
       font-size: 12px;
-      letter-spacing: 0.09em;
+      letter-spacing: .08em;
       text-transform: uppercase;
+      color: var(--blue);
+      border-bottom: 1px solid rgba(52,95,154,0.35);
+      padding-bottom: 8px;
     }
 
     .mark {
-      width: 14px;
-      height: 14px;
-      border: 2px solid #f1d494;
+      width: 13px;
+      height: 13px;
+      border: 2px solid var(--blue);
       transform: rotate(45deg);
-      box-shadow: 0 0 0 5px rgba(241,212,148,0.08);
     }
 
     h1 {
-      margin: 20px 0 20px;
-      max-width: 640px;
+      max-width: 740px;
+      margin: 20px 0 18px;
       font-family: var(--serif);
-      font-size: 78px;
-      line-height: 0.94;
+      font-size: 66px;
+      line-height: .98;
       letter-spacing: 0;
     }
 
     .lead {
-      max-width: 620px;
+      max-width: 720px;
       margin: 0;
-      color: rgba(251,248,239,0.82);
+      color: #3c352e;
       font-size: 18px;
-      line-height: 1.78;
+      line-height: 1.74;
     }
 
     .hero-note {
       margin-top: 24px;
-      display: inline-grid;
-      grid-template-columns: 26px 1fr;
-      gap: 12px;
-      max-width: 610px;
+      max-width: 720px;
+      border: 1px solid rgba(52,95,154,0.26);
+      background: rgba(217,226,239,0.56);
       padding: 14px 16px;
-      color: rgba(251,248,239,0.88);
-      border: 1px solid rgba(241,212,148,0.32);
-      background: rgba(241,212,148,0.08);
-      border-radius: 8px;
+      color: #3a352f;
       line-height: 1.58;
       font-size: 14px;
     }
 
-    .hero-note b {
-      color: #f1d494;
-    }
-
-    .hero-canvas {
-      align-self: stretch;
-      position: relative;
-      min-height: 420px;
-      border: 1px solid rgba(255,255,255,0.20);
-      border-radius: 8px;
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px) 0 0 / 24px 24px,
-        linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px) 0 0 / 24px 24px,
-        rgba(10, 13, 17, 0.32);
-      overflow: hidden;
-    }
-
-    .orbit {
-      position: absolute;
-      border: 1px solid rgba(255,255,255,0.20);
-      border-radius: 50%;
-      inset: 48px;
-    }
-
-    .orbit.two {
-      inset: 98px;
-      border-style: dashed;
-      opacity: 0.72;
-    }
-
-    .core-node {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 162px;
-      height: 162px;
-      transform: translate(-50%, -50%);
+    .stack {
       display: grid;
-      place-items: center;
-      text-align: center;
-      border-radius: 50%;
-      background: rgba(244,239,228,0.92);
-      color: var(--ink);
-      box-shadow: 0 24px 70px rgba(0,0,0,0.26);
-      border: 1px solid rgba(255,255,255,0.42);
-      font-family: var(--serif);
-      font-size: 24px;
-      line-height: 1.1;
-      font-weight: 700;
+      gap: 10px;
+      border: 1px solid var(--strong-line);
+      background: rgba(255,250,240,0.72);
+      padding: 18px;
+      align-content: start;
     }
 
-    .satellite {
-      position: absolute;
-      width: 132px;
-      min-height: 76px;
+    .stack-row {
+      display: grid;
+      grid-template-columns: 98px 1fr;
+      gap: 12px;
+      align-items: start;
+      min-height: 68px;
+      border: 1px solid var(--line);
+      background: #fffdf7;
       padding: 12px;
-      border-radius: 8px;
-      background: rgba(251,248,239,0.90);
-      color: var(--ink);
-      border: 1px solid rgba(255,255,255,0.50);
-      box-shadow: 0 18px 46px rgba(0,0,0,0.20);
-      font-size: 13px;
-      line-height: 1.3;
     }
 
-    .satellite b {
-      display: block;
+    .stack-row b {
       font-family: var(--mono);
-      font-size: 11px;
-      color: var(--blue);
-      margin-bottom: 7px;
+      font-size: 12px;
+      color: var(--muted);
     }
 
-    .satellite.s1 { left: 28px; top: 42px; }
-    .satellite.s2 { right: 26px; top: 74px; }
-    .satellite.s3 { left: 46px; bottom: 52px; }
-    .satellite.s4 { right: 52px; bottom: 38px; }
+    .stack-row strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .stack-row span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
 
     .section {
-      margin-top: 30px;
+      margin-top: 28px;
       overflow: hidden;
+      border: 1px solid var(--strong-line);
       border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.16);
       background: var(--panel);
-      box-shadow: 0 22px 72px rgba(0,0,0,0.22);
+      box-shadow: 0 18px 50px rgba(42,34,23,0.10);
     }
 
     .section-head {
       display: grid;
-      grid-template-columns: 0.8fr 1fr;
-      gap: 36px;
+      grid-template-columns: 360px 1fr;
+      gap: 30px;
       align-items: end;
-      padding: 30px 34px 24px;
+      padding: 28px 32px 22px;
       border-bottom: 1px solid var(--line);
-      background:
-        linear-gradient(90deg, rgba(255,255,255,0.62), rgba(255,255,255,0)),
-        var(--panel);
     }
 
-    .section h2 {
+    h2 {
       margin: 0;
       font-family: var(--serif);
-      font-size: 38px;
-      line-height: 1.08;
+      font-size: 34px;
+      line-height: 1.05;
       letter-spacing: 0;
     }
 
     .section-head p {
       margin: 0;
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
+      line-height: 1.62;
+      font-size: 15px;
     }
 
-    .board {
-      padding: 30px 34px 34px;
-    }
+    .board { padding: 28px 32px 32px; }
 
-    .split-map {
+    .split {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 18px;
     }
 
-    .map-panel {
-      min-height: 420px;
+    .panel {
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255,255,255,0.46);
-      padding: 22px;
-      position: relative;
-      overflow: hidden;
+      background: #fffdf7;
+      padding: 20px;
+      min-height: 360px;
     }
 
-    .map-panel.static {
-      background:
-        linear-gradient(145deg, rgba(49,93,155,0.12), rgba(255,255,255,0.52)),
-        rgba(255,255,255,0.46);
+    .panel h3 {
+      margin: 0 0 10px;
+      font-family: var(--serif);
+      font-size: 28px;
+      line-height: 1.1;
     }
 
-    .map-panel.runtime {
-      background:
-        linear-gradient(145deg, rgba(43,139,114,0.14), rgba(255,255,255,0.52)),
-        rgba(255,255,255,0.46);
-    }
-
-    .map-panel h3 {
-      margin: 0 0 8px;
-      font-size: 22px;
-    }
-
-    .map-panel .desc {
+    .panel > p {
+      margin: 0 0 18px;
       color: var(--muted);
-      margin: 0 0 22px;
-      font-size: 13px;
-      line-height: 1.58;
-    }
-
-    .layer-stack {
-      display: grid;
-      gap: 10px;
-    }
-
-    .layer {
-      display: grid;
-      grid-template-columns: 130px 1fr;
-      gap: 12px;
-      align-items: center;
-      border: 1px solid rgba(23,23,23,0.15);
-      background: rgba(251,248,239,0.78);
-      border-radius: 7px;
-      padding: 12px 14px;
-    }
-
-    .layer b {
-      font-family: var(--mono);
-      color: var(--accent);
-      font-size: 12px;
-      letter-spacing: 0.03em;
-    }
-
-    .layer span {
-      color: #2e2a25;
-      line-height: 1.5;
-      font-size: 13px;
-    }
-
-    .layer.input { --accent: var(--rose); }
-    .layer.memory { --accent: var(--amber); }
-    .layer.context { --accent: var(--blue); }
-    .layer.agent { --accent: var(--green); }
-    .layer.eval { --accent: var(--violet); }
-
-    .runtime-chain {
-      display: grid;
-      gap: 9px;
-      margin-top: 4px;
-    }
-
-    .runtime-row {
-      display: grid;
-      grid-template-columns: 34px 1fr 112px;
-      gap: 10px;
-      align-items: center;
-      border: 1px solid rgba(23,23,23,0.15);
-      background: rgba(251,248,239,0.80);
-      border-radius: 7px;
-      padding: 10px;
-    }
-
-    .runtime-row em {
-      width: 30px;
-      height: 30px;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      font-style: normal;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--white);
-      background: var(--ink);
-    }
-
-    .runtime-row strong {
-      display: block;
-      margin-bottom: 2px;
+      line-height: 1.55;
       font-size: 14px;
     }
 
-    .runtime-row span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.35;
+    .layer-list,
+    .runtime-list {
+      display: grid;
+      gap: 10px;
     }
 
-    .runtime-row code {
+    .layer-item,
+    .runtime-item {
+      display: grid;
+      grid-template-columns: 94px 1fr 92px;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid var(--line);
+      padding: 12px;
+      background: var(--soft);
+      min-height: 62px;
+    }
+
+    .layer-item { --soft: var(--slate-soft); }
+    .layer-item:nth-child(2) { --soft: var(--amber-soft); }
+    .layer-item:nth-child(3) { --soft: var(--blue-soft); }
+    .layer-item:nth-child(4) { --soft: var(--red-soft); }
+    .layer-item:nth-child(5) { --soft: var(--green-soft); }
+
+    .runtime-item:nth-child(1) { --soft: var(--green-soft); }
+    .runtime-item:nth-child(2) { --soft: var(--blue-soft); }
+    .runtime-item:nth-child(3) { --soft: var(--violet-soft); }
+    .runtime-item:nth-child(4) { --soft: var(--red-soft); }
+    .runtime-item:nth-child(5) { --soft: var(--amber-soft); }
+
+    .layer-item b,
+    .runtime-item b {
       font-family: var(--mono);
-      color: var(--green);
-      font-size: 11px;
-      padding: 5px 7px;
-      border: 1px solid rgba(43,139,114,0.22);
-      background: rgba(43,139,114,0.08);
-      border-radius: 5px;
-      text-align: center;
+      font-size: 12px;
+      color: #3e3933;
+    }
+
+    .layer-item span,
+    .runtime-item span {
+      color: #443e37;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .layer-item code,
+    .runtime-item code,
+    code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: rgba(255,250,240,0.58);
+      border: 1px solid rgba(23,22,21,0.12);
+      padding: 2px 5px;
+      color: #2c2a27;
     }
 
     .schema {
       display: grid;
-      grid-template-columns: 1.08fr 0.92fr;
-      gap: 18px;
+      grid-template-columns: 1fr 330px;
+      gap: 20px;
       align-items: start;
     }
 
-    .entity-map {
-      position: relative;
-      min-height: 720px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background:
-        linear-gradient(90deg, rgba(23,23,23,0.045) 1px, transparent 1px) 0 0 / 28px 28px,
-        linear-gradient(rgba(23,23,23,0.045) 1px, transparent 1px) 0 0 / 28px 28px,
-        rgba(255,255,255,0.38);
-      padding: 22px;
+    .entity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
     }
 
     .entity {
-      position: absolute;
-      width: 210px;
-      border: 1px solid rgba(23,23,23,0.18);
-      border-radius: 8px;
-      background: rgba(251,248,239,0.92);
-      box-shadow: 0 16px 38px rgba(28,25,20,0.10);
-      overflow: hidden;
+      border: 1px solid var(--line);
+      background: #fffdf7;
+      min-height: 178px;
+      padding: 17px;
+      border-top: 6px solid var(--accent);
+      position: relative;
     }
 
+    .entity.user { --accent: var(--slate); }
+    .entity.profile { --accent: var(--amber); }
+    .entity.session { --accent: var(--green); }
+    .entity.task { --accent: var(--blue); }
+    .entity.context { --accent: var(--violet); }
+    .entity.run { --accent: var(--red); }
+    .entity.artifact { --accent: var(--support, #b77920); }
+
     .entity h3 {
-      margin: 0;
-      padding: 12px 13px 9px;
-      color: var(--white);
-      background: var(--color);
-      font-size: 15px;
+      margin: 0 0 10px;
+      font-size: 20px;
     }
 
     .entity ul {
       margin: 0;
-      padding: 11px 13px 13px 25px;
+      padding-left: 18px;
+      color: #443e37;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .entity small {
+      display: block;
+      margin-top: 12px;
       color: var(--muted);
+      line-height: 1.4;
       font-size: 12px;
-      line-height: 1.55;
     }
 
-    .entity.user { --color: var(--slate); left: 26px; top: 36px; }
-    .entity.workspace { --color: var(--blue); left: 292px; top: 36px; }
-    .entity.profile { --color: var(--amber); left: 554px; top: 36px; }
-    .entity.session { --color: var(--green); left: 150px; top: 235px; }
-    .entity.goal { --color: var(--rose); left: 414px; top: 235px; }
-    .entity.run { --color: var(--violet); left: 150px; top: 446px; }
-    .entity.artifact { --color: var(--green); left: 414px; top: 446px; }
-
-    .connector {
-      position: absolute;
-      height: 2px;
-      background: rgba(23,23,23,0.32);
-      transform-origin: left center;
-    }
-
-    .connector::after {
-      content: "";
-      position: absolute;
-      right: -4px;
-      top: -4px;
-      width: 9px;
-      height: 9px;
-      border-right: 2px solid rgba(23,23,23,0.42);
-      border-top: 2px solid rgba(23,23,23,0.42);
-      transform: rotate(45deg);
-    }
-
-    .c1 { left: 236px; top: 104px; width: 58px; }
-    .c2 { left: 502px; top: 104px; width: 54px; }
-    .c3 { left: 252px; top: 198px; width: 2px; height: 40px; transform: rotate(90deg); }
-    .c4 { left: 360px; top: 304px; width: 56px; }
-    .c5 { left: 254px; top: 407px; width: 2px; height: 42px; transform: rotate(90deg); }
-    .c6 { left: 360px; top: 516px; width: 56px; }
-
-    .schema-side {
+    .side {
       display: grid;
-      gap: 14px;
+      gap: 12px;
     }
 
-    .principle {
+    .callout {
       border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(255,255,255,0.46);
-      padding: 18px;
+      background: #f2e8d8;
+      padding: 16px;
     }
 
-    .principle h3 {
-      margin: 0 0 10px;
+    .callout h3 {
+      margin: 0 0 8px;
       font-size: 18px;
     }
 
-    .principle p {
+    .callout p {
       margin: 0;
       color: var(--muted);
-      line-height: 1.62;
+      line-height: 1.55;
       font-size: 13px;
     }
 
     .memory-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
+      gap: 14px;
     }
 
-    .memory-card {
-      min-height: 330px;
+    .memory {
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 20px;
-      background: rgba(255,255,255,0.48);
-      position: relative;
-      overflow: hidden;
+      background: #fffdf7;
+      min-height: 234px;
+      padding: 18px;
+      border-top: 6px solid var(--accent);
     }
 
-    .memory-card::before {
-      content: attr(data-label);
-      position: absolute;
-      right: 14px;
-      top: 14px;
-      font-family: var(--mono);
-      font-size: 10px;
+    .memory.stable { --accent: var(--amber); }
+    .memory.session { --accent: var(--green); }
+    .memory.task { --accent: var(--blue); }
+
+    .memory h3 {
+      margin: 0 0 10px;
+      font-size: 22px;
+    }
+
+    .memory p {
+      margin: 0 0 14px;
       color: var(--muted);
-      border: 1px solid rgba(23,23,23,0.14);
-      border-radius: 999px;
-      padding: 4px 7px;
-      background: rgba(251,248,239,0.72);
+      line-height: 1.55;
+      font-size: 14px;
     }
 
-    .memory-card h3 {
-      margin: 0 0 12px;
-      font-family: var(--serif);
-      font-size: 25px;
-      line-height: 1.12;
-      max-width: 220px;
-    }
-
-    .memory-card p {
-      margin: 0 0 16px;
-      color: var(--muted);
-      line-height: 1.62;
-      font-size: 13px;
-    }
-
-    .memory-card ul {
+    .memory ul {
       margin: 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
-      gap: 8px;
+      padding-left: 18px;
+      color: #443e37;
+      font-size: 13px;
+      line-height: 1.48;
     }
-
-    .memory-card li {
-      border-left: 4px solid var(--accent);
-      padding: 7px 9px;
-      background: rgba(251,248,239,0.72);
-      font-size: 12px;
-      line-height: 1.42;
-    }
-
-    .memory-card.stable { --accent: var(--amber); }
-    .memory-card.session { --accent: var(--green); }
-    .memory-card.task { --accent: var(--rose); }
 
     .promotion {
       margin-top: 18px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
       display: grid;
-      grid-template-columns: 1fr 52px 1fr 52px 1fr;
-      align-items: center;
-      gap: 12px;
-      padding: 18px;
-      background: rgba(255,255,255,0.46);
+      grid-template-columns: 1fr 42px 1fr 42px 1fr;
+      gap: 10px;
+      align-items: stretch;
     }
 
-    .promo-box {
-      padding: 14px;
-      min-height: 92px;
-      border-radius: 7px;
-      border: 1px solid rgba(23,23,23,0.15);
-      background: rgba(251,248,239,0.80);
+    .promo {
+      border: 1px solid var(--line);
+      background: #f2e8d8;
+      padding: 16px;
+      min-height: 96px;
     }
 
-    .promo-box b {
+    .promo b {
       display: block;
-      margin-bottom: 6px;
-      color: var(--blue);
-      font-family: var(--mono);
-      font-size: 12px;
+      margin-bottom: 8px;
+      font-size: 16px;
     }
 
-    .promo-box span {
+    .promo span {
       display: block;
       color: var(--muted);
-      font-size: 12px;
+      font-size: 13px;
       line-height: 1.45;
     }
 
     .arrow {
-      text-align: center;
-      font-size: 32px;
-      color: var(--rose);
-      font-family: var(--serif);
+      display: grid;
+      place-items: center;
+      color: var(--red);
+      font-size: 28px;
+      font-weight: 700;
     }
 
     .lifecycle {
       display: grid;
-      grid-template-columns: 180px 1fr;
-      gap: 18px;
+      grid-template-columns: 240px 1fr;
+      gap: 20px;
     }
 
     .nav {
-      position: sticky;
-      top: 18px;
-      align-self: start;
+      border: 1px solid var(--line);
+      background: #f2e8d8;
+      padding: 16px;
       display: grid;
       gap: 8px;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.48);
+      align-content: start;
     }
 
     .nav a {
+      color: #2f2b27;
       text-decoration: none;
-      color: var(--ink);
-      padding: 8px 9px;
-      border-left: 3px solid transparent;
-      font-size: 13px;
-      line-height: 1.2;
-    }
-
-    .nav a:hover {
-      background: rgba(49,93,155,0.08);
-      border-left-color: var(--blue);
+      font-family: var(--mono);
+      font-size: 12px;
+      border-bottom: 1px solid rgba(23,22,21,0.12);
+      padding: 8px 0;
     }
 
     .steps {
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .step {
       display: grid;
-      grid-template-columns: 52px 1fr 190px;
+      grid-template-columns: 54px 1fr 190px;
       gap: 14px;
       align-items: center;
-      border-radius: 8px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.52);
+      background: #fffdf7;
       padding: 14px;
+      min-height: 82px;
     }
 
     .num {
-      width: 42px;
-      height: 42px;
+      width: 38px;
+      height: 38px;
       display: grid;
       place-items: center;
-      border-radius: 50%;
-      color: var(--white);
       background: var(--ink);
+      color: var(--panel);
       font-family: var(--mono);
-      font-weight: 700;
-      font-size: 12px;
+      font-size: 13px;
     }
 
     .step h3 {
-      margin: 0 0 5px;
-      font-size: 16px;
+      margin: 0 0 6px;
+      font-size: 17px;
     }
 
     .step p {
       margin: 0;
       color: var(--muted);
-      line-height: 1.5;
       font-size: 13px;
+      line-height: 1.45;
     }
 
     .state {
-      border: 1px solid rgba(43,139,114,0.22);
-      background: rgba(43,139,114,0.09);
-      color: var(--green);
-      border-radius: 7px;
-      padding: 10px;
       font-family: var(--mono);
-      font-size: 11px;
-      line-height: 1.42;
+      font-size: 12px;
+      color: #403a34;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      padding: 8px;
+      text-align: center;
+      overflow-wrap: anywhere;
     }
 
-    .code-map {
+    .snapshot {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 14px;
     }
 
-    .code-card {
-      min-height: 220px;
-      border-radius: 8px;
+    .snapshot-card {
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.50);
-      padding: 16px;
-    }
-
-    .code-card h3 {
-      margin: 0 0 10px;
-      font-size: 17px;
-    }
-
-    .code-card code {
-      display: inline-block;
-      margin-bottom: 12px;
-      font-family: var(--mono);
-      color: var(--blue);
-      background: rgba(49,93,155,0.08);
-      border: 1px solid rgba(49,93,155,0.16);
-      padding: 3px 6px;
-      border-radius: 5px;
-      font-size: 11px;
-    }
-
-    .code-card ul {
-      margin: 0;
-      padding-left: 18px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.62;
-    }
-
-    .warning {
-      margin-top: 18px;
-      display: grid;
-      grid-template-columns: 170px 1fr;
-      gap: 16px;
-      border-radius: 8px;
-      border: 1px solid rgba(182,76,82,0.24);
-      background: linear-gradient(90deg, rgba(182,76,82,0.12), rgba(255,255,255,0.46));
+      background: #fffdf7;
       padding: 18px;
+      min-height: 190px;
+      border-left: 6px solid var(--accent);
     }
 
-    .warning b {
-      color: var(--rose);
+    .snapshot-card:nth-child(1) { --accent: var(--green); }
+    .snapshot-card:nth-child(2) { --accent: var(--violet); }
+    .snapshot-card:nth-child(3) { --accent: var(--red); }
+
+    .snapshot-card h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+    }
+
+    .snapshot-card p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 13px;
+    }
+
+    .path {
+      display: block;
+      white-space: normal;
+      overflow-wrap: anywhere;
       font-family: var(--mono);
       font-size: 12px;
-      letter-spacing: 0.04em;
-    }
-
-    .warning p {
-      margin: 0;
-      color: #4c4038;
-      line-height: 1.65;
-      font-size: 14px;
+      line-height: 1.5;
+      border: 1px solid var(--line);
+      background: #f2e8d8;
+      padding: 10px;
+      color: #38332d;
     }
 
     .footer {
-      margin-top: 24px;
+      margin-top: 22px;
       display: flex;
       justify-content: space-between;
-      color: rgba(251,248,239,0.62);
+      color: rgba(23,22,21,0.56);
       font-family: var(--mono);
       font-size: 12px;
-      border-top: 1px solid rgba(255,255,255,0.18);
-      padding-top: 16px;
     }
 
-    @media print {
-      body {
-        min-width: 0;
-        background: var(--white);
+    @media (max-width: 920px) {
+      .shell { width: min(100% - 24px, 1180px); padding-top: 18px; }
+      .hero-grid { padding: 28px 24px; }
+      .hero-grid,
+      .section-head,
+      .split,
+      .schema,
+      .lifecycle { grid-template-columns: 1fr; }
+      h1 {
+        font-size: 34px;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        word-break: break-word;
       }
-      .shell {
-        width: auto;
-      }
-      .hero,
-      .section {
-        box-shadow: none;
-        break-inside: avoid;
-      }
-      .nav {
-        position: static;
-      }
+      .lead,
+      .hero-note,
+      .stack-row,
+      .layer-item,
+      .runtime-item,
+      .entity,
+      .step,
+      .snapshot-card { overflow-wrap: anywhere; }
+      .stack-row,
+      .layer-item,
+      .runtime-item { grid-template-columns: 1fr; }
+      .entity-grid,
+      .memory-grid,
+      .snapshot { grid-template-columns: 1fr; }
+      .promotion { grid-template-columns: 1fr; }
+      .arrow { min-height: 32px; transform: rotate(90deg); }
+      .step { grid-template-columns: 48px 1fr; }
+      .state { grid-column: 2; }
     }
   </style>
 </head>
@@ -793,335 +587,243 @@
     <section class="hero" id="top">
       <div class="hero-grid">
         <div>
-          <div class="kicker"><span class="mark"></span> Nori session runtime proposal</div>
-          <h1>公共系统架构之下，每个 Session 是一个任务工作空间</h1>
+          <div class="kicker"><span class="mark"></span> Nori session runtime</div>
+          <h1>每个 Session 是一个可恢复的任务工作空间</h1>
           <p class="lead">
-            这张图用于对齐下一阶段重构：静态架构负责定义能力边界；每个用户可以拥有多个 session；
-            每个 session 保存目标、执行、产物、审核、指标和记忆更新，而不是只保存聊天记录。
+            静态系统架构定义 Nori 有哪些能力；Session Runtime 定义某个用户这一次任务如何推进、执行到哪一步、产物在哪里、哪些事实可以沉淀为长期记忆。
           </p>
           <div class="hero-note">
-            <b>→</b>
-            <span><b>核心判断：</b> Nori 不应该把 session 当 chat log。Session 应该是可恢复、可审计、可产出 artifact、可推动 memory 更新的运行时单元。</span>
+            当前代码已经有 `Session`、`TaskGoal`、`ContextBundle`、`WorkflowRun`、`MemoryRecord` 和 `RuntimeRunRecorder`；
+            `ContextCompiler` 先生成业务 `ContextPack` / `ContextView`，`attach_context_pack` 再挂入 runtime，stage 产物通过 `StoredArtifact` 进入 workflow trace。
+            下一步产品化时，需要把这些 in-process 模型接到持久化存储和 API/UI。
           </div>
         </div>
-        <div class="hero-canvas" aria-label="session runtime orbit">
-          <div class="orbit"></div>
-          <div class="orbit two"></div>
-          <div class="core-node">Session<br>Runtime</div>
-          <div class="satellite s1"><b>STATIC</b> Core / Context / Agent capability map</div>
-          <div class="satellite s2"><b>MEMORY</b> Stable profile + session notes</div>
-          <div class="satellite s3"><b>WORKFLOW</b> Runs, stages, checkpoints</div>
-          <div class="satellite s4"><b>LEARNING</b> Reviews, metrics, promotion</div>
-        </div>
+        <aside class="stack" aria-label="session runtime stack">
+          <div class="stack-row"><b>USER</b><div><strong>一个用户</strong><span>可以有多个 session，不同 session 代表不同任务工作空间。</span></div></div>
+          <div class="stack-row"><b>SESSION</b><div><strong>一次工作推进</strong><span>保存 turns、events、task_goals 和运行 metadata。</span></div></div>
+          <div class="stack-row"><b>TASK</b><div><strong>一个明确目标</strong><span>保存 goal、workflow_name、acceptance。</span></div></div>
+          <div class="stack-row"><b>RUN</b><div><strong>一次实际执行</strong><span>LangGraph workflow run，可成功、失败、等待人工或重跑。</span></div></div>
+          <div class="stack-row"><b>ARTIFACT</b><div><strong>可审计产物</strong><span>每个 stage 的输入输出快照和最终封面。</span></div></div>
+        </aside>
       </div>
     </section>
 
     <section class="section" id="split">
       <div class="section-head">
-        <h2>先拆清楚：静态架构 vs 运行时 Session</h2>
-        <p>
-          公共架构是稳定能力地图；session 是每次任务推进时生成的状态容器。它们不应该混成一个“巨大上下文”。
-        </p>
+        <h2>静态架构 vs Session Runtime</h2>
+        <p>这两个层次必须分开。静态架构回答“系统能做什么”；Session Runtime 回答“这次任务做到哪一步”。</p>
       </div>
-      <div class="board split-map">
-        <article class="map-panel static">
-          <h3>Static System Architecture</h3>
-          <p class="desc">这部分相对稳定，定义产品能力和代码边界。它回答：系统能做什么，能力归谁负责。</p>
-          <div class="layer-stack">
-            <div class="layer input"><b>Input</b><span>Onboarding / Interaction，统一入口，不暴露内部 agent。</span></div>
-            <div class="layer memory"><b>Memory</b><span>长期品牌画像、平台策略、账号偏好、历史学习。</span></div>
-            <div class="layer context"><b>Context</b><span>平台策略、热点采集、指标监控，按需组装成 ContextPack。</span></div>
-            <div class="layer agent"><b>Agent</b><span>Understanding / Generation / Evaluation 三段主能力。</span></div>
-            <div class="layer eval"><b>Core</b><span>模型契约、ArtifactStore、LLMFactory、Workflow 基类。</span></div>
-          </div>
-        </article>
-        <article class="map-panel runtime">
-          <h3>Runtime Session Architecture</h3>
-          <p class="desc">这部分每次用户任务都会变化。它回答：这次要做什么，做到哪一步，产物在哪里，哪些信息要沉淀。</p>
-          <div class="runtime-chain">
-            <div class="runtime-row"><em>01</em><div><strong>Session</strong><span>一次任务推进的工作空间，不等于聊天记录。</span></div><code>active</code></div>
-            <div class="runtime-row"><em>02</em><div><strong>TaskGoal</strong><span>本次目标、交付物、约束、成功标准。</span></div><code>dynamic</code></div>
-            <div class="runtime-row"><em>03</em><div><strong>WorkflowRun</strong><span>实际跑了哪些 agent，当前跑到哪一步。</span></div><code>resume</code></div>
-            <div class="runtime-row"><em>04</em><div><strong>Artifacts</strong><span>输入、context、note、cover、review、metric 的快照。</span></div><code>versioned</code></div>
-            <div class="runtime-row"><em>05</em><div><strong>MemoryUpdate</strong><span>只有被确认或足够稳定的信息才提升为长期记忆。</span></div><code>promote</code></div>
-          </div>
-        </article>
+      <div class="board">
+        <div class="split">
+          <article class="panel">
+            <h3>Static System Architecture</h3>
+            <p>稳定、共享、低频变化。它定义代码边界和能力所有权。</p>
+            <div class="layer-list">
+              <div class="layer-item"><b>CORE</b><span>跨阶段契约、ContextPack、LLMFactory、AgentBase、ArtifactStore。</span><code>nori/core</code></div>
+              <div class="layer-item"><b>MEMORY</b><span>长期事实、session/task 记忆、promotion policy。</span><code>nori/memory</code></div>
+              <div class="layer-item"><b>CONTEXT</b><span>业务上下文编译、agent 视图投影、当前调用上下文组装。</span><code>nori/context</code></div>
+              <div class="layer-item"><b>AGENTS</b><span>五个业务 capability 拥有具体 agent 行为。</span><code>nori/agents</code></div>
+              <div class="layer-item"><b>GRAPH</b><span>跨阶段编排与执行记录。</span><code>nori/workflows</code></div>
+            </div>
+          </article>
+          <article class="panel">
+            <h3>Runtime Session Architecture</h3>
+            <p>动态、用户相关、高频变化。它保存一次任务推进的过程状态和证据。</p>
+            <div class="runtime-list">
+              <div class="runtime-item"><b>01</b><span>Session 保存 user_id、profile_id、turns、events、metadata。</span><code>active</code></div>
+              <div class="runtime-item"><b>02</b><span>TaskGoal 保存本次目标、workflow_name、acceptance。</span><code>goal</code></div>
+              <div class="runtime-item"><b>03</b><span>ContextPack/View 保存业务上下文，ContextBundle 保存当前调用 envelope。</span><code>context</code></div>
+              <div class="runtime-item"><b>04</b><span>WorkflowRun 保存粗粒度节点、Human Gate、StoredArtifact refs、metadata、status。</span><code>run</code></div>
+              <div class="runtime-item"><b>05</b><span>MemoryRecord 经过 promotion 才进入 stable profile。</span><code>learn</code></div>
+            </div>
+          </article>
+        </div>
       </div>
     </section>
 
     <section class="section" id="model">
       <div class="section-head">
         <h2>Session 数据模型</h2>
-        <p>
-          下面是推荐的最小实体关系。关键不是表多，而是把长期 profile、临时 session、当前 task 和执行 run 分开。
-        </p>
+        <p>现在最合理的建模是：User 拥有 StableProfile 和多个 Session；每个 Session 可以包含多个 TaskGoal；每个 TaskGoal 可以产生多个 WorkflowRun。</p>
       </div>
-      <div class="board schema">
-        <div class="entity-map">
-          <div class="entity user">
-            <h3>User</h3>
-            <ul>
-              <li>user_id</li>
-              <li>default_workspace_id</li>
-              <li>permissions</li>
-            </ul>
+      <div class="board">
+        <div class="schema">
+          <div class="entity-grid">
+            <article class="entity user">
+              <h3>User</h3>
+              <ul><li>user_id</li><li>workspace_id</li><li>入口身份</li></ul>
+              <small>产品层实体，代码里目前由调用方传入。</small>
+            </article>
+            <article class="entity profile">
+              <h3>StableProfile</h3>
+              <ul><li>profile_id</li><li>brand_profile</li><li>preferences</li><li>constraints</li></ul>
+              <small>跨 session 复用的长期状态。</small>
+            </article>
+            <article class="entity session">
+              <h3>Session</h3>
+              <ul><li>session_id</li><li>turns</li><li>task_goals</li><li>events</li><li>metadata</li></ul>
+              <small>一次任务工作空间，不等于 chat log。</small>
+            </article>
+            <article class="entity task">
+              <h3>TaskGoal</h3>
+              <ul><li>task_id</li><li>goal</li><li>workflow_name</li><li>acceptance</li><li>status</li></ul>
+              <small>本次交付物和验收条件。</small>
+            </article>
+            <article class="entity context">
+              <h3>Context</h3>
+              <ul><li>ContextPack</li><li>ContextView</li><li>ContextBundle</li><li>sources</li><li>trace</li></ul>
+              <small>业务上下文和 runtime envelope 分开，必要时显式桥接。</small>
+            </article>
+            <article class="entity run">
+              <h3>WorkflowRun</h3>
+              <ul><li>run_id</li><li>status</li><li>stages</li><li>artifact_refs</li><li>metadata.human_gate_mode</li></ul>
+              <small>LangGraph 实际执行轨迹，Human Gate 默认 skip。</small>
+            </article>
           </div>
-          <div class="entity workspace">
-            <h3>Workspace</h3>
-            <ul>
-              <li>workspace_id</li>
-              <li>brand / account scope</li>
-              <li>platform defaults</li>
-            </ul>
-          </div>
-          <div class="entity profile">
-            <h3>StableProfile</h3>
-            <ul>
-              <li>brand facts</li>
-              <li>positioning</li>
-              <li>content pillars</li>
-              <li>guardrails</li>
-            </ul>
-          </div>
-          <div class="entity session">
-            <h3>Session</h3>
-            <ul>
-              <li>session_id</li>
-              <li>entry_type</li>
-              <li>status</li>
-              <li>summary</li>
-              <li>current_goal_id</li>
-            </ul>
-          </div>
-          <div class="entity goal">
-            <h3>TaskGoal</h3>
-            <ul>
-              <li>goal_id</li>
-              <li>deliverables</li>
-              <li>must_include</li>
-              <li>constraints</li>
-              <li>success_criteria</li>
-            </ul>
-          </div>
-          <div class="entity run">
-            <h3>WorkflowRun</h3>
-            <ul>
-              <li>run_id</li>
-              <li>workflow_type</li>
-              <li>current_stage</li>
-              <li>status</li>
-              <li>checkpoint manifest</li>
-            </ul>
-          </div>
-          <div class="entity artifact">
-            <h3>Artifact</h3>
-            <ul>
-              <li>artifact_id</li>
-              <li>type</li>
-              <li>stage_name</li>
-              <li>version</li>
-              <li>path / data</li>
-            </ul>
-          </div>
-          <div class="connector c1"></div>
-          <div class="connector c2"></div>
-          <div class="connector c3"></div>
-          <div class="connector c4"></div>
-          <div class="connector c5"></div>
-          <div class="connector c6"></div>
+          <aside class="side">
+            <div class="callout">
+              <h3>一个 Session 可以有多个 Task</h3>
+              <p>用户可能先做账号定位，再做一篇内容，再要求重写封面。TaskGoal 独立后，不会把所有需求混成一团。</p>
+            </div>
+            <div class="callout">
+              <h3>一个 Task 可以有多个 Run</h3>
+              <p>同一目标可以失败后恢复、切换参数重跑、或 A/B 两套生成。WorkflowRun 记录实际发生过什么。</p>
+            </div>
+            <div class="callout">
+              <h3>Artifact 不是附属品</h3>
+              <p>content_package、cover、review、summary 都是排查和产品化体验的证据，需要从 workflow 中被引用。</p>
+            </div>
+          </aside>
         </div>
-        <aside class="schema-side">
-          <div class="principle">
-            <h3>为什么 Session 不等于 Chat Log</h3>
-            <p>Chat log 只记录对话文本；Session 要记录目标、上下文快照、工作流状态、产物索引、审核结果和记忆提升候选。</p>
-          </div>
-          <div class="principle">
-            <h3>为什么 TaskGoal 要独立出来</h3>
-            <p>同一个 session 里用户可能连续做多个任务。TaskGoal 独立后，修改目标不会污染长期 profile，也能追踪每次交付的验收标准。</p>
-          </div>
-          <div class="principle">
-            <h3>为什么 WorkflowRun 要独立出来</h3>
-            <p>同一个 TaskGoal 可能重跑、失败、resume 或 A/B 两套生成。WorkflowRun 是系统实际执行轨迹，不是用户意图本身。</p>
-          </div>
-          <div class="principle">
-            <h3>为什么 Artifact 要独立出来</h3>
-            <p>产物需要版本、路径、来源 stage 和可审计输入。它是 debug、复盘、resume 和评估闭环的基础。</p>
-          </div>
-        </aside>
       </div>
     </section>
 
     <section class="section" id="memory">
       <div class="section-head">
-        <h2>三种记忆，不要混写</h2>
-        <p>
-          最容易出错的是把用户一次会话里的临时偏好直接写进长期 profile。推荐采用 promotion gate。
-        </p>
+        <h2>三种 Memory</h2>
+        <p>Memory 和 Context 分成一级目录是正确的：Memory 管长期/中期事实，Context 管本次调用如何取用这些事实。</p>
       </div>
       <div class="board">
         <div class="memory-grid">
-          <article class="memory-card stable" data-label="cross-session">
-            <h3>Stable Memory</h3>
-            <p>跨 session 复用，代表长期确定的账号资产和策略。</p>
-            <ul>
-              <li>品牌定位、受众、人设、长期平台策略</li>
-              <li>内容支柱、禁忌、品牌词、视觉偏好</li>
-              <li>已经验证过的高质量 NoteSkill</li>
-              <li>历史策略迭代后的稳定结论</li>
-            </ul>
+          <article class="memory stable">
+            <h3>StableProfile</h3>
+            <p>跨 session 稳定复用，代表账号、品牌、偏好和约束。</p>
+            <ul><li>brand_profile</li><li>account_profile</li><li>preferences</li><li>facts</li></ul>
           </article>
-          <article class="memory-card session" data-label="per-session">
-            <h3>Session Memory</h3>
-            <p>只在当前 session 内稳定，保留讨论上下文和过程判断。</p>
-            <ul>
-              <li>用户本轮临时要求和口头修正</li>
-              <li>已经否定的方向和原因</li>
-              <li>当前上下文快照和中间选择</li>
-              <li>待确认的记忆提升候选</li>
-            </ul>
+          <article class="memory session">
+            <h3>SessionMemory</h3>
+            <p>只在当前 session 内稳定，保存过程判断和临时观察。</p>
+            <ul><li>session_id</li><li>records</li><li>artifact_refs</li><li>metadata</li></ul>
           </article>
-          <article class="memory-card task" data-label="per-task">
-            <h3>Task Memory</h3>
-            <p>围绕一个具体交付物，通常随任务完成而归档。</p>
-            <ul>
-              <li>本条内容的目标、交付物、平台和格式</li>
-              <li>must_include、taboos、success criteria</li>
-              <li>本次 ContentTask / NoteDraft / CoverResult</li>
-              <li>对应审核结果和指标快照</li>
-            </ul>
+          <article class="memory task">
+            <h3>TaskMemory</h3>
+            <p>绑定某个 task goal，保存本次目标下的产物、约束和决策。</p>
+            <ul><li>task_id</li><li>goal</li><li>records</li><li>artifact_refs</li></ul>
           </article>
         </div>
         <div class="promotion">
-          <div class="promo-box"><b>Session Observations</b><span>用户说了什么、系统观察到什么、哪些需求只是本次有效。</span></div>
+          <div class="promo"><b>Session / Task Observations</b><span>用户表达、系统观察、审核结果、指标反馈。</span></div>
           <div class="arrow">→</div>
-          <div class="promo-box"><b>Promotion Gate</b><span>是否重复出现、是否被用户确认、是否与已有 profile 冲突。</span></div>
+          <div class="promo"><b>Promotion Gate</b><span>被用户确认、重复出现、指标验证、无冲突。</span></div>
           <div class="arrow">→</div>
-          <div class="promo-box"><b>StableProfile Patch</b><span>形成可审计的 profile 版本更新，而不是直接覆盖旧记忆。</span></div>
+          <div class="promo"><b>StableProfile Patch</b><span>形成可审计的长期 profile 更新，而不是直接覆盖。</span></div>
         </div>
       </div>
     </section>
 
     <section class="section" id="lifecycle">
       <div class="section-head">
-        <h2>一次 Session 的生命周期</h2>
-        <p>
-          这个序列可以直接映射到未来代码里的 SessionManager、ContextResolver、WorkflowRunner 和 MemoryPromotion。
-        </p>
+        <h2>一次 Session 生命周期</h2>
+        <p>这条生命周期现在已经能映射到 `RuntimeRunRecorder`、`SessionManager`、`ContextResolver` 和 `WorkflowRunner`。</p>
       </div>
-      <div class="board lifecycle">
-        <nav class="nav">
-          <a href="#top">Overview</a>
-          <a href="#split">Architecture Split</a>
-          <a href="#model">Session Model</a>
-          <a href="#memory">Memory Types</a>
-          <a href="#lifecycle">Lifecycle</a>
-          <a href="#code">Code Plan</a>
-        </nav>
-        <div class="steps">
-          <div class="step">
-            <div class="num">01</div>
-            <div><h3>Create or Resume Session</h3><p>根据 workspace 和 entry_type 创建 session；如果有未完成 run，则恢复 current stage。</p></div>
-            <div class="state">Session.status = active</div>
-          </div>
-          <div class="step">
-            <div class="num">02</div>
-            <div><h3>Resolve Memory Snapshot</h3><p>读取 StableProfile、session notes 和最近 artifact，形成本轮可用上下文。</p></div>
-            <div class="state">MemorySnapshot</div>
-          </div>
-          <div class="step">
-            <div class="num">03</div>
-            <div><h3>Build or Update TaskGoal</h3><p>把用户这次需求转成明确交付物、约束和验收条件；对应现有 IntentContract。</p></div>
-            <div class="state">TaskGoal / IntentContract</div>
-          </div>
-          <div class="step">
-            <div class="num">04</div>
-            <div><h3>Assemble ContextPack</h3><p>按任务读取平台策略、热点、指标、历史内容和当前 profile，不把所有历史粗暴塞给 Agent。</p></div>
-            <div class="state">ContextPack</div>
-          </div>
-          <div class="step">
-            <div class="num">05</div>
-            <div><h3>Run Workflow</h3><p>Understanding / Generation / Evaluation 按需执行；每个 stage 写 checkpoint 和 artifact。</p></div>
-            <div class="state">WorkflowRun + StageRun</div>
-          </div>
-          <div class="step">
-            <div class="num">06</div>
-            <div><h3>Review and Collect Metrics</h3><p>质量审核、合规审核和人工指标都成为 session 内可追踪证据。</p></div>
-            <div class="state">Review + MetricsSnapshot</div>
-          </div>
-          <div class="step">
-            <div class="num">07</div>
-            <div><h3>Close Session or Continue</h3><p>用户可能继续追问、修改目标、重跑生成；session 直到明确完成才归档。</p></div>
-            <div class="state">paused / completed</div>
-          </div>
-          <div class="step">
-            <div class="num">08</div>
-            <div><h3>Promote Memory</h3><p>把被确认、重复出现或被指标验证的结论提升到 StableProfile 新版本。</p></div>
-            <div class="state">StableProfile.version += 1</div>
+      <div class="board">
+        <div class="lifecycle">
+          <nav class="nav">
+            <a href="#split">Static vs Runtime</a>
+            <a href="#model">Data Model</a>
+            <a href="#memory">Memory Types</a>
+            <a href="#snapshots">Holly Snapshots</a>
+          </nav>
+          <div class="steps">
+            <div class="step">
+              <div class="num">01</div>
+              <div><h3>Create Session</h3><p>`RuntimeRunRecorder.start()` 调用 `SessionManager.create_session()`，保存 user/profile/run_dir。</p></div>
+              <div class="state">Session.status = active</div>
+            </div>
+            <div class="step">
+              <div class="num">02</div>
+              <div><h3>Append Turn</h3><p>把当前用户 brief 作为 turn 写入 session，保留来源 metadata。</p></div>
+              <div class="state">Turn(role=user)</div>
+            </div>
+            <div class="step">
+              <div class="num">03</div>
+              <div><h3>Start TaskGoal</h3><p>创建 goal、workflow_name、acceptance，明确这次要交付什么。</p></div>
+              <div class="state">TaskGoal</div>
+            </div>
+            <div class="step">
+              <div class="num">04</div>
+              <div><h3>Compile / Resolve Context</h3><p>`ContextCompiler.build()` 生成 ContextPack；`ContextResolver.for_agent()` 投影 ContextView；`ContextResolver.build()` 组装 runtime ContextBundle。</p></div>
+              <div class="state">ContextPack -> ContextView -> ContextBundle</div>
+            </div>
+            <div class="step">
+              <div class="num">05</div>
+              <div><h3>Run LangGraph Workflow</h3><p>`WorkflowRunner().run(spec, state)` 执行粗粒度业务节点；节点内部保留细粒度 artifact trace。</p></div>
+              <div class="state">WorkflowRun.stages</div>
+            </div>
+            <div class="step">
+              <div class="num">06</div>
+              <div><h3>Optional Human Gate</h3><p>默认 `human_gate_mode=skip` 直接记录 skipped gate；产品模式 `pause` 停下来等待人工确认。</p></div>
+              <div class="state">HumanGateSpec</div>
+            </div>
+            <div class="step">
+              <div class="num">07</div>
+              <div><h3>Record Artifacts</h3><p>stage 返回 `StoredArtifact`、`_artifact_ref` 或 `_artifact_refs`，写入 StageRun.output_ref 和 WorkflowRun.artifact_refs。</p></div>
+              <div class="state">artifact_refs[]</div>
+            </div>
+            <div class="step">
+              <div class="num">08</div>
+              <div><h3>Write Snapshots</h3><p>写出 `session.json`、`context_bundle.json`、`workflow_run.json`，失败时也保留已执行轨迹。</p></div>
+              <div class="state">RuntimeRunRecorder.write_snapshot</div>
+            </div>
+            <div class="step">
+              <div class="num">09</div>
+              <div><h3>Promote Memory Later</h3><p>审核、指标或用户确认后的事实，经过 promotion policy 后进入 StableProfile。</p></div>
+              <div class="state">MemoryPromotion</div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="section" id="code">
+    <section class="section" id="snapshots">
       <div class="section-head">
-        <h2>推荐落地目录</h2>
-        <p>
-          不建议立刻大搬家。先补 session runtime，再逐步把现有 IntentContract、ArtifactStore 和 workflow 接进去。
-        </p>
+        <h2>Holly Runtime Snapshots</h2>
+        <p>当前测试数据目录已经体现这个建模：一次 run 产生 session、context、workflow 和最终图片产物。</p>
       </div>
       <div class="board">
-        <div class="code-map">
-          <article class="code-card">
-            <h3>Memory Layer</h3>
-            <code>nori/memory/</code>
-            <ul>
-              <li>models.py: StableProfile, SessionMemory, MemoryPatch</li>
-              <li>store.py: profile/session memory persistence</li>
-              <li>promotion.py: session -> stable promotion policy</li>
-            </ul>
+        <div class="snapshot">
+          <article class="snapshot-card">
+            <h3>Session Snapshot</h3>
+            <p>保存用户、profile、turn、task goal、metadata.run_dir。</p>
+            <span class="path">data/Holly/live_runs/20260531_121214_holly_live/session.json</span>
           </article>
-          <article class="code-card">
-            <h3>Session Runtime</h3>
-            <code>nori/sessions/</code>
-            <ul>
-              <li>models.py: Session, Turn, TaskGoal</li>
-              <li>manager.py: create/resume/close session</li>
-              <li>context.py: build ContextPack for current task</li>
-            </ul>
+          <article class="snapshot-card">
+            <h3>Context Snapshot</h3>
+            <p>保存当前输入、run_dir artifact、resolver trace 和 memory 状态。</p>
+            <span class="path">data/Holly/live_runs/20260531_121214_holly_live/context_bundle.json</span>
           </article>
-          <article class="code-card">
-            <h3>Workflow Runtime</h3>
-            <code>nori/workflows/</code>
-            <ul>
-              <li>models.py: WorkflowRun, StageRun</li>
-              <li>runner.py: execute/resume stage graph</li>
-              <li>content_loop.py: session-level content workflow</li>
-            </ul>
+          <article class="snapshot-card">
+            <h3>Workflow Snapshot</h3>
+            <p>保存细粒度 stages、artifact_refs、engine=langgraph，以及默认跳过或暂停的 Human Gate trace。</p>
+            <span class="path">data/Holly/live_runs/20260531_121214_holly_live/workflow_run.json</span>
           </article>
-          <article class="code-card">
-            <h3>Artifact Runtime</h3>
-            <code>nori/core/artifacts.py</code>
-            <ul>
-              <li>extend ArtifactStore into run-scoped manifests</li>
-              <li>track input_refs and output_refs per StageRun</li>
-              <li>support replay/debug from artifact index</li>
-            </ul>
-          </article>
-        </div>
-        <div class="warning">
-          <b>IMPLEMENTATION ORDER</b>
-          <p>
-            第一阶段先只建模，不迁移所有 agent：新增 Session / TaskGoal / WorkflowRun / Artifact models，
-            把现有 IntentContract 映射成 TaskGoal，把 ArtifactStore 接成 WorkflowRun checkpoint。
-            第二阶段再把 UnderstandingAgent、GenerationAgent、PerformanceAnalysisAgent 作为三个统一入口收敛。
-          </p>
         </div>
       </div>
     </section>
 
     <div class="footer">
-      <span>Nori Session Runtime Model</span>
-      <span>Static architecture + per-session execution model</span>
+      <span>Nori session runtime map</span>
+      <span>Session · TaskGoal · ContextBundle · WorkflowRun · MemoryRecord</span>
     </div>
   </main>
 </body>

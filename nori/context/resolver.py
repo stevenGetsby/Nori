@@ -5,7 +5,9 @@ from typing import Any
 
 from nori.memory import MemoryQuery, MemoryRetriever, MemoryStore
 
-from .models import ContextBundle, ContextSource, ContextTrace
+from nori.core import ContextPack
+
+from .models import ContextBundle, ContextSlice, ContextSource, ContextTrace, ContextView
 
 
 class ContextResolver:
@@ -53,9 +55,52 @@ class ContextResolver:
             trace=trace,
         )
 
+    def for_agent(
+        self,
+        agent_name: str,
+        context_pack: ContextPack | dict[str, Any],
+        *,
+        required_kinds: list[str] | None = None,
+    ) -> ContextView:
+        pack = context_pack if isinstance(context_pack, ContextPack) else ContextPack.from_dict(context_pack)
+        order = required_kinds or _default_agent_kinds(agent_name)
+        available = [ContextSlice.from_dict(item) for item in pack.context_slices]
+        selected = []
+        for kind in order:
+            selected.extend([item for item in available if item.kind == kind])
+        return ContextView(
+            agent_name=str(agent_name or ""),
+            task_id=str(pack.task_intent.get("task_id") or ""),
+            slices=selected,
+            trace=ContextTrace(
+                resolver=self.__class__.__name__,
+                source_refs=[pack.context_pack_id] if pack.context_pack_id else [],
+                notes=[f"context_view={agent_name}"],
+            ),
+        )
+
     def _memory_rows(self, query: str, *, user_id: str, session_id: str) -> list[dict[str, Any]]:
         if self.memory_store is None:
             return []
         retriever = MemoryRetriever(self.memory_store)
         records = retriever.retrieve(MemoryQuery(query, user_id=user_id, session_id=session_id, limit=self.memory_limit))
         return [record.to_dict() for record in records]
+
+
+def _default_agent_kinds(agent_name: str) -> list[str]:
+    if agent_name == "ContentSpecAgent":
+        return [
+            "task_intent",
+            "brand_profile",
+            "platform_strategy",
+            "market_hotspots",
+            "learned_skills",
+            "content_strategy",
+            "asset_context",
+            "constraints",
+        ]
+    if agent_name == "ArtifactGenerationAgent":
+        return ["task_intent", "content_strategy", "learned_skills", "asset_context", "constraints"]
+    if agent_name == "ReviewGateAgent":
+        return ["task_intent", "brand_profile", "platform_strategy", "content_strategy", "constraints"]
+    return ["task_intent", "brand_profile", "market_hotspots", "asset_context", "constraints"]

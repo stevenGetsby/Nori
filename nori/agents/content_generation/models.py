@@ -214,8 +214,76 @@ class ContentPackage:
         )
 
 
+@dataclass(slots=True)
+class ContentDesignSpec:
+    """Inspectable generation blueprint between strategy/skills and artifact execution."""
+
+    spec_id: str = ""
+    task_id: str = ""
+    platform: str = "xhs"
+    artifact_type: str = "note"
+    content_type: str = "note"
+    goal: str = ""
+    audience: list[str] = field(default_factory=list)
+    creative_angle: str = ""
+    selected_skill_refs: list[dict[str, Any]] = field(default_factory=list)
+    evidence_refs: list[dict[str, Any]] = field(default_factory=list)
+    structure: list[dict[str, Any]] = field(default_factory=list)
+    media_plan: dict[str, Any] = field(default_factory=dict)
+    copy_rules: dict[str, Any] = field(default_factory=dict)
+    visual_rules: dict[str, Any] = field(default_factory=dict)
+    constraints: list[str] = field(default_factory=list)
+    acceptance_checks: list[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "spec_id": self.spec_id,
+            "task_id": self.task_id,
+            "platform": self.platform,
+            "artifact_type": self.artifact_type,
+            "content_type": self.content_type,
+            "goal": self.goal,
+            "audience": list(self.audience),
+            "creative_angle": self.creative_angle,
+            "selected_skill_refs": _dict_list(self.selected_skill_refs),
+            "evidence_refs": _dict_list(self.evidence_refs),
+            "structure": _dict_list(self.structure),
+            "media_plan": _mapping(self.media_plan),
+            "copy_rules": _mapping(self.copy_rules),
+            "visual_rules": _mapping(self.visual_rules),
+            "constraints": list(self.constraints),
+            "acceptance_checks": list(self.acceptance_checks),
+            "metadata": dict(self.metadata),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any] | None) -> "ContentDesignSpec":
+        data = _mapping(data)
+        return cls(
+            spec_id=str(data.get("spec_id") or ""),
+            task_id=str(data.get("task_id") or ""),
+            platform=str(data.get("platform") or "xhs"),
+            artifact_type=str(data.get("artifact_type") or "note"),
+            content_type=str(data.get("content_type") or data.get("artifact_type") or "note"),
+            goal=str(data.get("goal") or ""),
+            audience=_string_list(data.get("audience")),
+            creative_angle=str(data.get("creative_angle") or ""),
+            selected_skill_refs=_dict_list(data.get("selected_skill_refs")),
+            evidence_refs=_dict_list(data.get("evidence_refs")),
+            structure=_dict_list(data.get("structure")),
+            media_plan=_mapping(data.get("media_plan")),
+            copy_rules=_mapping(data.get("copy_rules")),
+            visual_rules=_mapping(data.get("visual_rules")),
+            constraints=_string_list(data.get("constraints")),
+            acceptance_checks=_string_list(data.get("acceptance_checks")),
+            metadata=_mapping(data.get("metadata")),
+        )
+
+
 AssetBundle.__module__ = __name__
 CandidateTitle.__module__ = __name__
+ContentDesignSpec.__module__ = __name__
 ContentPackage.__module__ = __name__
 CoverResult.__module__ = __name__
 NoteDraft.__module__ = __name__
@@ -223,6 +291,7 @@ NoteDraft.__module__ = __name__
 __all__ = [
     "AssetBundle",
     "CandidateTitle",
+    "ContentDesignSpec",
     "ContentPackage",
     "CoverResult",
     "NoteDraft",

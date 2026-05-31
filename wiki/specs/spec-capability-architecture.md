@@ -45,11 +45,19 @@ There is no `nori.domain` compatibility layer; the product has not shipped yet, 
 | Package | Owns |
 | --- | --- |
 | `nori.sessions` | `Session`, `Turn`, `TaskGoal`, `SessionManager`. |
-| `nori.context` | `ContextBundle`, `ContextSource`, `ContextResolver`. |
+| `nori.context` | `ContextCompiler`, `ContextPackBuilder`, `ContextView`, `ContextBundle`, `ContextSource`, `ContextResolver`, `attach_context_pack(...)`. |
 | `nori.memory` | `StableProfile`, `SessionMemory`, `TaskMemory`, stores, retrieval, promotion. |
-| `nori.workflows` | `WorkflowRun`, `StageRun`, `WorkflowRunner`, `RuntimeRunRecorder`. |
+| `nori.workflows` | `WorkflowRun`, `StageRun`, `WorkflowRunner`, `RuntimeRunRecorder`, human gates, and artifact-ref recording. |
 
-`WorkflowRunner` is backed by LangGraph. It compiles `WorkflowSpec` into a `StateGraph`, wraps each `StageSpec.handler` with LangChain Core `RunnableLambda`, and records stage status plus artifact references into `WorkflowRun`.
+`WorkflowRunner` is backed by LangGraph. It compiles `WorkflowSpec` into a `StateGraph`, wraps each coarse-grained `StageSpec.handler` with LangChain Core `RunnableLambda`, and records stage status plus artifact references into `WorkflowRun`.
+
+`StageSpec` can declare a `HumanGateSpec`. The default `human_gate_mode` is `skip`, so tests and automated live runs do not block. Product-facing runs can switch to `pause`; the workflow then records `waiting_for_human` without marking the run as failed.
+
+`nori.core.WorkflowBase` is the backend-free base abstraction for capability facades. It owns `workflow_name`, ordered step metadata, and simple in-process `run_steps(...)`. Runtime execution is separate: `nori.workflows.workflow_spec_from_base(...)` converts a `WorkflowBase` into `WorkflowSpec`, and `WorkflowRunner` executes that spec through the configured backend.
+
+`ContextPack` and `ContextBundle` are different layers. `ContextPack` is a business-generation input compiled by `nori.context.ContextCompiler` from profile, task, market, skills, strategy, and assets. `ContextResolver.for_agent(...)` projects it into a `ContextView` for a specific agent. `ContextBundle` is the runtime envelope for one agent call. Use `nori.context.attach_context_pack(...)` to attach the business pack into the runtime bundle as a source and payload entry.
+
+`ArtifactStore` and `WorkflowRun.artifact_refs` are also bridged explicitly. Stage handlers can return `StoredArtifact`, `_artifact_ref`, or `_artifact_refs`; the LangGraph runner records normalized paths into `StageRun.output_ref` and `WorkflowRun.artifact_refs`.
 
 ## Snapshot Quality Gates
 
@@ -68,7 +76,13 @@ Current gates catch:
 | Rule | Meaning |
 | --- | --- |
 | Runtime first | New scripts/apps should create session/context/workflow state through `RuntimeRunRecorder`. |
+| Core/runtime split | `nori.core.WorkflowBase` defines workflow shape; `nori.workflows` owns runtime specs, execution, human gates, and run records. |
+| Context bridge | `ContextPack` stays in business/core contracts; `ContextBundle` stays in runtime context; `attach_context_pack(...)` is the bridge. |
+| Context compiler owner | `ContextCompiler` / `ContextPackBuilder` belongs to `nori.context`; planning can re-export it but should not own context compilation. |
+| Artifact bridge | Long-running stages write artifacts through `ArtifactStore`; workflow runtime records the returned refs instead of duplicating artifact persistence. |
 | Graph execution | Multi-stage workflows should enter through `WorkflowSpec` + `WorkflowRunner`; do not recreate manual stage loops in scripts. |
+| Coarse graph nodes | LangGraph nodes should represent checkpoint/retry/human-gate boundaries, not every helper or normalizer. |
+| Human gate mode | Human gates default to `skip` for tests; use `pause` only when a product surface can resume after human review. |
 | Agents own business behavior | Business entrypoints go through `nori.agents.*`; avoid adding a separate `domains/` package. |
 | Context is separate from planning | System-level context assembly belongs in `nori.context`; planning agents remain under the planning capability. |
 | Memory is separate from context | Durable facts and promotion policy belong in `nori.memory`; context only assembles what a specific call needs. |

@@ -52,9 +52,9 @@ CAPABILITY_MODULES: tuple[CapabilityModule, ...] = (
     CapabilityModule(
         name="content_generation",
         package="nori.agents.content_generation",
-        responsibility="Generate note copy, cover images, and final content packages.",
-        agents=("NoteMakerAgent", "CoverDirectorAgent", "ContentProducerAgent"),
-        contracts=("NoteDraft", "CoverResult", "ContentPackage"),
+        responsibility="Design reusable content specs, then instantiate them into generated packages.",
+        agents=("ContentSpecAgent", "ArtifactGenerationAgent", "ContentProducerAgent", "NoteMakerAgent", "CoverDirectorAgent"),
+        contracts=("ContentDesignSpec", "ContentPackage", "NoteDraft", "CoverResult"),
         depends_on=("planning", "market_analysis"),
     ),
     CapabilityModule(

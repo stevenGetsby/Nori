@@ -32,6 +32,8 @@ WORKFLOW_STAGE_PACKAGES = {
     },
     "nori/agents/content_generation/note_maker": {"note_maker.py", "package.py"},
     "nori/agents/content_generation/cover_director": {"cover_director.py", "package.py", "output.py"},
+    "nori/agents/content_generation/spec_designer": {"spec_designer.py"},
+    "nori/agents/content_generation/artifact_generator": {"artifact_generator.py"},
     "nori/agents/content_generation/content_producer": {"content_producer.py", "package.py", "state.py"},
     "nori/agents/planning/operation_planner": {
         "operation_planner.py",

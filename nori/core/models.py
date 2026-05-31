@@ -662,6 +662,7 @@ class ContextPack:
     context_pack_id: str = ""
     user_profile: UserProfile = field(default_factory=UserProfile)
     task_intent: dict[str, Any] = field(default_factory=dict)
+    context_slices: list[dict[str, Any]] = field(default_factory=list)
     market_analysis: MarketAnalysis = field(default_factory=MarketAnalysis)
     assets: list[dict[str, Any]] = field(default_factory=list)
     constraints: list[str] = field(default_factory=list)
@@ -675,6 +676,7 @@ class ContextPack:
             "context_pack_id": self.context_pack_id,
             "user_profile": self.user_profile.to_dict(),
             "task_intent": dict(self.task_intent),
+            "context_slices": _dict_rows(self.context_slices),
             "market_analysis": self.market_analysis.to_dict(),
             "assets": _dict_rows(self.assets),
             "constraints": list(self.constraints),
@@ -691,6 +693,7 @@ class ContextPack:
             context_pack_id=str(data.get("context_pack_id") or ""),
             user_profile=UserProfile.from_dict(data.get("user_profile")),
             task_intent=_mapping(data.get("task_intent")),
+            context_slices=_mapping_list(data.get("context_slices")),
             market_analysis=MarketAnalysis.from_dict(data.get("market_analysis")),
             assets=_mapping_list(data.get("assets")),
             constraints=_string_list(data.get("constraints")),
@@ -699,6 +702,15 @@ class ContextPack:
             explanation_trace=ExplanationTrace.from_dict(data.get("explanation_trace")),
             metadata=_mapping(data.get("metadata")),
         )
+
+    def context_slices_by_kind(self, kind: str) -> list[Any]:
+        from nori.context.models import ContextSlice
+
+        return [
+            ContextSlice.from_dict(item)
+            for item in self.context_slices
+            if str(item.get("kind") or "") == kind
+        ]
 
 
 @dataclass(slots=True)

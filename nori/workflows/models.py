@@ -17,9 +17,17 @@ def run_id(prefix: str) -> str:
 
 
 @dataclass(slots=True)
+class HumanGateSpec:
+    name: str
+    prompt: str = ""
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(slots=True)
 class StageSpec:
     name: str
     handler: Callable[[Any], Any]
+    human_gate: HumanGateSpec | None = None
 
 
 @dataclass(slots=True)
@@ -52,6 +60,13 @@ class StageRun:
         self.status = "failed"
         self.error = f"{type(error).__name__}: {error}"
         self.finished_at = utc_now_iso()
+
+    def skip(self) -> None:
+        self.status = "skipped"
+        self.finished_at = utc_now_iso()
+
+    def wait_for_human(self) -> None:
+        self.status = "waiting_for_human"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -92,6 +107,13 @@ class WorkflowRun:
         self.metadata["error"] = f"{type(error).__name__}: {error}"
         self.finished_at = utc_now_iso()
 
+    def wait_for_human(self, *, gate_name: str, stage_name: str) -> None:
+        self.status = "waiting_for_human"
+        self.metadata["human_gate"] = {
+            "gate_name": gate_name,
+            "stage_name": stage_name,
+        }
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "workflow_name": self.workflow_name,
@@ -105,3 +127,13 @@ class WorkflowRun:
             "started_at": self.started_at,
             "finished_at": self.finished_at,
         }
+
+
+class HumanGateRequired(RuntimeError):
+    """Raised when a workflow reaches a human gate in pause mode."""
+
+    def __init__(self, gate_name: str, stage_name: str, workflow_run: WorkflowRun) -> None:
+        super().__init__(f"human gate required: {gate_name} before {stage_name}")
+        self.gate_name = gate_name
+        self.stage_name = stage_name
+        self.workflow_run = workflow_run

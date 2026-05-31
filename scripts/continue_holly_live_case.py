@@ -13,9 +13,10 @@ if str(ROOT) not in sys.path:
 
 import llms
 from data_collect.adapter import HotNote, TopNotesResult
-from nori.agents.content_generation.content_producer import ContentProducerAgent
+from nori.agents.content_generation import ContentSpecAgent, ArtifactGenerationAgent
 from nori.agents.planning.calendar_planner import CalendarPlannerAgent
-from nori.core import AccountOperationProject, ClientBrief, KPIPlan, LLMFactory
+from nori.context import ContextPackBuilder, ContextResolver
+from nori.core import AccountOperationProject, AssetLibrary, AssetRecord, ClientBrief, KPIPlan, LLMFactory
 from nori.agents.learning_loop.review import ReviewGateAgent
 from nori.agents.market_analysis.models import SessionSkillReport
 from nori.agents.user_profiling.models import AccountPlanResult, IntakeResult
@@ -52,8 +53,23 @@ def main(argv: list[str]) -> int:
     task = sorted(calendar.tasks, key=lambda task: (task.priority, task.scheduled_date or ""))[0]
     _write_json(run_dir / "selected_task.json", task.to_dict())
 
-    package = ContentProducerAgent(llm_factory=llm_factory).run(
-        task,
+    context_pack = ContextPackBuilder().build_from_project(
+        project,
+        task=task,
+        asset_library=_asset_library_from_user_assets(intake.assets),
+        skills=market_report.skills,
+        platform_rules=_platform_rules("xhs"),
+        content_strategy=_content_strategy(task),
+    )
+    _write_json(run_dir / "content_context_pack.json", context_pack.to_dict())
+    context_view = ContextResolver().for_agent("ContentSpecAgent", context_pack)
+
+    content_spec = ContentSpecAgent(llm_factory=llm_factory).run(context_view=context_view)
+    _write_json(run_dir / "content_design_spec.json", content_spec.to_dict())
+
+    package = ArtifactGenerationAgent(llm_factory=llm_factory).run(
+        spec=content_spec,
+        task=task,
         skills=market_report.skills,
         assets=intake.assets,
         out_dir=covers_dir,
@@ -118,6 +134,41 @@ def _top_notes(path: Path) -> TopNotesResult:
         source_data_dir=str(data.get("source_data_dir") or ""),
         source_keyword_dirs=dict(data.get("source_keyword_dirs") or {}),
         source_db=str(data.get("source_db") or ""),
+    )
+
+
+def _platform_rules(platform: str) -> list[dict[str, str]]:
+    if platform == "xhs":
+        return [
+            {"rule": "小红书图文首屏必须一眼看出情绪利益点和收藏理由。"},
+            {"rule": "标题、封面和正文开头要围绕同一个点击钩子。"},
+        ]
+    return []
+
+
+def _content_strategy(task: Any) -> dict[str, Any]:
+    return {
+        "artifact_type": task.content_type,
+        "creative_angle": task.brief.get("angle") or task.objective or task.topic,
+        "objective": task.objective,
+    }
+
+
+def _asset_library_from_user_assets(assets: list[Any]) -> AssetLibrary:
+    return AssetLibrary(
+        assets=[
+            AssetRecord(
+                asset_id=f"intake_asset_{index + 1}",
+                kind=asset.kind,
+                path=asset.path,
+                text=asset.text,
+                usage=list(asset.usable_for),
+                tags=[*asset.vision_roles, *asset.brand_signals],
+                source="intake",
+                metadata={"subject": asset.subject, "quality": asset.quality},
+            )
+            for index, asset in enumerate(assets)
+        ]
     )
 
 

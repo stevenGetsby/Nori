@@ -37,6 +37,72 @@ class ContextTrace:
 
 
 @dataclass(slots=True)
+class ContextSlice:
+    """One typed business-context unit available to agent-specific views."""
+
+    kind: str
+    payload: dict[str, Any] = field(default_factory=dict)
+    scope: dict[str, Any] = field(default_factory=dict)
+    source_refs: list[dict[str, Any]] = field(default_factory=list)
+    confidence: float = 1.0
+    priority: int = 0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "kind": self.kind,
+            "payload": dict(self.payload),
+            "scope": dict(self.scope),
+            "source_refs": [dict(item) for item in self.source_refs],
+            "confidence": self.confidence,
+            "priority": self.priority,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any] | None) -> "ContextSlice":
+        data = mapping(data)
+        return cls(
+            kind=str(data.get("kind") or ""),
+            payload=mapping(data.get("payload")),
+            scope=mapping(data.get("scope")),
+            source_refs=mapping_list(data.get("source_refs")),
+            confidence=float(data.get("confidence") if data.get("confidence") is not None else 1.0),
+            priority=int(data.get("priority") or 0),
+        )
+
+
+@dataclass(slots=True)
+class ContextView:
+    """Agent-specific projection of a task ContextPack."""
+
+    agent_name: str
+    task_id: str = ""
+    slices: list[ContextSlice] = field(default_factory=list)
+    trace: ContextTrace = field(default_factory=ContextTrace)
+
+    @property
+    def kinds(self) -> list[str]:
+        return [item.kind for item in self.slices]
+
+    @property
+    def payload(self) -> dict[str, Any]:
+        return {item.kind: dict(item.payload) for item in self.slices}
+
+    def slice(self, kind: str) -> ContextSlice | None:
+        for item in self.slices:
+            if item.kind == kind:
+                return item
+        return None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "agent_name": self.agent_name,
+            "task_id": self.task_id,
+            "slices": [item.to_dict() for item in self.slices],
+            "trace": self.trace.to_dict(),
+        }
+
+
+@dataclass(slots=True)
 class ContextBundle:
     session_id: str = ""
     task_id: str = ""

@@ -10,13 +10,13 @@
 | `nori/capabilities/` | Public aggregate entrypoint for the current capability architecture: `build_capability_snapshot()` and `validate_capability_snapshot()`. |
 | `nori/core/` | Shared capability contracts, runtime base classes, public LLM/config contracts, architecture registry, and package-root lazy-export helper for public module APIs. |
 | `nori/agents/` | Business capability boundary for public agent groups: user profiling, planning, market analysis, content generation, and learning loop. |
-| `nori/context/` | Runtime context assembly for one agent call. |
+| `nori/context/` | Context orchestration layer: compiles business `ContextPack` / `ContextView`, resolves runtime `ContextBundle`, and bridges planning context into one agent call. |
 | `nori/memory/` | Stable/session/task memory contracts, retrieval, store, and promotion policy. |
 | `nori/sessions/` | Session, turn, task-goal, and session-manager contracts. |
 | `nori/workflows/` | Workflow run/stage contracts, LangGraph-backed runner, and `RuntimeRunRecorder` for session/context/workflow snapshots. |
 | `nori/agents/user_profiling/` | `facade.py` for long-lived user/account/brand/preference profile construction; package `__init__` keeps lightweight model exports eager and routes stage/facade exports through `nori.core.lazy_exports`. |
 | `nori/agents/market_analysis/` | `facade.py` for competitor/hot-example/trend evidence as market analysis; package `__init__` keeps lightweight model exports eager and routes analyzer/facade exports through `nori.core.lazy_exports`. |
-| `nori/agents/planning/` | Canonical context-building module: operation/KPI/calendar planning, planner critics, content task construction, and unified `ContextPack` assembly. |
+| `nori/agents/planning/` | Operation/KPI/calendar planning, planner critics, and content task construction. `ContextPackBuilder` is re-exported for compatibility, but canonical context compilation lives in `nori.context`. |
 | `nori/agents/content_generation/` | Canonical content-generation module: content production bridge, package input/builder/provenance/state helpers, candidate sets, and lazy public stage exports. |
 | `nori/agents/learning_loop/` | Canonical learning-loop module: review gates, review policy/scoring/state, metrics snapshots, strategy iteration, capability snapshots, and lazy public stage exports. |
 | `llms/` | Project-level LLM gateway and utilities. |
@@ -34,8 +34,9 @@ Nori uses LangGraph and LangChain Core at the runtime orchestration boundary:
 
 | Framework | Where | Role |
 | --- | --- | --- |
-| LangGraph | `nori.workflows.LangGraphWorkflowRunner` | Compiles `WorkflowSpec` into a `StateGraph`, executes stages through `START -> ... -> END`, and records `WorkflowRun` / `StageRun` status. |
+| LangGraph | `nori.workflows.LangGraphWorkflowRunner` | Compiles `WorkflowSpec` into a `StateGraph`, executes coarse workflow nodes through `START -> ... -> END`, and records `WorkflowRun` / `StageRun` status. |
 | LangChain Core | `nori.workflows.LangGraphWorkflowRunner` | Wraps each stage handler as a `RunnableLambda`, keeping workflow stages compatible with LangChain runnable semantics. |
+| Nori Human Gate | `nori.workflows.HumanGateSpec` | Declares human review control points before selected stages. Default `human_gate_mode="skip"` keeps tests automated; `pause` records `waiting_for_human` for product surfaces. |
 
 Business agents still own Nori-specific behavior under `nori.agents.*`; LangGraph owns cross-stage execution, not domain logic.
 
@@ -47,7 +48,8 @@ Input / assets
   -> nori.agents.user_profiling.AccountPlannerAgent
   -> nori.agents.planning.{OperationPlanner,KPIPlanner,CalendarPlanner}
   -> nori.core.IntentContract
-  -> nori.agents.content_generation.GenerationAgent
+  -> nori.agents.content_generation.ContentSpecAgent
+  -> nori.agents.content_generation.ArtifactGenerationAgent
   -> nori.agents.content_generation.ContentProducerAgent
   -> nori.agents.content_generation.NoteMakerAgent
   -> nori.agents.content_generation.CoverDirectorAgent
@@ -74,11 +76,11 @@ nori.core
 
 | Capability | Public contract | Current public agent surface | Backing implementation |
 | --- | --- | --- | --- |
-| Shared core/runtime | `UserProfile`, `UserAsset`, `ClientBrief`, `AccountOperationProject`, `ContextPack`, `CandidateSet`, `CapabilitySnapshot`, `Session`, `ContextBundle`, `WorkflowRun` | `nori.core`, `nori.sessions`, `nori.context`, `nori.memory`, `nori.workflows` | Provider-free dataclasses with `to_dict/from_dict`; `CapabilitySnapshot` is the current aggregate quality gate; `WorkflowRunner` delegates execution to LangGraph and `RuntimeRunRecorder` writes session/context/workflow snapshots for long live runs. |
+| Shared core/runtime | `UserProfile`, `UserAsset`, `ClientBrief`, `AccountOperationProject`, `ContextPack`, `CandidateSet`, `CapabilitySnapshot`, `Session`, `ContextBundle`, `WorkflowRun`, `HumanGateSpec` | `nori.core`, `nori.sessions`, `nori.context`, `nori.memory`, `nori.workflows` | Provider-free dataclasses with `to_dict/from_dict`; `CapabilitySnapshot` is the current aggregate quality gate; `ContextPack` is business planning context and can be attached into a runtime `ContextBundle` through `nori.context.attach_context_pack(...)`; `WorkflowRunner` delegates execution to LangGraph, supports default-skipped human gates, and `RuntimeRunRecorder` writes session/context/workflow snapshots for long live runs. |
 | User profiling | Long-lived user/account/brand/preference profile | `nori.agents.user_profiling` | Backed by `nori.agents.user_profiling` models and intaker/account planner stage packages. |
 | Market analysis | Competitor samples, hot examples, trend/audience insights | `nori.agents.market_analysis` | Backed by `nori.agents.market_analysis` models and `XHSNoteAnalyzer`; evidence can come from `DataCollector`. |
-| Planning | Operation project assembly, KPI/calendar planning, and content task construction | `nori.agents.planning` | Backed by existing `nori.agents.planning` planner packages while system-level runtime context lives in `nori.context`. |
-| Content generation | Routed text/image/package generation and candidate set before final human selection | `nori.agents.content_generation` | `NoteMakerAgent`, `CoverDirectorAgent`, and `ContentProducerAgent` remain specialized because text, image, and future video generation have different inputs and provider contracts. |
+| Planning | Operation project assembly, KPI/calendar planning, and content task construction | `nori.agents.planning` | Backed by existing `nori.agents.planning` planner packages; context-pack compilation and agent-specific context views live in `nori.context`. |
+| Content generation | Spec-driven package generation and candidate set before final human selection | `nori.agents.content_generation` | `ContentSpecAgent` turns task/skills/assets into an inspectable `ContentDesignSpec`; `ArtifactGenerationAgent` executes the spec through specialized generators. `NoteMakerAgent`, `CoverDirectorAgent`, and `ContentProducerAgent` remain specialized implementation details behind the executor. |
 | Learning loop | Review gates, product-quality checks, monitoring snapshots, and preference/strategy update signals | `nori.agents.learning_loop` | Backed by `nori.agents.learning_loop` review/strategy packages; `LearningLoopFacade.capability_snapshot_from_project()` builds the current aggregate view. |
 
 Design rule: new cross-stage behavior should add a shared runtime contract or one of the five capability groups before adding another standalone agent.
@@ -91,7 +93,7 @@ Projection bridge: the five domain facades can project an existing `AccountOpera
 | --- | --- |
 | `UserProfilingFacade.build_from_project(project)` | Converts client brief and account positioning into `UserProfile`. |
 | `MarketAnalysisFacade.build_from_project(project)` | Converts competitor research into `MarketAnalysis`. |
-| `ContextPackBuilder.build_from_project(project, task_id=...)` | Builds a task-level `ContextPack` from project profile, market, task, and assets. |
+| `nori.context.ContextPackBuilder.build_from_project(project, task_id=...)` | Builds a task-level `ContextPack` from project profile, market, task, and assets. `nori.agents.planning.ContextPackBuilder` points to the same class for compatibility. |
 | `ContentGenerationFacade.candidate_set_from_project(project, task_id=...)` | Converts task packages into a `CandidateSet` linked to context trace input refs. |
 | `LearningLoopFacade.performance_snapshots_from_project(project)` | Converts project metrics into `PerformanceSnapshot[]`. |
 | `LearningLoopFacade.learning_signals_from_project(project, ...)` | Converts strategy iterations into `LearningSignal[]`. |
@@ -148,7 +150,8 @@ Committed config artifacts:
 
 | Agent | Input | Output | Boundary |
 | --- | --- | --- | --- |
-| `GenerationAgent` | `artifact_type` plus route-specific inputs | `ContentPackage` / `NoteDraft` / `CoverResult` | Coarse generation stage and router. It owns route selection and shared intent handoff, while preserving specialized child agents for text and image. |
+| `ContentSpecAgent` | `ContentTask`, `ClientBrief`, `IntentContract`, assets, and skill evidence | `ContentDesignSpec` | Strategy/spec stage. It selects skill refs, freezes structure, media plan, copy/visual rules, constraints, and acceptance checks. It does not write final copy or generate media. |
+| `ArtifactGenerationAgent` | `ContentDesignSpec` plus task, skills, assets, and output path | `ContentPackage` | Execution stage. It filters skills by the spec and passes the spec into intent/context before delegating to `ContentProducerAgent`. It should not re-decide strategy. |
 | `IntakeAgent` | `UserInput(text, images)` | `IntakeResult(intention, context, missing, questions, assets)` | Only layer that performs image understanding / vision tagging. |
 | `NoteMakerAgent` | `NoteSkill[]`, `UserAsset[]`, intent/context | `NoteDraft` | Only writes note copy/title/tags; does not read original image bytes. |
 | `CoverDirectorAgent` | `NoteDraft`, selected skill, tagged assets | `CoverResult` | Only layer that calls image generation and reads reference image bytes. |
@@ -164,6 +167,8 @@ Workflow stage package layout:
 | `nori/agents/user_profiling/account_planner/` | `account_planner.py`, `package.py`, `fallback.py`, `search.py`, `normalizer.py`, `portrait.py`, `keywords.py` |
 | `nori/agents/content_generation/note_maker/` | `note_maker.py`, `package.py` |
 | `nori/agents/content_generation/cover_director/` | `cover_director.py`, `package.py`, `output.py` |
+| `nori/agents/content_generation/spec_designer/` | `spec_designer.py` |
+| `nori/agents/content_generation/artifact_generator/` | `artifact_generator.py` |
 | `nori/agents/content_generation/content_producer/` | `content_producer.py`, `package.py`, `state.py` |
 | `nori/agents/planning/operation_planner/` | `operation_planner.py`, `package.py`, `project_builder.py`, `project_policy.py`, `normalizer.py` |
 | `nori/agents/planning/kpi_planner/` | `kpi_planner.py`, `package.py`, `normalizer.py` |
@@ -181,9 +186,12 @@ Shared generation utilities:
 | `nori/core/contracts.py` | Public contract owner for runtime config models, LLM gateway errors, structured LLM helper result models, and model `from_dict()` coercion helpers. |
 | `nori/core/llm.py` | `LLMFactory` is the injectable project LLM gateway used by agents instead of reaching directly into `llms` in constructors or orchestration code. |
 | `nori/core/agent.py` | `AgentBase` standardizes `stage_name`, `use_llm`, `llm_factory`, and required/optional JSON helper methods while preserving each agent's domain-specific `run(...)` signature. `AgentInputPreparer` and `AgentPromptBuilder` give stage packages a shared class pattern for input and prompt contracts. |
-| `nori/core/workflow.py` | `WorkflowBase` provides a small ordered-step runner for agents and domain facades that compose multiple substages; `named_workflow_steps(...)` lets facades declare readable no-op stage names when their public methods own execution. All five business facades expose this shared workflow contract through `workflow_name` and `step_names`. |
+| `nori/core/workflow.py` | `WorkflowBase` provides the backend-free workflow abstraction for agents and capability facades: stable `workflow_name`, inspectable `step_names`, and optional in-process `run_steps(...)`. It intentionally does not import `nori.workflows` or LangGraph. |
+| `nori/workflows/adapters.py` | `workflow_spec_from_base(...)` bridges the core `WorkflowBase` abstraction into a runtime `WorkflowSpec` when a capability/facade workflow needs LangGraph-backed execution and `WorkflowRun` recording. |
+| `nori/context/compiler.py` | `ContextCompiler` / `ContextPackBuilder` compile profile, task, market, skills, strategy, and assets into a sliced `ContextPack`; `ContextResolver.for_agent(...)` projects it into an agent-specific `ContextView`. |
+| `nori/context/adapters.py` | `attach_context_pack(...)` bridges the business `ContextPack` produced by planning into the runtime `ContextBundle` used for one agent call. This keeps planning context and runtime context explicit instead of treating them as competing context systems. |
 | `nori/core/artifacts.py` | `StableArtifactAssembler` provides shared slug/dedupe behavior for deterministic assemblers that produce stable local artifact IDs or media/reference lists. |
-| `nori/core/artifacts.py` | `ArtifactStore` writes stage JSON checkpoints plus `manifest.json`, and exposes `get_or_build(...)` for resumable long-running flows. |
+| `nori/core/artifacts.py` | `ArtifactStore` writes stage JSON checkpoints plus `manifest.json`, returns `StoredArtifact`, and exposes `get_or_build(...)` for resumable long-running flows. `LangGraphWorkflowRunner` records returned `StoredArtifact` paths into `StageRun.output_ref` and `WorkflowRun.artifact_refs`. |
 | `nori/core/models.py` | `IntentContract` freezes user intent before generation and exposes `missing_terms(...)` so generation/review stages can verify concrete acceptance requirements. |
 | `nori/shared/llm_json.py` | `call_stage_json` wraps `llms.chat_json(json_mode=True)` for required generation stages and translates parse/provider errors into the caller's domain exception. |
 | `nori/shared/llm_json.py` | `call_stage_messages_json` applies the same required-stage contract to pre-built messages, including multimodal vision messages. |
@@ -197,6 +205,8 @@ Shared generation utilities:
 | `nori/agents/content_generation/note_maker/package.py` | NoteMaker-owned package contract: `NoteSkillSelector`, `NoteAssetCurator`, and `NoteComposer` own prompt construction, asset curation, note field normalization, and domain error translation; `note_maker.py` stays focused on stage orchestration. |
 | `nori/agents/content_generation/cover_director/package.py` | CoverDirector-owned package contract: `CoverReferenceSelector` and `CoverPromptBuilder` own tagged/legacy reference selection, reference input conversion, prompt construction, and empty-prompt domain errors. |
 | `nori/agents/content_generation/cover_director/output.py` | CoverDirector-owned image output boundary: persists data-uri or remote image payloads, sanitizes cover filenames, and translates base64/download failures into the caller's domain error. |
+| `nori/agents/content_generation/spec_designer/spec_designer.py` | Content-spec boundary: converts tasks, briefs, intent contracts, assets, and market-learned skills into `ContentDesignSpec`. This is where reusable skills influence generation decisions without coupling directly to artifact execution. |
+| `nori/agents/content_generation/artifact_generator/artifact_generator.py` | Artifact execution boundary: consumes `ContentDesignSpec`, filters skills to the selected refs, injects the spec into intent/context, and delegates to the concrete producer/generator for the current artifact contract. |
 | `nori/agents/user_profiling/account_planner/package.py` | AccountPlanner-owned package contract: restores/merges `AccountPlannerInput`, extra images/links, platform defaults, per-image prompt context, and JSON-only account-planning prompt construction. |
 | `nori/agents/user_profiling/account_planner/fallback.py` | AccountPlanner-owned deterministic fallback boundary: builds the non-inferential `AccountPlanResult` shell with platform/goal tags and empty benchmark/IP portrait sections. |
 | `nori/agents/user_profiling/account_planner/search.py` | AccountPlanner-owned search boundary: defines search provider protocol/fallback, cleans and dedupes planner keywords, isolates provider errors, and normalizes search result defaults. |
@@ -210,7 +220,7 @@ Shared generation utilities:
 | --- | --- |
 | `nori/agents/user_profiling/models.py` | Canonical user/account profile models: `AccountPositioning`, `UserInput`, `IntakeResult`, `AccountPlannerInput`, and `AccountPlanResult`. |
 | `nori/agents/market_analysis/models.py` | Canonical market evidence models: `CompetitorSample`, `CompetitorResearch`. |
-| `nori/agents/content_generation/models.py` | Canonical generated artifact model: `ContentPackage`. |
+| `nori/agents/content_generation/models.py` | Canonical generated artifact/spec models: `ContentDesignSpec`, `ContentPackage`, `NoteDraft`, `CoverResult`, and generation helper models. |
 | `nori/agents/learning_loop/models.py` | Canonical review/monitoring/evolution models: `ComplianceReview`, `MetricsSnapshot`, `StrategyIteration`. |
 | `nori/core/models.py` | Canonical owner for cross-stage workflow contracts: `AssetRecord`, `AssetLibrary`, `ClientBrief`, `OperationPlan`, `KPIPlan`, `ContentCalendar`, and `ContentTask`. |
 | `nori/core/project.py` | Canonical owner for the cross-module `AccountOperationProject` aggregate, with lazy coercion into each business module's concrete nested models. |

@@ -9,6 +9,7 @@ Stabilize the executable XHS generation chain:
 ```text
 UserInput(text/images)
 -> IntakeResult(intention/context/assets)
+-> ContentDesignSpec(structure/rules/media plan/acceptance checks)
 -> NoteDraft(title/body/tags/asset bundle)
 -> CoverResult(cover image path/prompt/reference paths)
 ```
@@ -20,13 +21,15 @@ UserInput(text/images)
 | 1. Input orchestration | `nori/agents/user_profiling/intaker/intaker.py` | Implemented | `IntakeResult` |
 | 2. Text intake normalization | `nori/agents/user_profiling/intaker/normalizer.py` | Implemented | intention/context/missing/questions |
 | 3. Vision tagging | `nori/agents/user_profiling/intaker/image_tagger.py` | Implemented | `UserAsset` with `vision_*` fields |
-| 4. Skill selection | `nori/agents/content_generation/note_maker/package.py::NoteSkillSelector` | Implemented | chosen `NoteSkill` |
-| 5. Asset curation | `nori/agents/content_generation/note_maker/package.py::NoteAssetCurator` | Implemented | `AssetBundle` |
-| 6. Note composition | `nori/agents/content_generation/note_maker/package.py::NoteComposer` | Implemented | `NoteDraft` |
-| 7. Cover reference selection | `nori/agents/content_generation/cover_director/package.py::CoverReferenceSelector` | Implemented | reference image paths |
-| 8. Cover prompt writing | `nori/agents/content_generation/cover_director/package.py::CoverPromptBuilder` | Implemented | image prompt |
-| 9. Cover image call | `CoverDirectorAgent` | Implemented | image payload |
-| 10. Cover image output | `nori/agents/content_generation/cover_director/output.py` | Implemented | `CoverResult.cover_path` |
+| 4. Content design spec | `nori/agents/content_generation/spec_designer/spec_designer.py::ContentSpecAgent` | Implemented | `ContentDesignSpec` |
+| 5. Artifact execution | `nori/agents/content_generation/artifact_generator/artifact_generator.py::ArtifactGenerationAgent` | Implemented | routes spec to concrete generator |
+| 6. Skill selection | `nori/agents/content_generation/note_maker/package.py::NoteSkillSelector` | Implemented | chosen `NoteSkill` when executor needs note copy |
+| 7. Asset curation | `nori/agents/content_generation/note_maker/package.py::NoteAssetCurator` | Implemented | `AssetBundle` |
+| 8. Note composition | `nori/agents/content_generation/note_maker/package.py::NoteComposer` | Implemented | `NoteDraft` |
+| 9. Cover reference selection | `nori/agents/content_generation/cover_director/package.py::CoverReferenceSelector` | Implemented | reference image paths |
+| 10. Cover prompt writing | `nori/agents/content_generation/cover_director/package.py::CoverPromptBuilder` | Implemented | image prompt |
+| 11. Cover image call | `CoverDirectorAgent` | Implemented | image payload |
+| 12. Cover image output | `nori/agents/content_generation/cover_director/output.py` | Implemented | `CoverResult.cover_path` |
 
 ## Contracts
 
@@ -35,6 +38,7 @@ UserInput(text/images)
 | `UserInput`, `IntakeResult` | `nori/agents/user_profiling/models.py`; front-pipeline inputs/results support `to_dict()` / `from_dict()` round trips. |
 | `UserAsset` | `nori/core/models.py`; cross-stage asset contract produced by Intake and consumed by NoteMaker/CoverDirector/ContentProducer. `nori.agents.content_generation.models` re-exports the same class for existing generation call sites. |
 | `AssetBundle`, `CandidateTitle`, `NoteDraft` | `nori/agents/content_generation/models.py`; generation artifacts support `to_dict()` / `from_dict()` round trips, and `UserAsset.from_dict()` is the canonical dict-asset normalization path for NoteMaker/ContentProducer. |
+| `ContentDesignSpec` | `nori/agents/content_generation/models.py`; bridge contract between skill/context decisions and artifact execution. It stores selected skill refs, evidence refs, structure, media plan, copy/visual rules, constraints, and acceptance checks. |
 | `CoverResult` | `nori/agents/content_generation/models.py`; cover artifacts support `to_dict()` / `from_dict()` round trips. |
 | `NoteSkill` | `nori/agents/market_analysis/models.py` |
 | `load_note_skills`, `write_note_skill_fixture` | `nori/agents/market_analysis/note_skill_fixture.py` |
@@ -44,6 +48,8 @@ UserInput(text/images)
 | Agent | Owns | Must not own |
 | --- | --- | --- |
 | Intake | Text normalization, image vision tags, missing questions. | Account strategy, note copy, image generation. |
+| ContentSpec | Artifact type, selected skill refs, structure, media plan, copy/visual rules, acceptance checks. | Final copy, image generation, package persistence. |
+| ArtifactGeneration | Instantiating a spec into concrete artifacts and passing spec context to executors. | Re-selecting strategy or rewriting the spec. |
 | NoteMaker | Skill pick, asset bundle, title/body/tags. | Raw image reading, cover rendering, account planning. |
 | CoverDirector | Reference selection for cover, prompt writing, image generation. | Body copy, skill learning, platform publishing. |
 
@@ -78,6 +84,8 @@ UserInput(text/images)
 | `nori.agents.content_generation.cover_director.package.CoverReferenceSelector` | CoverDirector reference boundary. It owns tagged-asset prompt construction, chosen-index normalization, existing-image filtering, dedupe/cap policy, reference input conversion, and legacy draft/reference-asset path collection; `CoverDirectorAgent` keeps the wrapper for image-stage orchestration. |
 | `nori.agents.content_generation.cover_director.package.CoverPromptBuilder` | CoverDirector prompt boundary. It owns image-prompt JSON construction from draft asset facts, skill rules, intent, and selected reference count; `CoverDirectorAgent` only injects the JSON stage and passes the resulting prompt to image generation. |
 | `nori.agents.content_generation.cover_director.output.*` | CoverDirector output boundary. It owns data-uri decoding, remote image download, filename sanitization, and persistence errors; `CoverDirectorAgent` only passes the first image payload and records the resulting path. |
+| `nori.agents.content_generation.spec_designer.ContentSpecAgent` | Spec boundary. Skills, platform rules, task intent, assets, and acceptance checks are resolved into `ContentDesignSpec` before execution. This keeps reusable skills decoupled from concrete generators. |
+| `nori.agents.content_generation.artifact_generator.ArtifactGenerationAgent` | Execution boundary. It consumes `ContentDesignSpec`, filters skill inputs to `selected_skill_refs`, injects the spec into intent/context, and delegates to concrete generators. |
 | `llms.request_params.merge_chat_kwargs(...)` | Canonical chat gateway merge for model constraints. It copies caller `extra_body` before applying model-level defaults and always normalizes token-limit kwargs so each model sends only its expected parameter, even when no `max_output` default is configured. |
 | `llms.request_params.merge_image_kwargs(...)` | Canonical image request merge for model-level `extra_body` without inheriting chat-only token/temperature fields. |
 | `llms.image(..., reference_images=...)` | Checks active model type and reference-image capability through `llms.capabilities.ensure_image_capability`; invalid image usage raises `ImageCapabilityError`. OpenAI-compatible image requests also merge model-level `extra_body` without mutating caller kwargs, but do not inherit chat-only token/temperature fields. Provider response normalization lives in `llms.results.collect_image_results`; responses with no usable URL/base64 image raise `ImageResultError` instead of returning an empty success. |
@@ -108,6 +116,8 @@ Fallback metadata:
 | `tests/test_content_generation_note_maker_asset_curator.py` | Asset-curation prompt contract, selected-index normalization, empty-asset skip, and cover/gallery path selection. |
 | `tests/test_content_generation_note_maker_note_composer.py` | Note-composition prompt contract, field normalization, fallback candidate title, and missing title/body domain error translation. |
 | `tests/test_content_generation_note_maker.py` | Skill selection, asset curation, note composition behavior. |
+| `tests/test_content_generation_spec_pipeline.py` | Spec-agent contract, artifact-executor skill filtering/spec injection, and explicit spec -> executor composition. |
+| `tests/test_content_generation_entrypoints.py` | Guards the removal of the old `GenerationAgent` router and verifies live Holly workflows create a design spec before artifact execution. |
 | `tests/test_shared_utils.py` | Shared `call_stage_json` / `call_stage_messages_json` / `try_stage_messages_json` / `try_stage_json` routing, error translation/classification, and utility exports. |
 | `tests/test_note_skill_fixture.py` | Learned skill fixture loading into NoteMaker-compatible `NoteSkill` objects. |
 | `tests/test_content_generation_cover_director_refs.py` | Cover reference path collection, tagged-asset prompt contract, selected-index normalization, missing-path filtering, dedupe, and reference caps. |

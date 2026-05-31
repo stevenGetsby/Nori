@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+from pathlib import Path
 
 import llms
 from nori.core import AgentBase, LLMFactory, WorkflowBase, named_workflow_steps
@@ -16,6 +17,9 @@ from nori.agents.learning_loop.strategy import MetricsSnapshotAgent, StrategyIte
 from nori.agents.market_analysis.xhs_note_analyzer import XHSNoteAnalyzer
 from nori.agents.user_profiling.account_planner import AccountPlannerAgent
 from nori.agents.user_profiling.intaker import IntakeAgent
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 AGENT_CLASSES = [
@@ -101,6 +105,13 @@ def test_named_workflow_steps_declare_noop_stage_names():
 
     assert workflow.step_names == ["ingest", "emit"]
     assert workflow.run_steps({"value": 1}) == {"value": 1}
+
+
+def test_core_workflow_base_does_not_depend_on_runtime_workflow_backend():
+    source = (ROOT / "nori" / "core" / "workflow.py").read_text()
+
+    assert "nori.workflows" not in source
+    assert "langgraph" not in source.lower()
 
 
 def test_concrete_agents_inherit_agent_base_and_keep_run_entrypoint():

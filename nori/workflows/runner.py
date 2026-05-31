@@ -20,5 +20,12 @@ class WorkflowRunner:
         *,
         session_id: str = "",
         task_id: str = "",
+        human_gate_mode: str = "skip",
     ) -> tuple[Any, WorkflowRun]:
-        return self.engine.run(spec, initial, session_id=session_id, task_id=task_id)
+        return self.engine.run(
+            spec,
+            initial,
+            session_id=session_id,
+            task_id=task_id,
+            human_gate_mode=human_gate_mode,
+        )
