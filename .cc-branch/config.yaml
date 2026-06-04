@@ -1,0 +1,30 @@
+version: 2
+project: Nori
+root: /Users/geminilight/projects/product/Nori
+display:
+  mode: grid
+  columns: 2
+  dashboard: true
+tabs:
+- name: coding
+  layout: auto
+  cwd: .
+  panes:
+  - name: coding
+    enabled: false
+    agent: codex
+    cwd: .
+    env: {}
+    session: 019e6490-b524-7f22-a38b-9b88f6c6119b
+  - name: pane-2
+    agent: codex
+    env: {}
+    session: 019e5937-d8ca-7653-be4f-df1b92afed44
+  - name: pane-3
+    agent: codex
+    env: {}
+    session: 019e5936-d9ec-7620-a3a2-497826f963e1
+  - name: pane-4
+    agent: codex
+    env: {}
+openWith: auto-terminal

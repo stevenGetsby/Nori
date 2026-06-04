@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #f8f3ea;
+        color: #1f2723;
+        font-family: sans-serif;
+      }
+
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 18% 20%, rgba(227, 72, 72, 0.13), transparent 360px),
+          radial-gradient(circle at 86% 76%, rgba(47, 125, 88, 0.12), transparent 430px),
+          linear-gradient(135deg, #f8f3ea 0%, #fffaf2 55%, #f4eadc 100%);
+      }
+
+      .grain {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.16;
+        z-index: 50;
+        background-image:
+          linear-gradient(rgba(31, 39, 35, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(31, 39, 35, 0.02) 1px, transparent 1px);
+        background-size: 38px 38px;
+      }
+
+      .brand-mark {
+        position: absolute;
+        top: 54px;
+        left: 72px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        z-index: 40;
+      }
+
+      .logo-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: #e34848;
+        box-shadow: 0 12px 40px rgba(227, 72, 72, 0.24);
+        position: relative;
+      }
+
+      .logo-dot::after {
+        content: "";
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #fffaf2;
+        border-left-color: transparent;
+        border-radius: 50%;
+        transform: rotate(-28deg);
+      }
+
+      .brand-name {
+        font-size: 31px;
+        font-weight: 760;
+        color: #1f2723;
+      }
+
+      .brand-tag {
+        margin-left: 6px;
+        padding: 8px 13px;
+        border: 1px solid rgba(31, 39, 35, 0.16);
+        border-radius: 999px;
+        color: #56615a;
+        font-size: 17px;
+        background: rgba(255, 250, 242, 0.7);
+      }
+
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      .scene-content {
+        width: 100%;
+        height: 100%;
+        padding: 136px 112px 86px;
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      .eyebrow {
+        font-size: 25px;
+        color: #e34848;
+        font-weight: 720;
+      }
+
+      .headline {
+        max-width: 1180px;
+        font-size: 82px;
+        line-height: 1.1;
+        font-weight: 820;
+        color: #1f2723;
+      }
+
+      .headline strong {
+        color: #e34848;
+        font-weight: 860;
+      }
+
+      .subline {
+        max-width: 960px;
+        font-size: 32px;
+        line-height: 1.55;
+        color: #657069;
+      }
+
+      .editorial {
+        font-family: serif;
+        font-weight: 600;
+      }
+
+      .stage-label {
+        font-size: 21px;
+        color: #657069;
+        font-weight: 650;
+      }
+
+      .panel {
+        background: rgba(255, 250, 242, 0.9);
+        border: 1px solid rgba(31, 39, 35, 0.13);
+        border-radius: 28px;
+        box-shadow: 0 26px 70px rgba(31, 39, 35, 0.1);
+      }
+
+      .small-caps {
+        font-size: 17px;
+        font-weight: 760;
+        color: #657069;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 18px;
+        min-height: 48px;
+        border-radius: 999px;
+        background: #fffaf2;
+        border: 1px solid rgba(31, 39, 35, 0.13);
+        color: #1f2723;
+        font-size: 20px;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+
+      .chip.red {
+        background: rgba(227, 72, 72, 0.1);
+        border-color: rgba(227, 72, 72, 0.28);
+        color: #b83232;
+      }
+
+      .chip.green {
+        background: rgba(47, 125, 88, 0.1);
+        border-color: rgba(47, 125, 88, 0.24);
+        color: #2f7d58;
+      }
+
+      .chip.amber {
+        background: rgba(215, 166, 71, 0.16);
+        border-color: rgba(215, 166, 71, 0.28);
+        color: #94651a;
+      }
+
+      .ghost-word {
+        position: absolute;
+        font-size: 260px;
+        font-weight: 860;
+        color: rgba(31, 39, 35, 0.045);
+        line-height: 1;
+        z-index: 0;
+      }
+
+      .ghost-word::before {
+        content: attr(data-word);
+      }
+
+      .line {
+        position: absolute;
+        height: 2px;
+        transform-origin: left center;
+        background: linear-gradient(90deg, rgba(227, 72, 72, 0), rgba(227, 72, 72, 0.7), rgba(47, 125, 88, 0));
+      }
+
+      .hook-layout {
+        justify-content: center;
+        gap: 38px;
+      }
+
+      .hook-quote {
+        width: 1280px;
+        font-size: 76px;
+        line-height: 1.14;
+        font-weight: 830;
+      }
+
+      .hook-quote span {
+        color: #e34848;
+      }
+
+      .messy-stack {
+        position: absolute;
+        right: 105px;
+        top: 178px;
+        width: 560px;
+        height: 720px;
+      }
+
+      .note-scrap {
+        position: absolute;
+        width: 315px;
+        min-height: 116px;
+        padding: 21px 24px;
+        border-radius: 24px;
+        background: #fffaf2;
+        border: 1px solid rgba(31, 39, 35, 0.15);
+        box-shadow: 0 22px 48px rgba(31, 39, 35, 0.09);
+        font-size: 23px;
+        font-weight: 700;
+        color: #1f2723;
+      }
+
+      .note-scrap small {
+        display: block;
+        margin-top: 10px;
+        color: #56615a;
+        font-size: 17px;
+        line-height: 1.35;
+        font-weight: 520;
+      }
+
+      .scrap-a {
+        left: 22px;
+        top: 46px;
+        transform: rotate(-6deg);
+      }
+
+      .scrap-b {
+        right: 20px;
+        top: 210px;
+        transform: rotate(5deg);
+      }
+
+      .scrap-c {
+        left: 82px;
+        bottom: 135px;
+        transform: rotate(-3deg);
+      }
+
+      .flow-ribbon {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 14px;
+        width: 1490px;
+        margin-top: 24px;
+      }
+
+      .flow-step {
+        min-height: 104px;
+        padding: 19px 17px;
+        border-radius: 24px;
+        background: rgba(255, 250, 242, 0.84);
+        border: 1px solid rgba(31, 39, 35, 0.13);
+      }
+
+      .flow-step b {
+        display: block;
+        font-size: 22px;
+        color: #1f2723;
+        margin-bottom: 8px;
+      }
+
+      .flow-step span {
+        display: block;
+        font-size: 16px;
+        color: #657069;
+        line-height: 1.35;
+      }
+
+      .input-board {
+        margin-top: 18px;
+        width: 1688px;
+        height: 635px;
+        display: grid;
+        grid-template-columns: 520px 1fr;
+        gap: 24px;
+      }
+
+      .upload-panel,
+      .intake-panel {
+        padding: 34px;
+        overflow: hidden;
+      }
+
+      .upload-grid {
+        margin-top: 26px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+      }
+
+      .upload-card {
+        min-height: 146px;
+        padding: 24px;
+        border-radius: 24px;
+        background: #f8f3ea;
+        border: 1px solid rgba(31, 39, 35, 0.12);
+      }
+
+      .upload-card .icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 15px;
+        margin-bottom: 18px;
+        background: rgba(227, 72, 72, 0.13);
+      }
+
+      .upload-card b {
+        display: block;
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+
+      .upload-card span {
+        color: #657069;
+        font-size: 18px;
+        line-height: 1.35;
+      }
+
+      .intake-map {
+        position: relative;
+        height: 510px;
+        margin-top: 28px;
+        border-radius: 30px;
+        background:
+          linear-gradient(90deg, rgba(47, 125, 88, 0.08) 1px, transparent 1px),
+          linear-gradient(rgba(47, 125, 88, 0.08) 1px, transparent 1px),
+          #fffaf2;
+        background-size: 70px 70px;
+        border: 1px solid rgba(31, 39, 35, 0.1);
+        overflow: hidden;
+      }
+
+      .intake-node {
+        position: absolute;
+        padding: 18px 22px;
+        border-radius: 20px;
+        background: #fffaf2;
+        border: 1px solid rgba(31, 39, 35, 0.13);
+        box-shadow: 0 18px 35px rgba(31, 39, 35, 0.08);
+        font-size: 21px;
+        font-weight: 720;
+      }
+
+      .intake-node.main {
+        left: 350px;
+        top: 198px;
+        width: 220px;
+        height: 108px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #1f2723;
+        color: #fffaf2;
+        font-size: 27px;
+      }
+
+      .intent {
+        left: 120px;
+        top: 75px;
+      }
+
+      .asset {
+        right: 110px;
+        top: 96px;
+      }
+
+      .format {
+        left: 118px;
+        bottom: 90px;
+      }
+
+      .missing {
+        right: 118px;
+        bottom: 84px;
+      }
+
+      .planning-layout {
+        display: grid;
+        grid-template-columns: 610px 1fr;
+        gap: 44px;
+        flex: 1;
+        align-items: stretch;
+      }
+
+      .persona-card {
+        padding: 46px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .persona-title {
+        font-size: 48px;
+        line-height: 1.15;
+        font-weight: 820;
+      }
+
+      .persona-list {
+        display: grid;
+        gap: 20px;
+      }
+
+      .persona-row {
+        display: grid;
+        grid-template-columns: 130px 1fr;
+        gap: 20px;
+        font-size: 24px;
+        line-height: 1.35;
+        align-items: start;
+      }
+
+      .persona-row span {
+        color: #657069;
+        font-weight: 650;
+      }
+
+      .pillar-board {
+        padding: 42px;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 26px;
+      }
+
+      .pillar-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        gap: 22px;
+      }
+
+      .pillar {
+        position: relative;
+        padding: 28px;
+        border-radius: 26px;
+        border: 1px solid rgba(31, 39, 35, 0.12);
+        background: #fffaf2;
+        overflow: hidden;
+      }
+
+      .pillar::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 6px;
+        background: #e34848;
+      }
+
+      .pillar.green::before {
+        background: #2f7d58;
+      }
+
+      .pillar.amber::before {
+        background: #d7a647;
+      }
+
+      .pillar.dark::before {
+        background: #1f2723;
+      }
+
+      .pillar b {
+        font-size: 32px;
+      }
+
+      .pillar p {
+        margin-top: 16px;
+        color: #657069;
+        font-size: 22px;
+        line-height: 1.45;
+      }
+
+      .market-board {
+        margin-top: 18px;
+        display: grid;
+        grid-template-columns: 650px 1fr;
+        gap: 38px;
+        flex: 1;
+      }
+
+      .xhs-feed {
+        padding: 34px;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 24px;
+      }
+
+      .note-card {
+        padding: 25px;
+        border-radius: 25px;
+        background: #fffaf2;
+        border: 1px solid rgba(31, 39, 35, 0.12);
+        box-shadow: 0 16px 36px rgba(31, 39, 35, 0.07);
+      }
+
+      .note-title {
+        font-size: 27px;
+        font-weight: 780;
+        line-height: 1.28;
+      }
+
+      .note-meta {
+        margin-top: 18px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        color: #657069;
+        font-size: 18px;
+      }
+
+      .like-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #e34848;
+      }
+
+      .skill-panel {
+        padding: 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 26px;
+        align-content: start;
+      }
+
+      .skill-card {
+        min-height: 170px;
+        padding: 30px;
+        border-radius: 28px;
+        background: #fffaf2;
+        border: 1px solid rgba(31, 39, 35, 0.12);
+      }
+
+      .skill-card b {
+        font-size: 30px;
+      }
+
+      .skill-card p {
+        margin-top: 18px;
+        color: #657069;
+        font-size: 21px;
+        line-height: 1.42;
+      }
+
+      .package-stage {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 42px;
+        flex: 1;
+        align-items: stretch;
+      }
+
+      .draft-phone {
+        position: relative;
+        width: 485px;
+        justify-self: center;
+        border-radius: 54px;
+        padding: 22px;
+        background: #1f2723;
+        box-shadow: 0 36px 90px rgba(31, 39, 35, 0.22);
+      }
+
+      .phone-screen {
+        height: 720px;
+        border-radius: 38px;
+        padding: 34px 30px;
+        background: #fffaf2;
+        overflow: hidden;
+      }
+
+      .cover-preview {
+        height: 260px;
+        border-radius: 30px;
+        background:
+          radial-gradient(circle at 70% 30%, rgba(227, 72, 72, 0.35), transparent 160px),
+          linear-gradient(135deg, #f4e2cf, #e5efd9);
+        display: flex;
+        align-items: flex-end;
+        padding: 28px;
+        font-size: 34px;
+        line-height: 1.15;
+        font-weight: 840;
+      }
+
+      .phone-title {
+        margin-top: 28px;
+        font-size: 33px;
+        line-height: 1.28;
+        font-weight: 820;
+      }
+
+      .phone-body {
+        margin-top: 18px;
+        font-size: 21px;
+        line-height: 1.52;
+        color: #657069;
+      }
+
+      .tag-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+      }
+
+      .tag {
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(227, 72, 72, 0.1);
+        color: #b83232;
+        font-size: 16px;
+        font-weight: 680;
+      }
+
+      .package-panel {
+        padding: 40px;
+        display: grid;
+        gap: 20px;
+        align-content: start;
+      }
+
+      .package-row {
+        display: grid;
+        grid-template-columns: 180px 1fr;
+        gap: 24px;
+        min-height: 86px;
+        padding: 22px 24px;
+        border-radius: 24px;
+        background: #fffaf2;
+        border: 1px solid rgba(31, 39, 35, 0.12);
+        align-items: center;
+      }
+
+      .package-row span {
+        color: #657069;
+        font-size: 19px;
+        font-weight: 720;
+      }
+
+      .package-row b {
+        font-size: 25px;
+        line-height: 1.32;
+      }
+
+      .review-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        flex: 1;
+      }
+
+      .review-panel,
+      .metrics-panel {
+        padding: 42px;
+        display: grid;
+        gap: 24px;
+        align-content: start;
+      }
+
+      .check-row {
+        display: grid;
+        grid-template-columns: 62px 1fr 90px;
+        gap: 22px;
+        min-height: 86px;
+        align-items: center;
+        padding: 18px 22px;
+        border-radius: 24px;
+        background: #fffaf2;
+        border: 1px solid rgba(31, 39, 35, 0.12);
+      }
+
+      .check-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(47, 125, 88, 0.12);
+        color: #2f7d58;
+        font-size: 30px;
+        font-weight: 840;
+      }
+
+      .check-row b {
+        display: block;
+        font-size: 25px;
+      }
+
+      .check-row small {
+        display: block;
+        margin-top: 6px;
+        color: #657069;
+        font-size: 17px;
+      }
+
+      .score {
+        font-size: 22px;
+        color: #2f7d58;
+        font-weight: 760;
+        text-align: right;
+      }
+
+      .metric-line {
+        display: grid;
+        grid-template-columns: 150px 1fr 80px;
+        gap: 18px;
+        align-items: center;
+      }
+
+      .metric-line span {
+        color: #657069;
+        font-size: 20px;
+        font-weight: 660;
+      }
+
+      .bar {
+        height: 18px;
+        border-radius: 999px;
+        background: rgba(31, 39, 35, 0.08);
+        overflow: hidden;
+      }
+
+      .bar i {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #e34848, #d7a647, #2f7d58);
+      }
+
+      .strategy-next {
+        margin-top: 8px;
+        padding: 28px;
+        border-radius: 28px;
+        background: #17211d;
+        color: #fffaf2;
+      }
+
+      .strategy-next b {
+        display: block;
+        font-size: 29px;
+        margin-bottom: 14px;
+      }
+
+      .strategy-next p {
+        color: rgba(255, 250, 242, 0.72);
+        font-size: 22px;
+        line-height: 1.42;
+      }
+
+      .closing {
+        background: #17211d;
+        color: #fffaf2;
+      }
+
+      .closing .scene-content {
+        justify-content: center;
+        padding: 118px 132px;
+      }
+
+      .closing .headline {
+        color: #fffaf2;
+        max-width: 1360px;
+        font-size: 88px;
+      }
+
+      .closing .subline {
+        color: rgba(255, 250, 242, 0.68);
+        max-width: 1090px;
+      }
+
+      .closing .brand-name {
+        color: #fffaf2;
+      }
+
+      .closing .brand-tag {
+        color: rgba(255, 250, 242, 0.68);
+        border-color: rgba(255, 250, 242, 0.18);
+        background: rgba(255, 250, 242, 0.06);
+      }
+
+      .closing-grid {
+        margin-top: 24px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        width: 1240px;
+      }
+
+      .closing-item {
+        padding: 24px;
+        min-height: 118px;
+        border-radius: 26px;
+        background: rgba(255, 250, 242, 0.07);
+        border: 1px solid rgba(255, 250, 242, 0.12);
+      }
+
+      .closing-item b {
+        display: block;
+        font-size: 25px;
+        color: #fffaf2;
+        margin-bottom: 10px;
+      }
+
+      .closing-item span {
+        font-size: 17px;
+        line-height: 1.35;
+        color: rgba(255, 250, 242, 0.64);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="72" data-width="1920" data-height="1080">
+      <audio
+        id="narration-audio"
+        class="clip"
+        data-start="0"
+        data-duration="64.364"
+        data-track-index="20"
+        src="assets/narration.wav"
+        data-volume="1"
+      ></audio>
+      <div class="grain" data-layout-ignore></div>
+      <div class="brand-mark">
+        <div class="logo-dot"></div>
+        <div class="brand-name">Nori</div>
+        <div class="brand-tag">XHS-first content operations agent</div>
+      </div>
+
+      <section id="scene-hook" class="scene clip" data-start="0" data-duration="8" data-track-index="1">
+        <div class="ghost-word" style="right: 80px; bottom: 80px" data-word="NORI" data-layout-ignore></div>
+        <div class="scene-content hook-layout">
+          <div class="eyebrow">给内容运营者和品牌主理人</div>
+          <h1 class="hook-quote">一个品牌想做小红书，问题常常不是<span>不会写文案</span>，而是不知道账号该怎么长。</h1>
+          <p class="subline">Nori 把混乱的创作需求，变成有定位、有参考、有素材、有审查、有迭代依据的内容生产包。</p>
+        </div>
+        <div class="messy-stack" data-layout-allow-overflow>
+          <div class="note-scrap scrap-a">产品图一堆<small>但不知道先讲卖点，还是先讲生活场景</small></div>
+          <div class="note-scrap scrap-b">老板要种草<small>但账号人设、栏目和节奏还没定</small></div>
+          <div class="note-scrap scrap-c">参考很多<small>但没有沉淀成自己的内容方法</small></div>
+        </div>
+      </section>
+
+      <section id="scene-flow" class="scene clip" data-start="7.4" data-duration="8.6" data-track-index="2">
+        <div class="scene-content">
+          <div class="eyebrow">不是再生成一篇孤立笔记</div>
+          <h2 class="headline">而是建立一个会学习、会规划、会产出、会复盘的运营后台。</h2>
+          <div class="flow-ribbon">
+            <div class="flow-step"><b>输入</b><span>品牌说明、产品素材、目标人群、内容任务</span></div>
+            <div class="flow-step"><b>Intake</b><span>识别意图、形式、素材类型和缺失信息</span></div>
+            <div class="flow-step"><b>账号规划</b><span>定位、IP 人设、内容支柱和关键词</span></div>
+            <div class="flow-step"><b>市场学习</b><span>从高赞笔记里提炼可复用 NoteSkill</span></div>
+            <div class="flow-step"><b>内容生产</b><span>生成标题、正文、标签、封面方案</span></div>
+            <div class="flow-step"><b>复盘迭代</b><span>审查风险，记录数据，决定下一轮方向</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-intake" class="scene clip" data-start="15.4" data-duration="11" data-track-index="3">
+        <div class="scene-content">
+          <div class="stage-label">01 / 输入与 Intake</div>
+          <h2 class="headline">先把零散资料变成可执行任务。</h2>
+          <div class="input-board">
+            <div class="upload-panel panel">
+              <div class="small-caps">用户丢进来</div>
+              <div class="upload-grid">
+                <div class="upload-card"><div class="icon"></div><b>品牌说明</b><span>Holly Shit 怪趣文创品牌</span></div>
+                <div class="upload-card"><div class="icon"></div><b>产品图片</b><span>杯子、贴纸、办公室小物</span></div>
+                <div class="upload-card"><div class="icon"></div><b>目标人群</b><span>喜欢反差、社交表达、轻礼物的人</span></div>
+                <div class="upload-card"><div class="icon"></div><b>任务目标</b><span>做一组小红书种草内容</span></div>
+              </div>
+            </div>
+            <div class="intake-panel panel">
+              <div class="small-caps">Nori 识别</div>
+              <div class="intake-map">
+                <div class="line" style="left: 220px; top: 155px; width: 310px; transform: rotate(22deg)" data-layout-ignore></div>
+                <div class="line" style="left: 520px; top: 165px; width: 285px; transform: rotate(155deg)" data-layout-ignore></div>
+                <div class="line" style="left: 230px; bottom: 155px; width: 330px; transform: rotate(-23deg)" data-layout-ignore></div>
+                <div class="line" style="right: 238px; bottom: 158px; width: 300px; transform: rotate(205deg)" data-layout-ignore></div>
+                <div class="intake-node intent">意图：种草 / 冷启动</div>
+                <div class="intake-node asset">素材：产品图 / 品牌文案</div>
+                <div class="intake-node main">Intake</div>
+                <div class="intake-node format">形式：图文笔记</div>
+                <div class="intake-node missing">缺失：对标账号 / 栏目</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-planning" class="scene clip" data-start="25.8" data-duration="11.5" data-track-index="4">
+        <div class="scene-content">
+          <div class="stage-label">02 / Account Planning</div>
+          <h2 class="headline">账号先有骨架，内容才不是散弹。</h2>
+          <div class="planning-layout">
+            <div class="persona-card panel">
+              <div>
+                <div class="small-caps">账号定位</div>
+                <div class="persona-title">怪趣文创的“办公室反差礼物”账号</div>
+              </div>
+              <div class="persona-list">
+                <div class="persona-row"><span>目标人群</span><b>年轻职场人、礼物场景、情绪表达</b></div>
+                <div class="persona-row"><span>IP 人设</span><b>嘴贫但靠谱，懂生活里的小尴尬</b></div>
+                <div class="persona-row"><span>关键词</span><b>怪趣礼物、办公室小物、反差文创</b></div>
+              </div>
+            </div>
+            <div class="pillar-board panel">
+              <div class="small-caps">内容支柱与对标方向</div>
+              <div class="pillar-grid">
+                <div class="pillar"><b>产品种草</b><p>把产品放进真实使用场景，而不是堆功能。</p></div>
+                <div class="pillar green"><b>情绪表达</b><p>用一句话击中“我懂你”的瞬间。</p></div>
+                <div class="pillar amber"><b>送礼场景</b><p>办公室、朋友聚会、低预算惊喜。</p></div>
+                <div class="pillar dark"><b>风格稳定</b><p>封面、标题、语气保持可识别。</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-market" class="scene clip" data-start="36.8" data-duration="11.8" data-track-index="5">
+        <div class="scene-content">
+          <div class="stage-label">03 / Market Learning</div>
+          <h2 class="headline">从真实高表现内容里，学习这个赛道的表达规律。</h2>
+          <div class="market-board">
+            <div class="xhs-feed panel">
+              <div class="small-caps">小红书高赞参考</div>
+              <div style="display: grid; gap: 18px">
+                <div class="note-card"><div class="note-title">“朋友以为我在阴阳，结果真的被这个杯子可爱到”</div><div class="note-meta"><i class="like-dot"></i> 8.6k 赞 · 情绪反差 · 礼物场景</div></div>
+                <div class="note-card"><div class="note-title">“办公室桌面别再只放水杯了，放点能救命的精神状态”</div><div class="note-meta"><i class="like-dot"></i> 5.1k 赞 · 场景开头 · 自嘲语气</div></div>
+                <div class="note-card"><div class="note-title">“20 元以内，但看起来像认真挑过的礼物”</div><div class="note-meta"><i class="like-dot"></i> 3.9k 赞 · 预算钩子 · 清单结构</div></div>
+              </div>
+            </div>
+            <div class="skill-panel panel">
+              <div class="skill-card"><b>标题结构</b><p>场景 + 反差 + 情绪利益点，让用户先看见自己。</p></div>
+              <div class="skill-card"><b>封面规律</b><p>产品局部放大，配一句口语化强钩子。</p></div>
+              <div class="skill-card"><b>卖点表达</b><p>少说设计理念，多说送礼和使用时的社交反馈。</p></div>
+              <div class="skill-card"><b>NoteSkill</b><p>把一次参考沉淀成下一次可复用的内容方法。</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-production" class="scene clip" data-start="48.1" data-duration="12.4" data-track-index="6">
+        <div class="scene-content">
+          <div class="stage-label">04 / Production</div>
+          <h2 class="headline">输出的是 export-ready 内容包，而不是孤立文案。</h2>
+          <div class="package-stage">
+            <div class="draft-phone">
+              <div class="phone-screen">
+                <div class="cover-preview">这个杯子，把我的精神状态说完了</div>
+                <div class="phone-title">办公室桌面要有一点“嘴替”</div>
+                <div class="phone-body">不是每个上班日都需要鸡血。有时候，一个看起来不太正经的小物，反而能让桌面先替你喘口气。</div>
+                <div class="tag-row">
+                  <span class="tag">#怪趣文创</span>
+                  <span class="tag">#办公室小物</span>
+                  <span class="tag">#送礼灵感</span>
+                </div>
+              </div>
+            </div>
+            <div class="package-panel panel">
+              <div class="package-row"><span>标题候选</span><b>3 个角度：反差、送礼、桌面情绪</b></div>
+              <div class="package-row"><span>正文草稿</span><b>可编辑笔记正文，保留品牌语气</b></div>
+              <div class="package-row"><span>封面方案</span><b>产品近景 + 口语钩子 + 暖色桌面</b></div>
+              <div class="package-row"><span>素材引用</span><b>明确哪张图用于封面，哪张图用于正文</b></div>
+              <div class="package-row"><span>发布前说明</span><b>人工发布、人工确认，不越过账号安全边界</b></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-review" class="scene clip" data-start="59.8" data-duration="7.7" data-track-index="7">
+        <div class="scene-content">
+          <div class="stage-label">05 / Review & Iterate</div>
+          <h2 class="headline">发布前先审查，发布后再学习。</h2>
+          <div class="review-grid">
+            <div class="review-panel panel">
+              <div class="check-row"><div class="check-icon">✓</div><div><b>合规风险</b><small>绝对化、夸大、敏感表达</small></div><div class="score">低</div></div>
+              <div class="check-row"><div class="check-icon">✓</div><div><b>品牌一致性</b><small>语气、卖点、账号定位</small></div><div class="score">92%</div></div>
+              <div class="check-row"><div class="check-icon">✓</div><div><b>任务匹配度</b><small>是否服务本轮内容目标</small></div><div class="score">88%</div></div>
+            </div>
+            <div class="metrics-panel panel">
+              <div class="metric-line"><span>收藏率</span><div class="bar"><i style="width: 74%"></i></div><span>高</span></div>
+              <div class="metric-line"><span>评论率</span><div class="bar"><i style="width: 48%"></i></div><span>中</span></div>
+              <div class="metric-line"><span>转化意图</span><div class="bar"><i style="width: 61%"></i></div><span>可测</span></div>
+              <div class="strategy-next"><b>下一轮策略建议</b><p>继续放大“办公室情绪嘴替”，减少抽象品牌理念，测试低预算礼物清单角度。</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-close" class="scene clip closing" data-start="66.8" data-duration="5.2" data-track-index="8">
+        <div class="ghost-word" style="right: 70px; top: 90px; color: rgba(255,250,242,0.05)" data-word="NORI" data-layout-ignore></div>
+        <div class="scene-content">
+          <div class="eyebrow">Nori</div>
+          <h2 class="headline">让内容创作不再只靠灵感，而是变成一个能学习、能生产、能迭代的运营系统。</h2>
+          <p class="subline">小红书优先 · 本地优先 · export-ready 内容包 · 人工发布前审查</p>
+          <div class="closing-grid">
+            <div class="closing-item"><b>理解品牌</b><span>定位、人设、受众、内容支柱</span></div>
+            <div class="closing-item"><b>学习市场</b><span>高表现内容、标题结构、封面规律</span></div>
+            <div class="closing-item"><b>生成内容包</b><span>标题、正文、标签、封面方案</span></div>
+            <div class="closing-item"><b>复盘迭代</b><span>审查、数据、下一轮策略</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      gsap.set(".brand-mark", { opacity: 0, y: -18 });
+      gsap.set("#scene-hook", { visibility: "visible", opacity: 1, y: 0 });
+
+      tl.to(".brand-mark", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.2);
+
+      const scenes = [
+        { id: "#scene-hook", start: 0, end: 8 },
+        { id: "#scene-flow", start: 7.4, end: 16 },
+        { id: "#scene-intake", start: 15.4, end: 26.4 },
+        { id: "#scene-planning", start: 25.8, end: 37.3 },
+        { id: "#scene-market", start: 36.8, end: 48.6 },
+        { id: "#scene-production", start: 48.1, end: 60.5 },
+        { id: "#scene-review", start: 59.8, end: 67.5 },
+        { id: "#scene-close", start: 66.8, end: 72 }
+      ];
+
+      scenes.forEach((scene, index) => {
+        tl.set(scene.id, { visibility: "visible" }, scene.start);
+        if (index > 0) {
+          tl.fromTo(
+            scene.id,
+            { opacity: 0, y: 36 },
+            { opacity: 1, y: 0, duration: 0.65, ease: "power3.out", immediateRender: false },
+            scene.start
+          );
+        }
+        if (index < scenes.length - 1) {
+          tl.to(scene.id, { opacity: 0, y: -28, duration: 0.55, ease: "power2.in" }, scene.end - 0.55);
+          tl.set(scene.id, { visibility: "hidden" }, scene.end);
+        }
+      });
+
+      tl.from("#scene-hook .eyebrow", { opacity: 0, y: 24, duration: 0.5, ease: "power3.out" }, 0.55);
+      tl.from("#scene-hook .hook-quote", { opacity: 0, y: 52, duration: 0.7, ease: "power3.out" }, 0.9);
+      tl.from("#scene-hook .subline", { opacity: 0, y: 38, duration: 0.6, ease: "power3.out" }, 1.35);
+      tl.from("#scene-hook .note-scrap", { opacity: 0, y: 44, rotation: -10, scale: 0.92, stagger: 0.18, duration: 0.55, ease: "back.out(1.4)" }, 1.75);
+
+      tl.from("#scene-flow .eyebrow, #scene-flow .headline", { opacity: 0, y: 36, stagger: 0.16, duration: 0.55, ease: "power3.out" }, 7.8);
+      tl.from("#scene-flow .flow-step", { opacity: 0, y: 42, stagger: 0.08, duration: 0.45, ease: "power3.out" }, 8.55);
+      tl.to("#scene-flow .flow-step", { y: -8, duration: 0.36, stagger: 0.07, ease: "power2.out" }, 12.1);
+
+      tl.from("#scene-intake .stage-label, #scene-intake .headline", { opacity: 0, y: 34, stagger: 0.14, duration: 0.5, ease: "power3.out" }, 15.85);
+      tl.from("#scene-intake .upload-panel", { opacity: 0, x: -58, duration: 0.6, ease: "power3.out" }, 16.55);
+      tl.from("#scene-intake .upload-card", { opacity: 0, y: 34, stagger: 0.09, duration: 0.45, ease: "power3.out" }, 17);
+      tl.from("#scene-intake .intake-panel", { opacity: 0, x: 58, duration: 0.6, ease: "power3.out" }, 17.25);
+      tl.from("#scene-intake .intake-node", { opacity: 0, scale: 0.88, stagger: 0.1, duration: 0.43, ease: "back.out(1.5)" }, 17.95);
+      tl.from("#scene-intake .line", { opacity: 0, scaleX: 0, stagger: 0.08, duration: 0.45, ease: "power2.out" }, 18.35);
+
+      tl.from("#scene-planning .stage-label, #scene-planning .headline", { opacity: 0, y: 32, stagger: 0.13, duration: 0.48, ease: "power3.out" }, 26.25);
+      tl.from("#scene-planning .persona-card", { opacity: 0, x: -54, duration: 0.62, ease: "power3.out" }, 27);
+      tl.from("#scene-planning .persona-row", { opacity: 0, y: 24, stagger: 0.12, duration: 0.42, ease: "power2.out" }, 27.6);
+      tl.from("#scene-planning .pillar-board", { opacity: 0, x: 54, duration: 0.62, ease: "power3.out" }, 27.28);
+      tl.from("#scene-planning .pillar", { opacity: 0, y: 36, stagger: 0.08, duration: 0.44, ease: "power3.out" }, 28.05);
+
+      tl.from("#scene-market .stage-label, #scene-market .headline", { opacity: 0, y: 34, stagger: 0.14, duration: 0.5, ease: "power3.out" }, 37.25);
+      tl.from("#scene-market .xhs-feed", { opacity: 0, x: -58, duration: 0.58, ease: "power3.out" }, 38);
+      tl.from("#scene-market .note-card", { opacity: 0, y: 34, stagger: 0.14, duration: 0.46, ease: "power3.out" }, 38.55);
+      tl.from("#scene-market .skill-panel", { opacity: 0, x: 58, duration: 0.58, ease: "power3.out" }, 39.15);
+      tl.from("#scene-market .skill-card", { opacity: 0, y: 36, stagger: 0.1, duration: 0.45, ease: "power3.out" }, 39.7);
+
+      tl.from("#scene-production .stage-label, #scene-production .headline", { opacity: 0, y: 34, stagger: 0.14, duration: 0.5, ease: "power3.out" }, 48.55);
+      tl.from("#scene-production .draft-phone", { opacity: 0, y: 70, scale: 0.94, duration: 0.68, ease: "power3.out" }, 49.4);
+      tl.from("#scene-production .cover-preview, #scene-production .phone-title, #scene-production .phone-body, #scene-production .tag", { opacity: 0, y: 22, stagger: 0.08, duration: 0.4, ease: "power2.out" }, 50.1);
+      tl.from("#scene-production .package-panel", { opacity: 0, x: 58, duration: 0.62, ease: "power3.out" }, 50.15);
+      tl.from("#scene-production .package-row", { opacity: 0, x: 42, stagger: 0.11, duration: 0.42, ease: "power3.out" }, 50.7);
+
+      tl.from("#scene-review .stage-label, #scene-review .headline", { opacity: 0, y: 32, stagger: 0.13, duration: 0.48, ease: "power3.out" }, 60.25);
+      tl.from("#scene-review .check-row", { opacity: 0, y: 28, stagger: 0.12, duration: 0.42, ease: "power3.out" }, 61);
+      tl.from("#scene-review .metric-line", { opacity: 0, x: 32, stagger: 0.12, duration: 0.42, ease: "power3.out" }, 61.35);
+      tl.from("#scene-review .bar i", { scaleX: 0, transformOrigin: "left center", stagger: 0.12, duration: 0.65, ease: "power3.out" }, 61.85);
+      tl.from("#scene-review .strategy-next", { opacity: 0, y: 28, duration: 0.48, ease: "power3.out" }, 62.5);
+
+      tl.from("#scene-close .eyebrow, #scene-close .headline, #scene-close .subline", { opacity: 0, y: 42, stagger: 0.16, duration: 0.58, ease: "power3.out" }, 67.15);
+      tl.from("#scene-close .closing-item", { opacity: 0, y: 34, stagger: 0.08, duration: 0.43, ease: "power3.out" }, 68.55);
+
+      tl.to(".ghost-word", { y: -22, duration: 72, ease: "none" }, 0);
+      tl.to(".grain", { opacity: 0.22, duration: 36, yoyo: true, repeat: 1, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
