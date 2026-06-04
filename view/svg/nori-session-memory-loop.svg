@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="auto" viewBox="0 0 1500 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Nori Session Memory Workflow Loop</title>
+  <desc id="desc">Session runtime and memory loop showing how context, workflow, artifacts, review, and memory promotion interact.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset=".55" stop-color="#f2e2c9"/>
+      <stop offset="1" stop-color="#e4edf0"/>
+    </linearGradient>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M30 0H0V30" fill="none" stroke="#161512" stroke-opacity=".05"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#2b2316" flood-opacity=".16"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M2 2L10 6L2 10Z" fill="#252a2d"/>
+    </marker>
+    <style>
+      .bg { fill: url(#bg); }
+      .grid { fill: url(#grid); }
+      .title { font: 700 54px "Iowan Old Style", "Songti SC", serif; fill: #161512; }
+      .sub { font: 400 18px "Avenir Next", "PingFang SC", sans-serif; fill: #61594f; }
+      .label { font: 700 12px "SFMono-Regular", Menlo, monospace; letter-spacing: .12em; }
+      .node { fill: rgba(255,250,240,.9); stroke: rgba(22,21,18,.26); stroke-width: 1.2; }
+      .nodeDark { fill: #252a2d; stroke: #161512; stroke-width: 1.2; }
+      .h { font: 700 22px "Avenir Next", "PingFang SC", sans-serif; fill: #161512; }
+      .p { font: 400 14px "Avenir Next", "PingFang SC", sans-serif; fill: #625b51; }
+      .code { font: 500 12px "SFMono-Regular", Menlo, monospace; fill: #37332d; }
+      .white { fill: #fffaf0; }
+      .mutedWhite { fill: rgba(255,250,240,.72); }
+      .loop { fill: none; stroke: #252a2d; stroke-width: 2.4; marker-end: url(#arrow); }
+      .soft { fill: none; stroke: rgba(37,42,45,.32); stroke-width: 1.5; stroke-dasharray: 8 8; marker-end: url(#arrow); }
+      .chip { fill: rgba(22,21,18,.045); stroke: rgba(22,21,18,.14); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1500" height="1080"/>
+  <rect class="grid" width="1500" height="1080"/>
+
+  <text class="label" x="74" y="76" fill="#b74336">NORI / SESSION RUNTIME</text>
+  <text class="title" x="74" y="136">Session, Workflow, Memory Loop</text>
+  <text class="sub" x="76" y="172">A session is a recoverable task workspace. Memory is promoted only after evidence, review, or repeated confirmation.</text>
+
+  <circle cx="750" cy="560" r="316" fill="none" stroke="rgba(22,21,18,.18)" stroke-width="2"/>
+  <circle cx="750" cy="560" r="218" fill="none" stroke="rgba(22,21,18,.12)" stroke-width="1.4"/>
+
+  <g filter="url(#shadow)">
+    <rect class="node" x="110" y="394" width="250" height="150" rx="8"/>
+    <rect x="110" y="394" width="250" height="8" fill="#ae7a20"/>
+    <text class="label" x="130" y="430" fill="#ae7a20">01 SESSION</text>
+    <text class="h" x="130" y="466">Task Workspace</text>
+    <text class="p" x="130" y="494">user_id, turns, events, task goals, run_dir</text>
+    <rect class="chip" x="130" y="518" width="128" height="28"/>
+    <text class="code" x="140" y="537">nori.sessions</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect class="node" x="405" y="220" width="270" height="152" rx="8"/>
+    <rect x="405" y="220" width="270" height="8" fill="#b74336"/>
+    <text class="label" x="425" y="256" fill="#b74336">02 CONTEXT</text>
+    <text class="h" x="425" y="292">ContextPack / View</text>
+    <text class="p" x="425" y="320">platform, market, skills, strategy, assets, constraints</text>
+    <rect class="chip" x="425" y="344" width="150" height="28"/>
+    <text class="code" x="435" y="363">nori.context</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect class="nodeDark" x="730" y="214" width="300" height="166" rx="8"/>
+    <text class="label" x="752" y="254" fill="#f0dfbd">03 WORKFLOW</text>
+    <text class="h white" x="752" y="292">LangGraph Runtime</text>
+    <text class="p mutedWhite" x="752" y="322">coarse stages, Human Gate, status, errors, refs</text>
+    <rect x="752" y="342" width="150" height="28" fill="rgba(255,250,240,.08)" stroke="rgba(255,250,240,.18)"/>
+    <text class="code white" x="762" y="361">WorkflowRun</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect class="node" x="1080" y="394" width="270" height="152" rx="8"/>
+    <rect x="1080" y="394" width="270" height="8" fill="#247257"/>
+    <text class="label" x="1100" y="430" fill="#247257">04 ARTIFACTS</text>
+    <text class="h" x="1100" y="466">Evidence Objects</text>
+    <text class="p" x="1100" y="494">spec, note, cover, package, review snapshot</text>
+    <rect class="chip" x="1100" y="518" width="142" height="28"/>
+    <text class="code" x="1110" y="537">StoredArtifact</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect class="node" x="870" y="716" width="280" height="156" rx="8"/>
+    <rect x="870" y="716" width="280" height="8" fill="#266f91"/>
+    <text class="label" x="890" y="752" fill="#266f91">05 REVIEW</text>
+    <text class="h" x="890" y="788">Gate + Metrics</text>
+    <text class="p" x="890" y="816">compliance, intent fit, consistency, performance</text>
+    <rect class="chip" x="890" y="842" width="146" height="28"/>
+    <text class="code" x="900" y="861">learning_loop</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect class="node" x="368" y="716" width="300" height="156" rx="8"/>
+    <rect x="368" y="716" width="300" height="8" fill="#6a5794"/>
+    <text class="label" x="388" y="752" fill="#6a5794">06 MEMORY</text>
+    <text class="h" x="388" y="788">Promotion Policy</text>
+    <text class="p" x="388" y="816">stable facts, task memory, session observations</text>
+    <rect class="chip" x="388" y="842" width="126" height="28"/>
+    <text class="code" x="398" y="861">nori.memory</text>
+  </g>
+
+  <path class="loop" d="M360 438C384 342 434 296 405 296"/>
+  <path class="loop" d="M675 296H720"/>
+  <path class="loop" d="M1030 300C1120 320 1190 354 1210 390"/>
+  <path class="loop" d="M1220 546C1192 636 1136 704 1060 716"/>
+  <path class="loop" d="M870 805H674"/>
+  <path class="loop" d="M430 716C350 650 320 570 360 506"/>
+
+  <g transform="translate(610 466)">
+    <rect class="nodeDark" x="0" y="0" width="280" height="184" rx="8"/>
+    <text class="label" x="24" y="38" fill="#f0dfbd">CENTER CONTRACT</text>
+    <text class="h white" x="24" y="76">ContextBundle</text>
+    <text class="p mutedWhite" x="24" y="104">runtime envelope for one agent call</text>
+    <text class="code white" x="24" y="138">sources · memory · artifacts · payload · trace</text>
+    <text class="code white" x="24" y="162">attach_context_pack(...) when needed</text>
+  </g>
+
+  <path class="soft" d="M518 716C510 632 545 578 610 556"/>
+  <path class="soft" d="M890 556C964 574 1040 560 1080 505"/>
+  <path class="soft" d="M750 466V382"/>
+
+  <g transform="translate(86 930)">
+    <rect x="0" y="0" width="1328" height="86" fill="rgba(255,250,240,.72)" stroke="rgba(22,21,18,.22)"/>
+    <text class="label" x="24" y="32" fill="#b74336">RULE OF THE LOOP</text>
+    <text class="p" x="24" y="60">Context is assembled for the current call. Workflow records what happened. Artifacts prove what was produced. Memory only stores facts that survive review, confirmation, or repeated evidence.</text>
+  </g>
+</svg>

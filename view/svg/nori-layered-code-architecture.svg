@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="auto" viewBox="0 0 1600 1040" role="img" aria-labelledby="title desc">
+  <title id="title">Nori Layered Code Architecture</title>
+  <desc id="desc">Layered architecture map for Nori from user interaction to information, agents, workflow runtime, artifacts, and memory.</desc>
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset="0.52" stop-color="#f3e5cf"/>
+      <stop offset="1" stop-color="#e5eef0"/>
+    </linearGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1d2021"/>
+      <stop offset="1" stop-color="#30363a"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#161512" stroke-opacity="0.055" stroke-width="1"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#2b2316" flood-opacity="0.18"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M2 2L10 6L2 10Z" fill="#252a2d"/>
+    </marker>
+    <style>
+      .bg { fill: url(#paper); }
+      .grid { fill: url(#grid); }
+      .frame { fill: rgba(255,250,240,.82); stroke: rgba(22,21,18,.28); stroke-width: 1.4; }
+      .title { font: 700 54px "Iowan Old Style", "Songti SC", serif; fill: #161512; letter-spacing: 0; }
+      .subtitle { font: 400 18px "Avenir Next", "PingFang SC", sans-serif; fill: #5f584f; }
+      .label { font: 700 13px "SFMono-Regular", Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; }
+      .h { font: 700 24px "Avenir Next", "PingFang SC", sans-serif; fill: #161512; }
+      .body { font: 400 15px "Avenir Next", "PingFang SC", sans-serif; fill: #5f584f; }
+      .code { font: 500 13px "SFMono-Regular", Menlo, monospace; fill: #37332d; }
+      .module { fill: rgba(255,255,255,.52); stroke: rgba(22,21,18,.17); stroke-width: 1; }
+      .band { stroke: rgba(22,21,18,.28); stroke-width: 1.25; }
+      .arrow { fill: none; stroke: #252a2d; stroke-width: 2; marker-end: url(#arrow); }
+      .thin { fill: none; stroke: rgba(22,21,18,.25); stroke-width: 1.2; }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1600" height="1040"/>
+  <rect class="grid" width="1600" height="1040"/>
+
+  <g filter="url(#shadow)">
+    <rect class="frame" x="48" y="44" width="1504" height="952" rx="10"/>
+  </g>
+
+  <text class="label" x="86" y="92" fill="#b74336">NORI / CURRENT CODE ARCHITECTURE</text>
+  <text class="title" x="86" y="154">Layered Business System</text>
+  <text class="subtitle" x="88" y="190">User interaction creates runtime state. Information is compiled into context. Agents own business behavior. Workflow records evidence. Memory promotes durable facts.</text>
+
+  <g transform="translate(86 238)">
+    <rect class="band" x="0" y="0" width="1428" height="118" fill="#f2d8ab"/>
+    <rect x="0" y="0" width="12" height="118" fill="#ae7a20"/>
+    <text class="label" x="28" y="34" fill="#ae7a20">01 USER_INTERACTION</text>
+    <text class="h" x="28" y="68">Entry, session, task goal</text>
+    <text class="body" x="28" y="94">Future UI / API / scripts should describe intent, assets, acceptance, and trigger the workflow without owning business state.</text>
+    <g transform="translate(620 20)">
+      <rect class="module" x="0" y="0" width="178" height="78"/>
+      <text class="code" x="16" y="30">future UI</text>
+      <text class="body" x="16" y="55">workbench + review</text>
+      <rect class="module" x="194" y="0" width="178" height="78"/>
+      <text class="code" x="210" y="30">scripts/</text>
+      <text class="body" x="210" y="55">live + smoke</text>
+      <rect class="module" x="388" y="0" width="178" height="78"/>
+      <text class="code" x="404" y="30">nori/sessions</text>
+      <text class="body" x="404" y="55">Session, TaskGoal</text>
+      <rect class="module" x="582" y="0" width="178" height="78"/>
+      <text class="code" x="598" y="30">RuntimeRun</text>
+      <text class="body" x="598" y="55">snapshot writer</text>
+    </g>
+  </g>
+
+  <path class="arrow" d="M800 360V398"/>
+
+  <g transform="translate(86 400)">
+    <rect class="band" x="0" y="0" width="1428" height="136" fill="#efd0c9"/>
+    <rect x="0" y="0" width="12" height="136" fill="#b74336"/>
+    <text class="label" x="28" y="34" fill="#b74336">02 INFORMATION_LAYER</text>
+    <text class="h" x="28" y="68">Context compilation and agent-specific projection</text>
+    <text class="body" x="28" y="96">Raw inputs, assets, XHS evidence, learned skills, platform rules, and content strategy become typed context slices.</text>
+    <g transform="translate(620 24)">
+      <rect class="module" x="0" y="0" width="178" height="88"/>
+      <text class="code" x="16" y="28">IntakeAgent</text>
+      <text class="body" x="16" y="54">text + vision tags</text>
+      <rect class="module" x="194" y="0" width="178" height="88"/>
+      <text class="code" x="210" y="28">XHSNoteAnalyzer</text>
+      <text class="body" x="210" y="54">hotspots + skills</text>
+      <rect class="module" x="388" y="0" width="178" height="88"/>
+      <text class="code" x="404" y="28">ContextCompiler</text>
+      <text class="body" x="404" y="54">ContextPack</text>
+      <rect class="module" x="582" y="0" width="178" height="88"/>
+      <text class="code" x="598" y="28">ContextResolver</text>
+      <text class="body" x="598" y="54">ContextView</text>
+    </g>
+  </g>
+
+  <path class="arrow" d="M800 540V578"/>
+
+  <g transform="translate(86 580)">
+    <rect class="band" x="0" y="0" width="1428" height="136" fill="#cfe4d8"/>
+    <rect x="0" y="0" width="12" height="136" fill="#247257"/>
+    <text class="label" x="28" y="34" fill="#247257">03 AGENT_LAYER</text>
+    <text class="h" x="28" y="68">Five capability groups own business behavior</text>
+    <text class="body" x="28" y="96">No domains layer. Each capability package owns its facade, models, package contracts, policy, normalizer, and state helpers.</text>
+    <g transform="translate(570 24)">
+      <rect class="module" x="0" y="0" width="154" height="88"/>
+      <text class="code" x="14" y="28">profiling</text>
+      <text class="body" x="14" y="54">intake + account</text>
+      <rect class="module" x="170" y="0" width="154" height="88"/>
+      <text class="code" x="184" y="28">market</text>
+      <text class="body" x="184" y="54">evidence</text>
+      <rect class="module" x="340" y="0" width="154" height="88"/>
+      <text class="code" x="354" y="28">planning</text>
+      <text class="body" x="354" y="54">ops / KPI</text>
+      <rect class="module" x="510" y="0" width="154" height="88"/>
+      <text class="code" x="524" y="28">generation</text>
+      <text class="body" x="524" y="54">spec / note / cover</text>
+      <rect class="module" x="680" y="0" width="154" height="88"/>
+      <text class="code" x="694" y="28">learning</text>
+      <text class="body" x="694" y="54">review / metrics</text>
+    </g>
+  </g>
+
+  <path class="arrow" d="M800 720V758"/>
+
+  <g transform="translate(86 760)">
+    <rect class="band" x="0" y="0" width="1428" height="136" fill="#d9e7ed"/>
+    <rect x="0" y="0" width="12" height="136" fill="#266f91"/>
+    <text class="label" x="28" y="34" fill="#266f91">04 WORKFLOW_RUNTIME + ARTIFACTS</text>
+    <text class="h" x="28" y="68">LangGraph execution, human gates, artifact trace</text>
+    <text class="body" x="28" y="96">WorkflowBase stays backend-free. WorkflowSpec runs through LangGraph. Stage returns are recorded as StoredArtifact refs.</text>
+    <g transform="translate(620 24)">
+      <rect class="module" x="0" y="0" width="178" height="88"/>
+      <text class="code" x="16" y="28">WorkflowSpec</text>
+      <text class="body" x="16" y="54">StageSpec rows</text>
+      <rect class="module" x="194" y="0" width="178" height="88"/>
+      <text class="code" x="210" y="28">LangGraphRunner</text>
+      <text class="body" x="210" y="54">START -> END</text>
+      <rect class="module" x="388" y="0" width="178" height="88"/>
+      <text class="code" x="404" y="28">HumanGateSpec</text>
+      <text class="body" x="404" y="54">skip / pause</text>
+      <rect class="module" x="582" y="0" width="178" height="88"/>
+      <text class="code" x="598" y="28">ArtifactStore</text>
+      <text class="body" x="598" y="54">manifest + refs</text>
+    </g>
+  </g>
+
+  <g transform="translate(1120 914)">
+    <rect x="0" y="0" width="394" height="52" fill="url(#dark)" stroke="#252a2d"/>
+    <text class="label" x="18" y="22" fill="#f0dfbd">MEMORY_LAYER</text>
+    <text class="body" x="18" y="42" fill="#e9dfcd">StableProfile / SessionMemory / TaskMemory / promotion policy</text>
+  </g>
+  <path class="thin" d="M1188 914C1060 860 1000 810 980 760"/>
+  <path class="thin" d="M1338 914C1288 812 1260 680 1238 540"/>
+  <path class="thin" d="M1450 914C1420 694 1400 486 1320 360"/>
+</svg>

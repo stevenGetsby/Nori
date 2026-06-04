@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="auto" viewBox="0 0 1800 760" role="img" aria-labelledby="title desc">
+  <title id="title">Nori Business Flow</title>
+  <desc id="desc">End-to-end business flow from user brief to session, context, agents, workflow trace, artifacts, review, and memory promotion.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset=".58" stop-color="#f3e3cd"/>
+      <stop offset="1" stop-color="#ddebee"/>
+    </linearGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" fill="none" stroke="#161512" stroke-opacity=".055"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#2b2316" flood-opacity=".18"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M2 2L10 6L2 10Z" fill="#252a2d"/>
+    </marker>
+    <style>
+      .bg { fill: url(#bg); }
+      .grid { fill: url(#grid); }
+      .title { font: 700 52px "Iowan Old Style", "Songti SC", serif; fill: #161512; }
+      .sub { font: 400 18px "Avenir Next", "PingFang SC", sans-serif; fill: #61594f; }
+      .card { fill: rgba(255,250,240,.86); stroke: rgba(22,21,18,.24); stroke-width: 1.2; }
+      .dark { fill: #252a2d; stroke: #161512; stroke-width: 1.2; }
+      .k { font: 700 12px "SFMono-Regular", Menlo, monospace; letter-spacing: .1em; }
+      .h { font: 700 22px "Avenir Next", "PingFang SC", sans-serif; fill: #161512; }
+      .p { font: 400 14px "Avenir Next", "PingFang SC", sans-serif; fill: #61594f; }
+      .code { font: 500 12px "SFMono-Regular", Menlo, monospace; fill: #3c352d; }
+      .white { fill: #fffaf0; }
+      .mutedWhite { fill: rgba(255,250,240,.7); }
+      .flow { fill: none; stroke: #252a2d; stroke-width: 2.2; marker-end: url(#arrow); }
+      .side { fill: none; stroke: rgba(37,42,45,.42); stroke-width: 1.4; stroke-dasharray: 7 7; marker-end: url(#arrow); }
+      .chip { fill: rgba(22,21,18,.045); stroke: rgba(22,21,18,.14); }
+    </style>
+  </defs>
+
+  <rect class="bg" width="1800" height="760"/>
+  <rect class="grid" width="1800" height="760"/>
+
+  <text class="k" x="70" y="70" fill="#b74336">NORI / BUSINESS FLOW AS CODE</text>
+  <text class="title" x="70" y="126">One request becomes a traceable content package</text>
+  <text class="sub" x="72" y="160">Each stage has a code owner. Context and memory are not mixed. Agents consume explicit contracts and workflow records every decision point.</text>
+
+  <g transform="translate(70 230)" filter="url(#shadow)">
+    <rect class="card" x="0" y="0" width="185" height="190" rx="8"/>
+    <rect x="0" y="0" width="185" height="8" fill="#ae7a20"/>
+    <text class="k" x="18" y="34" fill="#ae7a20">01 INPUT</text>
+    <text class="h" x="18" y="70">User Brief</text>
+    <text class="p" x="18" y="100">goal, platform, assets, taboo terms, acceptance</text>
+    <rect class="chip" x="18" y="134" width="120" height="28"/>
+    <text class="code" x="28" y="153">UserInput</text>
+  </g>
+
+  <path class="flow" d="M262 325H330"/>
+
+  <g transform="translate(340 230)" filter="url(#shadow)">
+    <rect class="card" x="0" y="0" width="205" height="190" rx="8"/>
+    <rect x="0" y="0" width="205" height="8" fill="#266f91"/>
+    <text class="k" x="18" y="34" fill="#266f91">02 RUNTIME</text>
+    <text class="h" x="18" y="70">Session Space</text>
+    <text class="p" x="18" y="100">turns, task goal, run dir, snapshots</text>
+    <rect class="chip" x="18" y="134" width="150" height="28"/>
+    <text class="code" x="28" y="153">Session / TaskGoal</text>
+  </g>
+
+  <path class="flow" d="M552 325H620"/>
+
+  <g transform="translate(630 230)" filter="url(#shadow)">
+    <rect class="card" x="0" y="0" width="235" height="190" rx="8"/>
+    <rect x="0" y="0" width="235" height="8" fill="#b74336"/>
+    <text class="k" x="18" y="34" fill="#b74336">03 CONTEXT</text>
+    <text class="h" x="18" y="70">Information Layer</text>
+    <text class="p" x="18" y="100">market evidence, assets, skills, strategy become slices</text>
+    <rect class="chip" x="18" y="134" width="172" height="28"/>
+    <text class="code" x="28" y="153">ContextPack / View</text>
+  </g>
+
+  <path class="flow" d="M872 325H940"/>
+
+  <g transform="translate(950 206)" filter="url(#shadow)">
+    <rect class="dark" x="0" y="0" width="300" height="238" rx="8"/>
+    <text class="k" x="20" y="38" fill="#f0dfbd">04 AGENT LAYER</text>
+    <text class="h white" x="20" y="74">Capability Chain</text>
+    <text class="p mutedWhite" x="20" y="104">profiling -> market -> planning -> generation -> learning</text>
+    <g transform="translate(20 130)">
+      <rect x="0" y="0" width="124" height="32" fill="rgba(255,250,240,.08)" stroke="rgba(255,250,240,.18)"/>
+      <text class="code white" x="10" y="21">ContentSpec</text>
+      <rect x="136" y="0" width="124" height="32" fill="rgba(255,250,240,.08)" stroke="rgba(255,250,240,.18)"/>
+      <text class="code white" x="146" y="21">NoteMaker</text>
+      <rect x="0" y="46" width="124" height="32" fill="rgba(255,250,240,.08)" stroke="rgba(255,250,240,.18)"/>
+      <text class="code white" x="10" y="67">CoverDirector</text>
+      <rect x="136" y="46" width="124" height="32" fill="rgba(255,250,240,.08)" stroke="rgba(255,250,240,.18)"/>
+      <text class="code white" x="146" y="67">ReviewGate</text>
+    </g>
+  </g>
+
+  <path class="flow" d="M1258 325H1326"/>
+
+  <g transform="translate(1336 230)" filter="url(#shadow)">
+    <rect class="card" x="0" y="0" width="205" height="190" rx="8"/>
+    <rect x="0" y="0" width="205" height="8" fill="#247257"/>
+    <text class="k" x="18" y="34" fill="#247257">05 ARTIFACTS</text>
+    <text class="h" x="18" y="70">Content Package</text>
+    <text class="p" x="18" y="100">spec, note, cover, review, metrics</text>
+    <rect class="chip" x="18" y="134" width="138" height="28"/>
+    <text class="code" x="28" y="153">ContentPackage</text>
+  </g>
+
+  <path class="flow" d="M1548 325H1616"/>
+
+  <g transform="translate(1626 230)" filter="url(#shadow)">
+    <rect class="card" x="0" y="0" width="130" height="190" rx="8"/>
+    <rect x="0" y="0" width="130" height="8" fill="#6a5794"/>
+    <text class="k" x="18" y="34" fill="#6a5794">06 LEARN</text>
+    <text class="h" x="18" y="70">Memory</text>
+    <text class="p" x="18" y="100">verified facts and preferences</text>
+    <rect class="chip" x="18" y="134" width="94" height="28"/>
+    <text class="code" x="28" y="153">Promotion</text>
+  </g>
+
+  <path class="side" d="M1045 206C1010 120 800 88 740 210"/>
+  <text class="code" x="776" y="90" fill="#61594f">Context evidence feeds agent prompts, not global state</text>
+
+  <path class="side" d="M1430 424C1390 570 980 600 915 420"/>
+  <text class="code" x="1000" y="625" fill="#61594f">WorkflowRun records stages, human gates, and artifact refs</text>
+
+  <path class="side" d="M1690 422C1630 662 520 680 445 430"/>
+  <text class="code" x="690" y="704" fill="#61594f">Only confirmed outcomes are promoted back to reusable memory</text>
+</svg>
