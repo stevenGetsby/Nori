@@ -71,6 +71,21 @@ The external `xhs-hotspot-image-post-generator` skill maps into Nori through exi
 
 Market-analysis agents still collect and distill XHS evidence. Generation agents consume that evidence; they should not pretend to know live hotspots unless a collector, user brief, or other source has supplied the evidence.
 
+## Guizang Social Card Design Profile
+
+The external `guizang-social-card-skill` is distilled into Nori as a design profile, not vendored as templates. The owner is `nori.agents.content_generation.social_card_guides`; `ContentSpecAgent` injects the profile into `ContentDesignSpec.media_plan`, `visual_rules`, `acceptance_checks`, and `metadata`.
+
+| External principle | Nori placement |
+| --- | --- |
+| XHS cards should be a visual argument, not an article pasted into posters | `media_plan.social_card.compression_ladder` and acceptance checks. |
+| XHS output defaults to `1080 x 1440`, `3:4`, phone-safe margins, 5-9 pages | `media_plan.social_card.canvas` and `page_count`. |
+| Page 1 is cover hook; pages 2-N carry one idea each | `media_plan.social_card.page_plan` and enriched `ContentDesignSpec.structure[*].page_role`. |
+| Editorial and Swiss modes are visual stances, not content-type categories | `visual_rules.social_card.style_modes`. |
+| QA should check thumbnail legibility, safe area, density, style identity, screenshot readability, and no fake evidence | `ContentDesignSpec.acceptance_checks`; `CoverPromptBuilder` also reads `intent.content_design_spec` and repeats first-cover constraints. |
+| WeChat cover output is a 21:9 + 1:1 pair, not a hard crop | `media_plan.wechat_cover_pair` for `platform=wechat` article tasks. |
+
+This keeps skill strategy decoupled from concrete execution: future HTML/card renderers can consume the same spec, while the current `CoverDirector` already gets the cover-relevant parts through `intent.content_design_spec`.
+
 ## LLM Failure Policy
 
 | Component | Failure behavior |

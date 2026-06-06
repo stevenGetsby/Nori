@@ -77,6 +77,7 @@ Stage-local `schema.py` re-export files should not exist either.
 | `nori/agents/planning/calendar_planner/policy.py` | Pure calendar fallback policy. |
 | `nori/agents/planning/calendar_planner/task_builder.py` | Builds fallback and normalized LLM `ContentTask` rows. |
 | `nori/agents/planning/planner_critics.py` | Shared planner critic policy. |
+| `nori/agents/content_generation/social_card_guides.py` | Social-card platform profiles, page plans, style identity rules, and QA checks distilled from Guizang social-card practice. |
 | `nori/agents/content_generation/spec_designer/spec_designer.py` | Converts tasks, briefs, intent contracts, assets, and learned skills into `ContentDesignSpec`. |
 | `nori/agents/content_generation/artifact_generator/artifact_generator.py` | Executes a frozen `ContentDesignSpec` through concrete generators. |
 | `nori/agents/content_generation/note_maker/package.py` | Note skill selection, asset curation, note prompt construction, and note field normalization. |

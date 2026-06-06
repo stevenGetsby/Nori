@@ -2,6 +2,14 @@
 
 # Changelog
 
+## 2026-06-07
+
+| Change | Notes |
+| --- | --- |
+| Added Guizang social-card design profile | Distilled `guizang-social-card-skill` into `nori.agents.content_generation.social_card_guides` instead of vendoring external templates. |
+| Enriched content specs for social cards | XHS image-text specs now carry 1080x1440 canvas rules, safe area, 5-9 page guidance, page roles, compression ladder, style-mode identity checks, and density/thumbnail/evidence QA checks. WeChat article specs now carry 21:9 + 1:1 cover-pair guidance. |
+| Propagated spec constraints into cover prompts | `CoverPromptBuilder` reads `intent.content_design_spec` so cover generation sees the social-card platform/profile constraints selected by `ContentSpecAgent`. |
+
 ## 2026-06-01
 
 | Change | Notes |

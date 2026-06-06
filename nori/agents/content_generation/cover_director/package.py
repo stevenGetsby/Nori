@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Callable, TypeVar
 
 from nori.agents.content_generation.models import NoteDraft
+from nori.agents.content_generation.social_card_guides import cover_prompt_guidance
 from nori.core import AgentPromptBuilder, UserAsset
 from nori.shared.image_io import image_to_bytes
 from nori.shared.prompting import json_block, json_prompt
@@ -174,6 +175,7 @@ class CoverPromptBuilder(AgentPromptBuilder):
         bundle_dict = draft.asset_bundle or {}
         brand_facts = list(bundle_dict.get("brand_facts") or [])
         text_points = list(bundle_dict.get("text_points") or [])
+        social_guidance = cover_prompt_guidance(intent)
 
         return (
             f"小红书 note 标题：{draft.title}\n"
@@ -184,6 +186,7 @@ class CoverPromptBuilder(AgentPromptBuilder):
             f"主要卖点：{json_prompt(text_points[:3])}\n\n"
             f"封面规则：\n{json_block(skill.get('cover_rules') or [])}\n\n"
             f"视觉规则：\n{json_block(skill.get('visual_rules') or [])}\n\n"
+            f"{_social_card_prompt_block(social_guidance)}"
             f"禁止项：{json_prompt(skill.get('avoid_rules') or [])}\n"
             f"参考图数量：{len(reference_paths)}（已作为 reference_images 传给生图模型）\n\n"
             "请为这条小红书 note 写一段 gpt-image-2 视觉 prompt：\n"
@@ -196,6 +199,34 @@ class CoverPromptBuilder(AgentPromptBuilder):
             "  - 不要伪造 UI 截图、官方通知、用户背书、医疗金融证明\n\n"
             '只输出 JSON：{"prompt": "<一段完整的视觉 prompt>"}'
         )
+
+
+def _social_card_prompt_block(profile: dict[str, Any]) -> str:
+    if not profile:
+        return ""
+    if profile.get("platform") == "xhs":
+        canvas = profile.get("canvas") if isinstance(profile.get("canvas"), dict) else {}
+        page_count = profile.get("page_count") if isinstance(profile.get("page_count"), dict) else {}
+        summary = {
+            "source": profile.get("source", ""),
+            "artifact": profile.get("artifact", ""),
+            "canvas": canvas,
+            "page_count": page_count,
+            "layout_principles": profile.get("layout_principles") or [],
+        }
+        return (
+            "社交卡片设计约束（来自 content_design_spec）：\n"
+            f"{json_block(summary)}\n\n"
+            "封面必须按 1080x1440 的 3:4 小红书首图设计：大钩子、一个强视觉、底部 3-5 个关键词；"
+            "所有标题和主体留在安全区内；不要生成整套海报文字，也不要把正文塞满首图。\n\n"
+        )
+    if profile.get("platform") == "wechat":
+        return (
+            "公众号封面设计约束（来自 content_design_spec）：\n"
+            f"{json_block(profile)}\n\n"
+            "如果执行公众号封面，21:9 主封面和 1:1 方封面需要分别构图；方封面使用短标题，不做硬裁切。\n\n"
+        )
+    return f"社交卡片设计约束：\n{json_block(profile)}\n\n"
 
 
 __all__ = [

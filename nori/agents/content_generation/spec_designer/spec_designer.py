@@ -4,6 +4,11 @@ from __future__ import annotations
 from typing import Any
 
 from nori.agents.content_generation.models import ContentDesignSpec
+from nori.agents.content_generation.social_card_guides import (
+    social_card_acceptance_checks,
+    social_card_profile,
+    social_card_visual_rules,
+)
 from nori.agents.market_analysis.models import NoteSkill
 from nori.context import ContextView
 from nori.core import AccountOperationProject, AgentBase, ClientBrief, ContentTask, IntentContract, LLMFactory, UserAsset
@@ -56,8 +61,12 @@ class ContentSpecAgent(AgentBase):
         selected = _select_skills(normalized_skills, normalized_task)
         selected_refs = [_skill_ref(skill) for skill in selected]
         artifact_type = _artifact_type(normalized_task)
+        normalized_assets = _normalize_assets(assets)
+        social_profile = social_card_profile(normalized_task, artifact_type=artifact_type, assets=normalized_assets)
         hotspot_strategy = _hotspot_strategy(context, normalized_task)
         acceptance_checks = _acceptance_checks(contract, brief, selected)
+        if social_profile:
+            acceptance_checks = _dedupe([*acceptance_checks, *social_card_acceptance_checks(social_profile)])
         if hotspot_strategy:
             acceptance_checks = _dedupe([
                 *acceptance_checks,
@@ -72,6 +81,12 @@ class ContentSpecAgent(AgentBase):
             "selected_skill_count": len(selected),
             **({"context_view": {"agent_name": view.agent_name, "slice_kinds": view.kinds}} if view else {}),
         }
+        if social_profile:
+            metadata["social_card_profile"] = {
+                "source": social_profile.get("source", ""),
+                "platform": social_profile.get("platform", ""),
+                "artifact": social_profile.get("artifact", ""),
+            }
         if hotspot_strategy:
             metadata["hotspot_strategy"] = hotspot_strategy
             metadata["human_review_checklist"] = [
@@ -92,10 +107,10 @@ class ContentSpecAgent(AgentBase):
             creative_angle=_creative_angle(selected, normalized_task, intent),
             selected_skill_refs=selected_refs,
             evidence_refs=_evidence_refs(normalized_task, selected),
-            structure=_structure(selected, normalized_task, context),
-            media_plan=_media_plan(selected, normalized_task, _normalize_assets(assets)),
+            structure=_structure(selected, normalized_task, context, social_profile),
+            media_plan=_media_plan(selected, normalized_task, normalized_assets, social_profile),
             copy_rules=_copy_rules(selected),
-            visual_rules=_visual_rules(selected),
+            visual_rules=_visual_rules(selected, social_profile),
             constraints=_constraints(brief, normalized_task, context),
             acceptance_checks=acceptance_checks,
             metadata=metadata,
@@ -210,13 +225,18 @@ def _evidence_refs(task: ContentTask, skills: list[dict[str, Any]]) -> list[dict
     return refs
 
 
-def _structure(skills: list[dict[str, Any]], task: ContentTask, context: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+def _structure(
+    skills: list[dict[str, Any]],
+    task: ContentTask,
+    context: dict[str, Any] | None = None,
+    social_profile: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     skill = skills[0] if skills else {}
     if _artifact_type(task) == "image_text_post":
         market = _context_mapping(context, "market_hotspots")
         strategy = _context_mapping(context, "content_strategy")
         topic = task.topic or strategy.get("creative_angle") or task.title
-        return [
+        rows = [
             {"slot": "cover", "purpose": "首图一眼看懂热点/利益点，封面文字 6-14 字。"},
             {"slot": "hotspot_bridge", "purpose": _hotspot_bridge_purpose(market, topic)},
             {"slot": "account_fit", "purpose": "说明账号、产品或场景为什么有资格参与这个热点。"},
@@ -224,6 +244,7 @@ def _structure(skills: list[dict[str, Any]], task: ContentTask, context: dict[st
             {"slot": "method_or_choice", "purpose": "给出可保存的选择方法、步骤、清单或避坑判断。"},
             {"slot": "save_or_comment_cta", "purpose": _first_rule(skill.get("interaction_rules"), fallback="用收藏、评论或到店动作收口。")},
         ]
+        return _merge_social_page_roles(rows, social_profile)
     rows = [
         {"slot": "title", "purpose": _first_rule(skill.get("title_rules"), fallback=task.title or task.topic)},
         {"slot": "opening", "purpose": _first_rule(skill.get("opening_rules"), fallback="先承接用户场景或痛点。")},
@@ -242,11 +263,16 @@ def _structure(skills: list[dict[str, Any]], task: ContentTask, context: dict[st
     return rows
 
 
-def _media_plan(skills: list[dict[str, Any]], task: ContentTask, assets: list[UserAsset]) -> dict[str, Any]:
+def _media_plan(
+    skills: list[dict[str, Any]],
+    task: ContentTask,
+    assets: list[UserAsset],
+    social_profile: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     image_count = sum(1 for asset in assets if asset.kind == "image")
     skill = skills[0] if skills else {}
     artifact_type = _artifact_type(task)
-    return {
+    plan = {
         "cover": {
             "required": artifact_type in {"note", "image_text_post", "video_script"},
             "rules": list(skill.get("cover_rules") or []),
@@ -259,6 +285,10 @@ def _media_plan(skills: list[dict[str, Any]], task: ContentTask, assets: list[Us
             "required": artifact_type == "video_script",
         },
     }
+    if social_profile:
+        key = "wechat_cover_pair" if social_profile.get("platform") == "wechat" else "social_card"
+        plan[key] = social_profile
+    return plan
 
 
 def _copy_rules(skills: list[dict[str, Any]]) -> dict[str, Any]:
@@ -271,12 +301,16 @@ def _copy_rules(skills: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def _visual_rules(skills: list[dict[str, Any]]) -> dict[str, Any]:
+def _visual_rules(skills: list[dict[str, Any]], social_profile: dict[str, Any] | None = None) -> dict[str, Any]:
     skill = skills[0] if skills else {}
-    return {
+    rules = {
         "visual_rules": list(skill.get("visual_rules") or []),
         "cover_rules": list(skill.get("cover_rules") or []),
     }
+    social_rules = social_card_visual_rules(social_profile or {})
+    if social_rules:
+        rules["social_card"] = social_rules
+    return rules
 
 
 def _constraints(brief: ClientBrief, task: ContentTask, context: dict[str, Any] | None) -> list[str]:
@@ -326,6 +360,31 @@ def _hotspot_bridge_purpose(market: dict[str, Any], topic: str) -> str:
     if insights:
         return f"用热点洞察承接主题：{insights[0]}"
     return f"把热点语境自然转到账号主题：{topic}"
+
+
+def _merge_social_page_roles(
+    rows: list[dict[str, Any]],
+    social_profile: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    if not social_profile:
+        return rows
+    role_by_slot = {
+        str(item.get("slot") or ""): item
+        for item in social_profile.get("page_plan") or []
+        if isinstance(item, dict)
+    }
+    merged = []
+    for row in rows:
+        enriched = dict(row)
+        role = role_by_slot.get(str(row.get("slot") or ""))
+        if role:
+            enriched.update({
+                "page_role": str(role.get("role") or ""),
+                "visual_intent": str(role.get("intent") or ""),
+                "source": social_profile.get("source", ""),
+            })
+        merged.append(enriched)
+    return merged
 
 
 def _first_rule(rows: Any, *, fallback: str) -> str:
