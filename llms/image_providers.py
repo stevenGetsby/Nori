@@ -24,12 +24,14 @@ def image_relay_generate_with_references(
     payload_variants: list[dict[str, Any]] = []
     if urls:
         payload_variants.extend([
+            {"reference_images": urls},
             {"image_urls": urls},
             {"images": urls},
             {"image": urls[0] if len(urls) == 1 else urls},
         ])
     if data_uris:
         payload_variants.extend([
+            {"reference_images": data_uris},
             {"image_urls": data_uris},
             {"images": data_uris},
             {"image": data_uris[0] if len(data_uris) == 1 else data_uris},

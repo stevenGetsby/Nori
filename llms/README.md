@@ -100,7 +100,7 @@ Provider response 归一化实现放在 `llms.results`。`extract_chat_text(...)
 
 图片输入归一化实现放在 `llms.image_inputs`。`load_image_bytes(...)` 把 bytes、data-uri、本地路径和 base64 字符串统一为 bytes，并把不可读输入返回为空 bytes 交给上层过滤；`sniff_mime(...)` / `bytes_to_data_uri(...)` 负责 provider 参考图 payload 的 MIME 和 data-uri 构造。`llms.call` 保留旧的 `_load_image_bytes` / `_bytes_to_data_uri` / `_sniff_mime` 导入别名，避免内部兼容路径漂移。
 
-Provider-specific image dispatch 实现放在 `llms.image_providers`。`image_openai_edit(...)` 只负责 OpenAI-compatible `images.edit` 文件包装，`image_relay_generate_with_references(...)` 只负责 relay 参考图 payload variant retry，`image_google(...)` 只负责 Google native `google-genai` 调用。`llms.call` 保留 `_image_openai_edit` / `_image_relay_generate_with_references` / `_image_google` 旧内部别名。
+Provider-specific image dispatch 实现放在 `llms.image_providers`。`image_openai_edit(...)` 只负责 OpenAI-compatible `images.edit` 文件包装，`image_relay_generate_with_references(...)` 只负责 relay 参考图 payload variant retry，`image_google(...)` 只负责 Google native `google-genai` 调用。Relay `gpt-image-2` 的有效图生图字段是 `extra_body.reference_images`；`image_urls` / `images` / `image` 仅作为兼容 fallback，实际验证中可能返回文生图结果但忽略参考图。`llms.call` 保留 `_image_openai_edit` / `_image_relay_generate_with_references` / `_image_google` 旧内部别名。
 
 Image 执行实现放在 `llms.image_runner`。`image_outputs(...)` 负责解析一次 active image model、过滤 reference inputs、执行 image capability guard、按 provider 调度、校验空结果和发 telemetry；`llms.call.image` 保留为薄 facade，并显式保留旧测试/调用方可 monkeypatch `llms.call.get_active` / `build_client_bundle` / `_image_google` 等兼容面。
 

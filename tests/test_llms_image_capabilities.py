@@ -145,7 +145,7 @@ def test_relay_image_provider_retries_reference_payload_variants_without_mutatin
         def generate(self, **kwargs):
             self.generate_calls.append(kwargs)
             if len(self.generate_calls) == 1:
-                raise RuntimeError("unsupported image_urls")
+                raise RuntimeError("unsupported reference_images")
             return FakeImageResponse(FakeImageItem(url="https://example.test/relay.png"))
 
     model = _model(supports_reference_image=True, provider_id="relay")
@@ -164,11 +164,11 @@ def test_relay_image_provider_retries_reference_payload_variants_without_mutatin
     assert request_kwargs == {"extra_body": {"trace": "caller"}, "response_format": "b64_json"}
     assert len(images.generate_calls) == 2
     assert images.generate_calls[0]["extra_body"]["trace"] == "caller"
-    assert images.generate_calls[0]["extra_body"]["image_urls"][0].startswith("data:image/png;base64,")
-    assert "images" not in images.generate_calls[0]["extra_body"]
+    assert images.generate_calls[0]["extra_body"]["reference_images"][0].startswith("data:image/png;base64,")
+    assert "image_urls" not in images.generate_calls[0]["extra_body"]
     assert images.generate_calls[1]["extra_body"]["trace"] == "caller"
-    assert images.generate_calls[1]["extra_body"]["images"][0].startswith("data:image/png;base64,")
-    assert "image_urls" not in images.generate_calls[1]["extra_body"]
+    assert images.generate_calls[1]["extra_body"]["image_urls"][0].startswith("data:image/png;base64,")
+    assert "reference_images" not in images.generate_calls[1]["extra_body"]
     assert images.generate_calls[1]["size"] == "1024x1024"
 
 
@@ -177,7 +177,7 @@ def test_relay_image_provider_raises_when_base64_refs_are_rejected():
         def generate(self, **kwargs):
             self.generate_calls.append(kwargs)
             extra_body = kwargs.get("extra_body") or {}
-            if any(key in extra_body for key in ("image_urls", "images", "image")):
+            if any(key in extra_body for key in ("reference_images", "image_urls", "images", "image")):
                 raise RuntimeError("不支持base64参数，请使用图片url传参")
             return FakeImageResponse(FakeImageItem(url="https://example.test/text-fallback.png"))
 
@@ -195,7 +195,7 @@ def test_relay_image_provider_raises_when_base64_refs_are_rejected():
         )
 
     assert request_kwargs == {"extra_body": {"trace": "caller"}, "response_format": "b64_json"}
-    assert len(images.generate_calls) == 3
+    assert len(images.generate_calls) == 4
     assert images.generate_calls[-1]["extra_body"]["image"].startswith("data:image/png;base64,")
 
 
@@ -217,8 +217,8 @@ def test_relay_image_provider_sends_reference_urls_before_local_base64():
     assert request_kwargs == {"extra_body": {"trace": "caller"}, "response_format": "b64_json"}
     assert len(images.generate_calls) == 1
     assert images.generate_calls[0]["extra_body"]["trace"] == "caller"
-    assert images.generate_calls[0]["extra_body"]["image_urls"] == ["https://example.test/source.png"]
-    assert "images" not in images.generate_calls[0]["extra_body"]
+    assert images.generate_calls[0]["extra_body"]["reference_images"] == ["https://example.test/source.png"]
+    assert "image_urls" not in images.generate_calls[0]["extra_body"]
 
 
 def test_relay_image_runner_rejects_local_reference_without_public_url(monkeypatch):
