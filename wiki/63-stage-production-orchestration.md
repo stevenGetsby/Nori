@@ -27,6 +27,7 @@ The stage connects P1 planning contracts with P0 generation agents. It does not 
 | --- | --- | --- |
 | `nori/context/compiler.py` | Implemented | Compiles platform strategy, market hotspots, learned skills, content strategy, assets, and constraints into a sliced `ContextPack`. |
 | `nori/context/resolver.py` | Implemented | Projects `ContextPack` into the `ContextView` consumed by `ContentSpecAgent`. |
+| `nori/agents/content_generation/social_card_guides.py` | Implemented | Distills Guizang social-card design practice into reusable XHS/WeChat platform profiles, page plans, style identity rules, and QA checks consumed by specs and cover prompts. |
 | `nori/agents/content_generation/spec_designer/spec_designer.py` | Implemented | Builds `ContentDesignSpec` from task, brief, intent contract, assets, and skill evidence before generation. |
 | `nori/agents/content_generation/artifact_generator/artifact_generator.py` | Implemented | Executes a `ContentDesignSpec` by filtering selected skills, injecting the spec into intent/context, and delegating to `ContentProducerAgent`. |
 | `nori/agents/content_generation/content_producer/content_producer.py` | Implemented | Produces `ContentPackage` from a planned `ContentTask`. |
@@ -42,6 +43,7 @@ The stage connects P1 planning contracts with P0 generation agents. It does not 
 | `ContextResolver().for_agent("ContentSpecAgent", pack) -> ContextView` | Select only the slices needed for spec design. |
 | `ContentSpecAgent().run(context_view=...) -> ContentDesignSpec` | Preferred production path. Produce an inspectable generation blueprint from platform, market, skill, content strategy, asset, and constraint context slices. |
 | `ContentSpecAgent().run(task, skills, assets=None, client_brief=None, project=None, intent_contract=None, intent=None, context=None) -> ContentDesignSpec` | Direct-input path for focused tests and manual calls when a compiled context view is not available. |
+| `nori.agents.content_generation.social_card_guides.social_card_profile(...)` | Build reusable social-card platform profiles for XHS image-text posts and WeChat cover pairs. These are spec inputs, not a separate generator. |
 | `ArtifactGenerationAgent().run(spec, task, skills, assets, out_dir, ...) -> ContentPackage` | Instantiate a spec through the current package generator; it passes `content_design_spec` into both intent and context so lower-level generators can obey the plan without owning it. |
 | `ContentProducerAgent().run(task, skills, assets, out_dir, client_brief=None, project=None, intent=None, context=None, intent_contract=None, use_cover=True)` | Normalize task/brief/assets, pass optional `IntentContract` into generation context/metadata, produce note draft, optionally produce cover, return `ContentPackage`. |
 | `ContentPackageAssembler.prepare(task, brief, ...)` | Restore `UserAsset` inputs, add task/brief text context when no text asset exists, and build production intent/context. |

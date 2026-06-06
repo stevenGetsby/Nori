@@ -115,6 +115,11 @@ def test_content_spec_agent_builds_hotspot_image_post_strategy_from_context_view
     assert spec.artifact_type == "image_text_post"
     assert spec.metadata["hotspot_strategy"]["mode"] == "hotspot_image_post"
     assert spec.metadata["hotspot_strategy"]["keywords"] == ["母亲节花束", "送妈妈的花"]
+    assert spec.metadata["social_card_profile"] == {
+        "source": "guizang_social_card_skill",
+        "platform": "xhs",
+        "artifact": "social_card_carousel",
+    }
     assert spec.metadata["human_review_checklist"] == [
         "热点证据可追溯或已明确标注假设",
         "账号参与角度可信，不显得硬蹭",
@@ -129,8 +134,43 @@ def test_content_spec_agent_builds_hotspot_image_post_strategy_from_context_view
         "method_or_choice",
         "save_or_comment_cta",
     ]
+    assert spec.structure[0]["page_role"] == "hook_cover"
+    assert spec.structure[3]["page_role"] == "evidence"
+    assert spec.media_plan["social_card"]["source"] == "guizang_social_card_skill"
+    assert spec.media_plan["social_card"]["canvas"] == {
+        "width": 1080,
+        "height": 1440,
+        "ratio": "3:4",
+        "safe_area_px": {"left": 72, "right": 72, "top": 96, "bottom": 96},
+        "export": "png",
+    }
+    assert spec.media_plan["social_card"]["page_count"] == {"min": 5, "max": 9, "target": 6}
+    assert spec.visual_rules["social_card"]["core_principle"] == "先把内容变成视觉论证，再决定文字、证据和版式。"
+    assert "swiss_international" in [mode["mode"] for mode in spec.visual_rules["social_card"]["style_modes"]]
     assert "校验热点证据来源或明确标注假设" in spec.acceptance_checks
     assert "首图必须一眼看懂，不只做氛围图" in spec.acceptance_checks
+    assert "每张图只承载一个清晰观点，不把整篇正文塞进图片" in spec.acceptance_checks
+    assert "3:4 图文页填充感达标：有效内容覆盖至少 75% 画布高度" in spec.acceptance_checks
+
+
+def test_content_spec_agent_adds_wechat_cover_pair_profile_for_articles():
+    task = ContentTask(
+        task_id="wechat_001",
+        title="开源了一个 Skill，让 AI 接管你屏幕边那张便签纸",
+        platform="wechat",
+        content_type="article",
+        topic="AI Skill",
+        objective="公众号首图点击",
+    )
+
+    spec = ContentSpecAgent().run(task=task, skills=[_skill()], client_brief=_brief())
+
+    pair = spec.media_plan["wechat_cover_pair"]
+    assert spec.artifact_type == "article"
+    assert pair["source"] == "guizang_social_card_skill"
+    assert pair["main_cover"]["width"] == 2100
+    assert pair["square_cover"]["width"] == 1080
+    assert "1:1 方封面使用短标题，不挤入完整长标题和复杂副标题" in spec.acceptance_checks
 
 
 def test_artifact_generation_agent_executes_from_spec_without_exposing_all_skills():
