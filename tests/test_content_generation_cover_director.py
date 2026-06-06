@@ -13,6 +13,7 @@ from nori.agents.content_generation.models import CandidateTitle, CoverResult, N
 from nori.core import ImageCapabilityError, UserAsset
 from nori.agents.content_generation import CoverDirectorAgent
 from nori.agents.content_generation.cover_director import CoverDirectorError
+from nori.storage import PublishedReference, PublishedReferences
 
 cd_module = importlib.import_module("nori.agents.content_generation.cover_director.cover_director")
 
@@ -239,6 +240,54 @@ def test_cover_director_preserves_remote_url_references(tmp_path, monkeypatch):
     result = CoverDirectorAgent().run(draft, skill, out_dir=tmp_path)
     assert result.reference_paths == [url]
     assert captured["refs"] == [url]
+
+
+def test_cover_director_publishes_local_refs_to_https_urls(tmp_path, monkeypatch):
+    ref = tmp_path / "local-ref.png"
+    ref.write_bytes(_TINY_PNG_BYTES)
+    draft = _draft(cover_path=str(ref))
+    skill = _planting_skill()
+    captured: dict = {}
+
+    class FakePublisher:
+        def publish_paths(self, paths, *, project="", session="", now=None):  # noqa: ANN001, ARG002
+            captured["publish_paths"] = list(paths)
+            captured["project"] = project
+            captured["session"] = session
+            return PublishedReferences(items=[
+                PublishedReference(
+                    original_path=paths[0],
+                    input_value="https://nori.tos-cn-beijing.volces.com/ref.png?signed=1",
+                    url="https://nori.tos-cn-beijing.volces.com/ref.png?signed=1",
+                    public_url="https://nori.tos-cn-beijing.volces.com/ref.png",
+                    key="nori/reference-images/holly/session-a/20260607/ref.png",
+                    uploaded=True,
+                    reason="uploaded",
+                )
+            ])
+
+    def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
+        captured["refs"] = reference_images
+        return [_TINY_PNG_DATA_URI]
+
+    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "image", fake_image)
+
+    result = CoverDirectorAgent(reference_publisher=FakePublisher()).run(
+        draft,
+        skill,
+        out_dir=tmp_path / "session-a" / "covers",
+        intent={"project_id": "holly", "session_id": "session-a"},
+    )
+
+    assert result.reference_paths == [str(ref)]
+    assert captured["publish_paths"] == [str(ref)]
+    assert captured["project"] == "holly"
+    assert captured["session"] == "session-a"
+    assert captured["refs"] == ["https://nori.tos-cn-beijing.volces.com/ref.png?signed=1"]
+    assert result.extra["reference_images_sent"] is True
+    assert result.extra["reference_images_uploaded"] is True
+    assert result.extra["reference_object_keys"] == ["nori/reference-images/holly/session-a/20260607/ref.png"]
 
 
 def test_cover_director_passes_none_references_when_no_assets(tmp_path, monkeypatch):

@@ -111,6 +111,31 @@ def test_call_stage_json_translates_parse_errors():
         raise AssertionError("expected StageTestError")
 
 
+def test_call_stage_json_retries_parse_errors_with_larger_token_budget():
+    import llms
+
+    calls: list[dict] = []
+
+    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):  # noqa: ARG001
+        calls.append(dict(kwargs))
+        if len(calls) == 1:
+            raise llms.ChatJSONError("bad json", '{"items": [1, 2')
+        return {"ok": True}
+
+    data = call_stage_json(
+        system="system",
+        user="user",
+        timeout=1,
+        error_type=StageTestError,
+        chat_json_func=fake_chat_json,
+    )
+
+    assert data == {"ok": True}
+    assert calls[0]["json_mode"] is True
+    assert "max_tokens" not in calls[0]
+    assert calls[1]["max_tokens"] == 8192
+
+
 def test_call_stage_messages_json_supports_prebuilt_multimodal_messages():
     sentinel_chat = object()
     messages = [

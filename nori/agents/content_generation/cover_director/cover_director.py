@@ -17,6 +17,8 @@ from typing import Any
 
 from nori.core import AgentBase, ImageCapabilityError, LLMFactory
 from nori.shared.llm_json import call_stage_json
+from nori.storage import ObjectStoreError, ReferenceImagePublisher
+from nori.storage.reference_publisher import reference_publish_context
 from nori.agents.content_generation.models import CoverResult, NoteDraft
 from nori.core import UserAsset
 from nori.agents.market_analysis.models import NoteSkill
@@ -49,10 +51,16 @@ class CoverDirectorAgent(AgentBase):
 
     stage_name = "cover_director"
 
-    def __init__(self, *, llm_factory: LLMFactory | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        llm_factory: LLMFactory | None = None,
+        reference_publisher: ReferenceImagePublisher | None = None,
+    ) -> None:
         super().__init__(stage_name=self.stage_name, use_llm=True, llm_factory=llm_factory)
         self.reference_selector = CoverReferenceSelector()
         self.prompt_builder = CoverPromptBuilder()
+        self.reference_publisher = reference_publisher or ReferenceImagePublisher.from_env()
 
     def run(
         self,
@@ -93,10 +101,16 @@ class CoverDirectorAgent(AgentBase):
             error_type=CoverDirectorError,
         )
 
-        # Local references are compressed before llms.image; remote URLs are
-        # preserved because relay::gpt-image-2 accepts URL refs but rejects base64.
-        ref_inputs = [self.reference_selector.to_image_input(p) for p in ref_paths]
-        ref_inputs = [item for item in ref_inputs if item]
+        publish_context = reference_publish_context(intent, out_dir)
+        try:
+            published_refs = self.reference_publisher.publish_paths(
+                ref_paths,
+                project=publish_context["project"],
+                session=publish_context["session"],
+            )
+        except ObjectStoreError as exc:
+            raise CoverDirectorError(f"参考图上传 OSS 失败: {exc}") from exc
+        ref_inputs = published_refs.inputs
 
         reference_images_sent = bool(ref_inputs)
         reference_fallback = ""
@@ -145,6 +159,7 @@ class CoverDirectorAgent(AgentBase):
             extra={
                 "reference_images_sent": reference_images_sent,
                 "reference_image_fallback": reference_fallback,
+                **published_refs.to_extra(),
             },
         )
 

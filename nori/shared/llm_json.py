@@ -15,6 +15,7 @@ def call_stage_json(
     error_type,
     usage: str = "llm",
     json_mode: bool = True,
+    retry_max_tokens: int | None = 8192,
     chat_func=None,
     chat_json_func=None,
 ) -> dict[str, Any]:
@@ -34,6 +35,7 @@ def call_stage_json(
         error_type=error_type,
         usage=usage,
         json_mode=json_mode,
+        retry_max_tokens=retry_max_tokens,
         chat_func=chat_func,
         chat_json_func=chat_json_func,
     )
@@ -46,24 +48,67 @@ def call_stage_messages_json(
     error_type,
     usage: str = "llm",
     json_mode: bool = True,
+    retry_max_tokens: int | None = 8192,
     chat_func=None,
     chat_json_func=None,
 ) -> dict[str, Any]:
     """Call the project LLM gateway for JSON using pre-built messages."""
+    chat_func = chat_func or llms.chat
+    chat_json_func = chat_json_func or llms.chat_json
     try:
-        chat_func = chat_func or llms.chat
-        chat_json_func = chat_json_func or llms.chat_json
-        return chat_json_func(
+        return _call_chat_json(
+            chat_json_func,
             messages,
             usage=usage,
             timeout=timeout,
             json_mode=json_mode,
-            _chat=chat_func,
+            chat_func=chat_func,
         )
     except llms.ChatJSONError as exc:
+        if retry_max_tokens and _should_retry_json_parse(exc):
+            try:
+                return _call_chat_json(
+                    chat_json_func,
+                    messages,
+                    usage=usage,
+                    timeout=timeout,
+                    json_mode=json_mode,
+                    chat_func=chat_func,
+                    max_tokens=retry_max_tokens,
+                )
+            except llms.ChatJSONError as retry_exc:
+                raise error_type(f"LLM 输出无法解析为 JSON: {retry_exc.preview!r}") from retry_exc
         raise error_type(f"LLM 输出无法解析为 JSON: {exc.preview!r}") from exc
     except Exception as exc:  # noqa: BLE001
         raise error_type(f"llms.chat 失败: {type(exc).__name__}: {exc}") from exc
+
+
+def _call_chat_json(
+    chat_json_func,
+    messages: list[dict[str, Any]],
+    *,
+    usage: str,
+    timeout: int,
+    json_mode: bool,
+    chat_func,
+    max_tokens: int | None = None,
+) -> dict[str, Any]:
+    kwargs: dict[str, Any] = {
+        "usage": usage,
+        "timeout": timeout,
+        "json_mode": json_mode,
+        "_chat": chat_func,
+    }
+    if max_tokens:
+        kwargs["max_tokens"] = max_tokens
+    return chat_json_func(messages, **kwargs)
+
+
+def _should_retry_json_parse(exc: llms.ChatJSONError) -> bool:
+    raw = exc.raw.strip()
+    if not raw:
+        return False
+    return raw.count("{") != raw.count("}") or raw.count("[") != raw.count("]") or len(raw) > 120
 
 
 def try_stage_json(

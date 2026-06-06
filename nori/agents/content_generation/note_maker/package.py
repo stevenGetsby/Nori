@@ -90,7 +90,7 @@ class NoteAssetCurator:
             for i, a in images
         ]
         text_input = [
-            {"index": i, "text": a.text.strip()[:400]}
+            {"index": i, "text": a.text.strip()[:240]}
             for i, a in texts
         ]
 
@@ -111,7 +111,7 @@ class NoteAssetCurator:
                 "  - text_points：用户的卖点/描述短句\n"
                 "  - brand_facts：品牌名/口号/理念/人设\n"
                 "  - data_points：数据/数字/案例\n"
-                "保留原文，不要改写。每个文本桶最多 6 条。\n"
+                "保留原文关键词，不要扩写。text_points 每条 <=80 字；brand_facts 每条 <=60 字；每个文本桶最多 6 条。\n"
                 '输出 JSON：{"main_image_indices": [], "aux_image_indices": [], '
                 '"text_points": [], "brand_facts": [], "data_points": []}'
             ),

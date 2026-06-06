@@ -15,6 +15,7 @@ ALLOWED_NORI_TOP_LEVEL_DIRS = {
     "memory",
     "sessions",
     "shared",
+    "storage",
     "workflows",
 }
 

@@ -113,6 +113,7 @@ def tag_one_image_llm(
         usage="vision",
         timeout=60,
         error_type=IntakeVisionLLMError,
+        retry_max_tokens=None,
         chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )
