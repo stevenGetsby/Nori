@@ -23,7 +23,7 @@ if str(ROOT) not in sys.path:
 from nori.agents.market_analysis import XHSNoteAnalyzer
 
 
-DEFAULT_DATA_DIR = "nori/skill_base/data/xhs_note_analyzer/holly"
+DEFAULT_DATA_DIR = "data/skill_runs/xhs_note_analyzer/holly"
 
 
 def main() -> int:

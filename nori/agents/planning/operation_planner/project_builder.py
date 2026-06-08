@@ -4,7 +4,7 @@ from __future__ import annotations
 from nori.core import AccountOperationProject
 from datetime import date, timedelta
 
-from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPlanResult
 from nori.core import ClientBrief
 
 from nori.core import ContentCalendar, ContentTask, OperationPlan

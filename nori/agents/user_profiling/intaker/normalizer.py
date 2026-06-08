@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from nori.agents.user_profiling.models import IntakeResult, UserInput
+from nori.agents.user_profiling.schemas import IntakeResult, UserInput
 
 from . import taxonomy as _taxonomy
 

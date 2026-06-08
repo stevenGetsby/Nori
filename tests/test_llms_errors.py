@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import llms
-import llms.call as call_module
-import llms.client as client_module
+import nori.core.llms as llms
 from nori.core import contracts
 
 
 def test_public_gateway_errors_share_single_identity():
     assert llms.LLMClientConfigError is contracts.LLMClientConfigError
-    assert client_module.LLMClientConfigError is contracts.LLMClientConfigError
 
     assert llms.ChatJSONError is contracts.ChatJSONError
 

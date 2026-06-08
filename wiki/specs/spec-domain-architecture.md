@@ -32,21 +32,22 @@ The purpose is to make the shared layer and five domain modules the canonical im
 
 | Layer | Modules | Responsibility |
 | --- | --- | --- |
-| `shared` | `nori/core/{profile_models,asset_models,planning_models,capability_models}.py`, `nori/core/models.py`, `nori/core/architecture.py` | Common contract owners, compatibility facade, canonical domain registry, context packs, decision traces, evidence references, learning signals. |
+| `shared` | `nori/core/{profile_models,asset_models,planning_models,capability_models}.py`, `nori/core/architecture.py` | Common contract owners, canonical registry, context packs, decision traces, evidence references, learning signals. |
 | `user profiling` | `nori/agents/user_profiling/facade.py` | Long-lived user/account/brand/preferences/constraints profiles. |
 | `market analysis` | `nori/agents/market_analysis/facade.py` | Benchmark samples, market snapshots, trend insights, audience insights. |
-| `context building` | `nori/agents/planning/facade.py`, operation/KPI/calendar planner modules, planner critics | Build operation project context, KPI plans, content calendars, `ContentTask` rows, and `ContextPack` from profile + task + market + assets + history. |
+| `context building` | `nori/context`, operation/KPI/calendar planner modules, planner critics | Build operation project context, KPI plans, content calendars, `ContentTask` rows, and `ContextPack` from profile + task + market + assets + history. |
 | `content generation` | `nori/agents/content_generation/facade.py`, `content_producer/*`, `note_maker/*`, `cover_director/*` | Produce content packages, manage production state/provenance, group candidates, and expose final deliverables. |
 | `learning loop` | `nori/agents/learning_loop/facade.py`, `review/*`, `strategy/*` | Review gates, monitoring snapshots, analytics, feedback signals, preference updates, strategy iteration. |
 
 ## Public Entrypoint
 
-At the time of this historical refactor, `nori.domain` was proposed as the stable import path for upper layers that needed the complete projected architecture. Current pre-launch code removed that compatibility layer; use `nori.capabilities` instead:
+At the time of this historical refactor, `nori.domain` was proposed as the stable import path for upper layers that needed the complete projected architecture. Current pre-launch code removed that compatibility layer and the later `nori.capabilities` facade; use the owning modules directly:
 
 | API | Purpose |
 | --- | --- |
-| `build_capability_snapshot(project, ...)` | Builds a full `CapabilitySnapshot` from an `AccountOperationProject` or persisted project dict. |
-| `validate_capability_snapshot(snapshot)` | Validates a `CapabilitySnapshot` object or persisted snapshot dict and returns structured issues. |
+| `nori.core.capability_registry_snapshot()` | Returns the five agent-owned capability groups. |
+| `nori.agents.learning_loop.build_capability_snapshot(project, ...)` | Builds a full `CapabilitySnapshot` from an `AccountOperationProject` or persisted project dict. |
+| `nori.agents.learning_loop.validate_capability_snapshot(snapshot)` | Validates a `CapabilitySnapshot` object or persisted snapshot dict and returns structured issues. |
 
 ## Shared Contracts
 

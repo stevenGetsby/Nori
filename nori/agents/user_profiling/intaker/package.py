@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from nori.core import AgentPromptBuilder
 from nori.shared.prompting import json_prompt
-from nori.agents.user_profiling.models import UserInput
+from nori.agents.user_profiling.schemas import UserInput
 
 
 class IntakeTextPromptBuilder(AgentPromptBuilder):

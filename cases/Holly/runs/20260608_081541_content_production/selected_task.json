@@ -1,0 +1,35 @@
+{
+  "task_id": "task_d01_01",
+  "title": "Holly Shit开心拉屎拉屎哲学：围绕厕所时间、带薪拉屎、合法躺平、身体自主权表达反焦虑态度。｜Holly Shit开心拉屎",
+  "scheduled_date": "2026-06-08",
+  "platform": "xhs",
+  "content_type": "note",
+  "topic": "Holly Shit开心拉屎拉屎哲学：围绕厕所时间、带薪拉屎、合法躺平、身体自主权表达反焦虑态度。",
+  "objective": "让小红书用户在 7 天内快速理解 Holly Shit开心拉屎的核心理念：用怪趣幽默对抗焦虑，Shit人生也要拉得开心。",
+  "status": "planned",
+  "priority": 1,
+  "owner": "",
+  "brief": {
+    "brand_name": "Holly Shit开心拉屎",
+    "audience": [
+      "20-35岁喜欢有梗、有态度、非传统可爱风文创的年轻人",
+      "对打工焦虑、内耗、绩效压力、厕所摸鱼等话题有强共鸣的学生和职场新人",
+      "愿意为小众原创设计、情绪价值和社交表达买单的文创消费者",
+      "喜欢市集、独立品牌、设计幕后、IP养成过程的内容用户",
+      "能接受轻微粗口幽默，但不喜欢低俗冒犯或过度硬广的人群"
+    ],
+    "cover_title": "Holly Shit开心拉屎拉屎哲学",
+    "content_pillar": "拉屎哲学：围绕厕所时间、带薪拉屎、合法躺平、身体自主权表达反焦虑态度。"
+  },
+  "required_assets": [
+    "xhs_note"
+  ],
+  "references": [],
+  "package_id": "",
+  "notes": [
+    "生成前需做内容合规与素材可用性检查。"
+  ],
+  "metadata": {
+    "source": "calendar_planner_fallback"
+  }
+}

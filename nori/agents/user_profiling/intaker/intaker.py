@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from nori.core import AgentBase, LLMFactory
 from nori.shared.llm_json import attach_llm_error, try_stage_json
-from nori.agents.user_profiling.models import IntakeResult, UserInput
+from nori.agents.user_profiling.schemas import IntakeResult, UserInput
 
 from . import normalizer as _intake_normalizer
 from . import image_tagger as _image_tagger
@@ -89,7 +89,6 @@ def _llm_intake(
     data, error = try_stage_json(
         system=_TEXT_PROMPT_BUILDER.system_prompt,
         user=_TEXT_PROMPT_BUILDER.build_user_prompt(normalized),
-        chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )
     if data is None:

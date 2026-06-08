@@ -17,7 +17,7 @@ from nori.core import (
 from nori.agents.market_analysis.facade import MarketAnalysisFacade
 from nori.agents.user_profiling.facade import UserProfilingFacade
 
-from .models import MetricsSnapshot, StrategyIteration
+from .schemas import MetricsSnapshot, StrategyIteration
 
 
 class LearningLoopFacade(WorkflowBase):
@@ -153,6 +153,35 @@ class LearningLoopFacade(WorkflowBase):
             },
         )
 
+
+def build_capability_snapshot(
+    project: AccountOperationProject | dict[str, Any] | None,
+    *,
+    task_ids: list[str] | None = None,
+    selected_candidate_ids: dict[str, str] | None = None,
+    signal_source: str = "metrics",
+    signal_target: str = "preference",
+    confidence: float = 0.5,
+) -> CapabilitySnapshot:
+    """Build the aggregate capability view from the learning-loop owner."""
+
+    return LearningLoopFacade().capability_snapshot_from_project(
+        project,
+        task_ids=task_ids,
+        selected_candidate_ids=selected_candidate_ids,
+        signal_source=signal_source,
+        signal_target=signal_target,
+        confidence=confidence,
+    )
+
+
+def validate_capability_snapshot(snapshot: CapabilitySnapshot | dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Validate a capability snapshot object or persisted dictionary."""
+
+    normalized = snapshot if isinstance(snapshot, CapabilitySnapshot) else CapabilitySnapshot.from_dict(snapshot)
+    return normalized.validate()
+
+
 def _project_task_ids(project: AccountOperationProject, task_ids: list[str] | None) -> list[str]:
     requested = _dedupe_strings(task_ids or [])
     if requested:
@@ -173,4 +202,4 @@ def _dedupe_strings(values: list[str]) -> list[str]:
     return result
 
 
-__all__ = ["LearningLoopFacade"]
+__all__ = ["LearningLoopFacade", "build_capability_snapshot", "validate_capability_snapshot"]

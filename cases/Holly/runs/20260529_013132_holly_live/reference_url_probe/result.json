@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "reference_images": [
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/JPEG_example_flower.jpg/320px-JPEG_example_flower.jpg"
+  ],
+  "output_path": "cases/Holly/runs/20260529_013132_holly_live/reference_url_probe/cover_relay_url_reference_probe_20260529_031741.png",
+  "source_preview": "https://sd2oss-american.oss-us-west-1.aliyuncs.com/temp_images/2026/05/28/img-bc4c5402-43f.png?Expir"
+}

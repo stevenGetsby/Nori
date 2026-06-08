@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from nori._compat import dataclass
 
-from .models import MemoryRecord
+from .schemas import MemoryRecord
 from .store import MemoryStore
 
 

@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "case_id": "Holly",
+  "run_id": "20260529_013132_holly_live",
+  "workflow": "holly_live_content_generation",
+  "path": "cases/Holly/runs/20260529_013132_holly_live",
+  "status": "migrated",
+  "metadata": {
+    "migration": "case_centric_artifact_store"
+  },
+  "artifacts": [
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:FLOW_REVIEW",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "FLOW_REVIEW",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/FLOW_REVIEW.md",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:account_plan",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "account_plan",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/account_plan.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:client_brief",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "client_brief",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/client_brief.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:content_calendar",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "content_calendar",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/content_calendar.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:content_package",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "content_package",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/content_package.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:covers__cover_经验复盘_个人经验笔记制作指南_20260529_015836",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "covers__cover_经验复盘_个人经验笔记制作指南_20260529_015836",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/covers/cover_经验复盘_个人经验笔记制作指南_20260529_015836.png",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:intake_result",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "intake_result",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/intake_result.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:kpi_plan",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "kpi_plan",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/kpi_plan.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market__20260529_013132_note_skill_guides",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market__20260529_013132_note_skill_guides",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market/20260529_013132_note_skill_guides.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market__20260529_013132_session_skill_report",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market__20260529_013132_session_skill_report",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market/20260529_013132_session_skill_report.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market__20260529_013132_反焦虑文创__6658456700000000150089c8__note",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market__20260529_013132_反焦虑文创__6658456700000000150089c8__note",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market/20260529_013132_反焦虑文创/6658456700000000150089c8/note.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market__20260529_013132_反焦虑文创__search_contents_2026-05-29",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market__20260529_013132_反焦虑文创__search_contents_2026-05-29",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market/20260529_013132_反焦虑文创/search_contents_2026-05-29.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market__20260529_013132_反焦虑文创__selected_notes",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market__20260529_013132_反焦虑文创__selected_notes",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market/20260529_013132_反焦虑文创/selected_notes.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market__20260529_013132_怪趣文创__659eb0f3000000001d035792__note",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market__20260529_013132_怪趣文创__659eb0f3000000001d035792__note",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market/20260529_013132_怪趣文创/659eb0f3000000001d035792/note.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market__20260529_013132_怪趣文创__search_contents_2026-05-29",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market__20260529_013132_怪趣文创__search_contents_2026-05-29",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market/20260529_013132_怪趣文创/search_contents_2026-05-29.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market__20260529_013132_怪趣文创__selected_notes",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market__20260529_013132_怪趣文创__selected_notes",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market/20260529_013132_怪趣文创/selected_notes.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market__xhs_top_notes_result",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market__xhs_top_notes_result",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market/xhs_top_notes_result.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:market_session_skill_report",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "market_session_skill_report",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/market_session_skill_report.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:note_skill_guides",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "note_skill_guides",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/note_skill_guides.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:operation_project",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "operation_project",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/operation_project.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:reference_url_probe__cover_relay_url_reference_probe_20260529_031741",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "reference_url_probe__cover_relay_url_reference_probe_20260529_031741",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/reference_url_probe/cover_relay_url_reference_probe_20260529_031741.png",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:reference_url_probe__result",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "reference_url_probe__result",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/reference_url_probe/result.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:reviews",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "reviews",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/reviews.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:selected_task",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "selected_task",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/selected_task.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:summary",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "summary",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/summary.md",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260529_013132_holly_live:xhs_top_notes_result",
+      "case_id": "Holly",
+      "run_id": "20260529_013132_holly_live",
+      "type": "xhs_top_notes_result",
+      "path": "cases/Holly/runs/20260529_013132_holly_live/xhs_top_notes_result.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    }
+  ]
+}

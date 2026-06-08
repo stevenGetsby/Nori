@@ -14,7 +14,7 @@ from typing import Any
 
 from nori.core import AgentBase, LLMFactory
 from nori.shared.case_log import write_stage_log
-from nori.agents.market_analysis.models import SessionSkillReport, XHSNoteSample, XHSSeedSkillDraft
+from nori.agents.market_analysis.schemas import SessionSkillReport, XHSNoteSample, XHSSeedSkillDraft
 from . import loader as xhs_note_loader
 from . import note_llm as xhs_note_llm
 from . import rules as xhs_note_rules
@@ -71,7 +71,6 @@ class XHSNoteAnalyzer(AgentBase):
         return xhs_note_llm.enhance_note(
             note,
             rule_draft,
-            chat_func=self.llm_factory.chat_func,
             chat_json_func=self.llm_factory.chat_json_func,
         ) or xhs_note_llm.mark_llm_fallback(rule_draft)
 
@@ -95,7 +94,7 @@ class XHSNoteAnalyzer(AgentBase):
           - min_liked : 默认 500
           - pool_size : 默认 20，每轮最多一页候选
           - download_media : 默认 True
-                    - data_dir : 默认 nori/skill_base/data/xhs_note_analyzer
+          - data_dir : 默认 data/skill_runs/xhs_note_analyzer
         """
         from data_collect import DataCollector, TopNotesRule
 
@@ -127,7 +126,7 @@ class XHSNoteAnalyzer(AgentBase):
             min_liked=int(context.get("min_liked", 500)),
             pool_size=int(context.get("pool_size", 20)),
             download_media=bool(context.get("download_media", True)),
-            data_dir=str(context.get("data_dir") or "nori/skill_base/data/xhs_note_analyzer"),
+            data_dir=str(context.get("data_dir") or "data/skill_runs/xhs_note_analyzer"),
         )
         owned_dc = dc is None
         dc = dc or DataCollector()

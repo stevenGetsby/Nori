@@ -6,7 +6,7 @@ import os
 import subprocess
 import sys
 from dataclasses import replace
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -14,22 +14,22 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import llms
-from data_collect.adapter import HotNote, TopNotesResult
-from nori.agents.content_generation import ContentSpecAgent, ArtifactGenerationAgent
-from nori.agents.learning_loop import ReviewGateAgent
-from nori.agents.market_analysis import SessionSkillReport, XHSNoteAnalyzer
-from nori.agents.market_analysis.xhs_note_analyzer import session_reporter as xhs_session_reporter
-from nori.agents.market_analysis.xhs_note_analyzer import skill_builder as xhs_skill_builder
-from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
-from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
-from nori.context import ContextPackBuilder, ContextResolver
-from nori.core import AssetLibrary, AssetRecord, ClientBrief, LLMFactory
-from nori.workflows import HumanGateSpec, RuntimeRunRecorder, StageSpec, WorkflowRunner, WorkflowSpec
+import nori.core.llms as llms
+from data_collect.adapter import TopNotesResult
+from nori.core import CaseWorkspace, LLMFactory
+from nori.workflows import RuntimeRunRecorder
+from nori.workflows.content_production import (
+    ContentProductionConfig,
+    ContentProductionWorkflow,
+    record_content_production_artifacts,
+    top_notes_result_from_dict,
+)
 
 
-CASE_DIR = ROOT / "data" / "Holly"
-MATERIAL_DIR = CASE_DIR / "holly shit品牌素材"
+CASE = CaseWorkspace(ROOT, case_id="Holly", title="Holly Shit开心拉屎").ensure()
+CASE_DIR = CASE.case_dir
+BRIEF_PATH = CASE.brief_dir / "original.md"
+MATERIAL_DIR = CASE.raw_assets_dir / "brand_materials"
 CRAWLER_PYTHON = ROOT / "data_collect" / "crawler" / ".venv" / "bin" / "python"
 
 KEYWORDS = ["怪趣文创", "反焦虑文创"]
@@ -41,79 +41,61 @@ ASSET_NAMES = [
     "明信片 打印文件_画板 1.png",
 ]
 
+WORKFLOW_NAME = "holly_live_content_generation"
+GOAL = "用 Holly 真实素材和小红书市场证据生成一篇图文内容，并生成封面图片。"
+
 
 def main() -> int:
-    run_dir = CASE_DIR / "live_runs" / datetime.now().strftime("%Y%m%d_%H%M%S_holly_live")
+    _assert_active_models()
+    llm_factory = _llm_factory()
+    brief_text = BRIEF_PATH.read_text(encoding="utf-8")
+    asset_paths = _selected_assets()
+
+    run_dir = CASE.create_run_dir("holly_live", at=datetime.now(), metadata={"workflow_name": WORKFLOW_NAME})
     market_dir = run_dir / "market"
     covers_dir = run_dir / "covers"
-    run_dir.mkdir(parents=True, exist_ok=False)
     market_dir.mkdir(parents=True, exist_ok=True)
     covers_dir.mkdir(parents=True, exist_ok=True)
 
-    _assert_active_models()
-    llm_factory = _llm_factory()
-
-    brief_text = (CASE_DIR / "设计理念.md").read_text(encoding="utf-8")
-    asset_paths = _selected_assets()
+    CASE.record_artifact(
+        run_id=run_dir.name,
+        artifact_type="original_brief",
+        path=BRIEF_PATH,
+        created_by="user",
+        status="source",
+    )
     runtime_recorder = RuntimeRunRecorder(
         user_id="holly",
         profile_id="holly",
-        workflow_name="holly_live_content_generation",
-        goal="用 Holly 真实素材和小红书市场证据生成一篇图文内容，并生成封面图片。",
+        workflow_name=WORKFLOW_NAME,
+        goal=GOAL,
     )
     runtime = runtime_recorder.start(
-        user_input={"brief_text": brief_text, "case_dir": str(CASE_DIR)},
+        user_input={"brief_text": brief_text, "case_id": CASE.case_id, "case_dir": str(CASE_DIR)},
         run_dir=run_dir,
-        source="设计理念.md",
+        source="brief/original.md",
         acceptance=[
             "生成 content_design_spec.json",
             "生成 content_package.json",
             "生成 cover png",
             "生成 summary.md",
         ],
-        metadata={"case_dir": str(CASE_DIR)},
+        metadata={"case_id": CASE.case_id, "case_dir": str(CASE_DIR), "case_manifest": str(CASE.case_manifest_path)},
     )
     runtime_recorder.write_snapshot(runtime, run_dir)
 
-    state = {
-        "run_dir": run_dir,
-        "market_dir": market_dir,
-        "covers_dir": covers_dir,
-        "llm_factory": llm_factory,
-        "brief_text": brief_text,
-        "asset_paths": asset_paths,
-        "_artifact_refs": {},
-    }
-    spec = WorkflowSpec(
-        name="holly_live_content_generation",
-        stages=[
-            StageSpec("xhs_top_notes", _stage_xhs_top_notes),
-            StageSpec("market_skill_report", _stage_market_skill_report),
-            StageSpec("intake", _stage_intake),
-            StageSpec("account_plan", _stage_account_plan),
-            StageSpec("client_brief", _stage_client_brief),
-            StageSpec("operation_project", _stage_operation_project),
-            StageSpec("kpi_plan", _stage_kpi_plan),
-            StageSpec("content_calendar", _stage_content_calendar),
-            StageSpec("selected_task", _stage_selected_task),
-            StageSpec("content_context", _stage_content_context),
-            StageSpec("content_design_spec", _stage_content_design_spec),
-            StageSpec(
-                "content_package",
-                _stage_content_package,
-                human_gate=HumanGateSpec(
-                    name="approve_content_design_spec",
-                    prompt="Review content_design_spec.json before generating final copy and cover.",
-                    metadata={"artifact": "content_design_spec.json"},
-                ),
-            ),
-            StageSpec("reviews", _stage_reviews),
-            StageSpec("summary", _stage_summary),
-        ],
+    workflow = ContentProductionWorkflow(config=_holly_config())
+    state = workflow.initial_state(
+        run_dir=run_dir,
+        market_dir=market_dir,
+        covers_dir=covers_dir,
+        llm_factory=llm_factory,
+        brief_text=brief_text,
+        asset_paths=asset_paths,
+        top_notes_collector=_collect_xhs_notes,
     )
     try:
-        _final_state, workflow_run = WorkflowRunner().run(
-            spec,
+        _final_state, workflow_run = workflow.run(
             state,
             session_id=runtime.session.session_id,
             task_id=runtime.task_goal.task_id,
@@ -123,186 +105,61 @@ def main() -> int:
         failed_run = getattr(exc, "workflow_run", None)
         if failed_run is not None:
             runtime_recorder.write_snapshot(replace(runtime, workflow_run=failed_run), run_dir)
+        CASE.record_run(
+            run_dir,
+            workflow=WORKFLOW_NAME,
+            status="failed",
+            metadata={"error_type": type(exc).__name__},
+        )
+        record_content_production_artifacts(CASE, run_dir, status="failed")
         raise
     runtime = replace(runtime, workflow_run=workflow_run)
     runtime_recorder.write_snapshot(runtime, run_dir)
+    CASE.record_run(run_dir, workflow=WORKFLOW_NAME, status="completed")
+    record_content_production_artifacts(CASE, run_dir)
     print(json.dumps({"run_dir": str(run_dir), "summary": str(run_dir / "summary.md")}, ensure_ascii=False))
     return 0
 
 
-def _stage_xhs_top_notes(state: dict[str, Any]) -> dict[str, Any]:
-    top_result = _collect_xhs_notes(state["market_dir"])
-    path = state["run_dir"] / "xhs_top_notes_result.json"
-    _write_json(path, top_result.to_dict())
-    state = {**state, "top_result": top_result}
-    return _with_artifact(state, "xhs_top_notes", path)
-
-
-def _stage_market_skill_report(state: dict[str, Any]) -> dict[str, Any]:
-    analyzer = XHSNoteAnalyzer(use_llm=True, llm_factory=state["llm_factory"])
-    market_report = _build_market_report(analyzer, state["top_result"], state["brief_text"])
-    report_path = state["run_dir"] / "market_session_skill_report.json"
-    guides_path = state["run_dir"] / "note_skill_guides.json"
-    _write_json(report_path, market_report.to_dict())
-    _write_json(guides_path, xhs_session_reporter.skills_output(market_report))
-    state = {**state, "market_report": market_report}
-    return _with_artifact(state, "market_skill_report", report_path)
-
-
-def _stage_intake(state: dict[str, Any]) -> dict[str, Any]:
-    intake = IntakeAgent(use_llm=True, use_vision=True, llm_factory=state["llm_factory"]).run(
-        UserInput(text=state["brief_text"], images=[str(path) for path in state["asset_paths"]])
-    )
-    path = state["run_dir"] / "intake_result.json"
-    _write_json(path, intake.to_dict())
-    state = {**state, "intake": intake}
-    return _with_artifact(state, "intake", path)
-
-
-def _stage_account_plan(state: dict[str, Any]) -> dict[str, Any]:
-    account_plan = AccountPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(
-        AccountPlannerInput.from_intaker(
-            state["intake"],
-            text=state["brief_text"],
-            images=[str(path) for path in state["asset_paths"]],
-            platform="xhs",
-            enable_search=False,
-        )
-    )
-    path = state["run_dir"] / "account_plan.json"
-    _write_json(path, account_plan.to_dict())
-    state = {**state, "account_plan": account_plan}
-    return _with_artifact(state, "account_plan", path)
-
-
-def _stage_client_brief(state: dict[str, Any]) -> dict[str, Any]:
-    client_brief = _client_brief(state["brief_text"], state["account_plan"], state["top_result"])
-    path = state["run_dir"] / "client_brief.json"
-    _write_json(path, client_brief.to_dict())
-    state = {**state, "client_brief": client_brief}
-    return _with_artifact(state, "client_brief", path)
-
-
-def _stage_operation_project(state: dict[str, Any]) -> dict[str, Any]:
-    project = OperationPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(
-        state["client_brief"],
-        state["account_plan"],
-        project_id=f"holly_live_{state['run_dir'].name}",
+def _holly_config() -> ContentProductionConfig:
+    return ContentProductionConfig(
+        workflow_name=WORKFLOW_NAME,
+        client_name="Holly",
+        brand_name="Holly Shit开心拉屎",
+        platform="xhs",
+        project_id_prefix="holly_live",
         project_name="Holly Shit 小红书冷启动",
-        start_date=date.today(),
+        topic="Holly Shit 开心拉屎反焦虑怪趣文创账号冷启动",
+        account_position="用便便精神、反焦虑、怪趣 IP 和原创文创产品做小红书种草与人格化内容。",
+        target_audience="高压学习和上班人群、喜欢怪趣文创和反差幽默的年轻女性、原创设计周边买家。",
+        goals=[
+            "让小红书用户快速理解品牌：Shit人生也要拉得开心。",
+            "把线下卖得好的怪趣文创转成线上可关注、可收藏、可下单的内容资产。",
+            "为后续接 commission、卖杯子/包/钥匙扣/贴纸/冰箱贴等产品建立账号人设。",
+        ],
+        positioning_notes=[
+            "品牌核心不是低俗玩梗，而是用荒诞幽默回收焦虑和身体自主权。",
+        ],
+        constraints=[
+            "保留 Holly Shit 的反叛、自信、搞笑、怪趣调性。",
+            "内容必须能落到具体产品或 IP，不只写抽象情绪。",
+            "小红书表达要有点击钩子、收藏理由和评论入口。",
+        ],
+        taboos=[
+            "不要把便便梗写成低俗猎奇。",
+            "不要虚构销量、价格、疗效或未提供的合作背书。",
+            "不要照搬真实竞品笔记句子。",
+        ],
+        platform_rules=[
+            {"rule": "小红书图文首屏必须一眼看出情绪利益点和收藏理由。"},
+            {"rule": "标题、封面和正文开头要围绕同一个点击钩子。"},
+        ],
+        top_k_per_keyword=TOP_K_PER_KEYWORD,
+        download_media=False,
         horizon_days=7,
+        llm_label="lumina::gpt-5.5",
+        image_label="relay::gpt-image-2",
     )
-    path = state["run_dir"] / "operation_project.json"
-    _write_json(path, project.to_dict())
-    state = {**state, "project": project}
-    return _with_artifact(state, "operation_project", path)
-
-
-def _stage_kpi_plan(state: dict[str, Any]) -> dict[str, Any]:
-    kpi_plan = KPIPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(state["project"])
-    path = state["run_dir"] / "kpi_plan.json"
-    _write_json(path, kpi_plan.to_dict())
-    state = {**state, "kpi_plan": kpi_plan}
-    return _with_artifact(state, "kpi_plan", path)
-
-
-def _stage_content_calendar(state: dict[str, Any]) -> dict[str, Any]:
-    calendar = CalendarPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(
-        state["project"],
-        kpi_plan=state["kpi_plan"],
-        client_brief=state["client_brief"],
-        start_date=date.today(),
-        horizon_days=7,
-    )
-    path = state["run_dir"] / "content_calendar.json"
-    _write_json(path, calendar.to_dict())
-    state = {**state, "calendar": calendar}
-    return _with_artifact(state, "content_calendar", path)
-
-
-def _stage_selected_task(state: dict[str, Any]) -> dict[str, Any]:
-    task = _select_task(state["calendar"])
-    path = state["run_dir"] / "selected_task.json"
-    _write_json(path, task.to_dict())
-    state = {**state, "task": task}
-    return _with_artifact(state, "selected_task", path)
-
-
-def _stage_content_context(state: dict[str, Any]) -> dict[str, Any]:
-    context_pack = ContextPackBuilder().build_from_project(
-        state["project"],
-        task=state["task"],
-        asset_library=_asset_library_from_user_assets(state["intake"].assets),
-        skills=state["market_report"].skills,
-        platform_rules=_platform_rules("xhs"),
-        content_strategy=_content_strategy(state["task"]),
-    )
-    context_view = ContextResolver().for_agent("ContentSpecAgent", context_pack)
-    path = state["run_dir"] / "content_context_pack.json"
-    _write_json(path, context_pack.to_dict())
-    state = {**state, "content_context_pack": context_pack, "content_context_view": context_view}
-    return _with_artifact(state, "content_context", path)
-
-
-def _stage_content_design_spec(state: dict[str, Any]) -> dict[str, Any]:
-    content_spec = ContentSpecAgent(llm_factory=state["llm_factory"]).run(
-        context_view=state["content_context_view"],
-    )
-    path = state["run_dir"] / "content_design_spec.json"
-    _write_json(path, content_spec.to_dict())
-    state = {**state, "content_spec": content_spec}
-    return _with_artifact(state, "content_design_spec", path)
-
-
-def _stage_content_package(state: dict[str, Any]) -> dict[str, Any]:
-    package = ArtifactGenerationAgent(llm_factory=state["llm_factory"]).run(
-        spec=state["content_spec"],
-        task=state["task"],
-        skills=state["market_report"].skills,
-        assets=state["intake"].assets,
-        out_dir=state["covers_dir"],
-        client_brief=state["client_brief"],
-        project=state["project"],
-        use_cover=True,
-    )
-    path = state["run_dir"] / "content_package.json"
-    _write_json(path, package.to_dict())
-    state = {**state, "package": package}
-    return _with_artifact(state, "content_package", path)
-
-
-def _stage_reviews(state: dict[str, Any]) -> dict[str, Any]:
-    reviews = ReviewGateAgent().run(
-        state["package"],
-        task=state["task"],
-        client_brief=state["client_brief"],
-        project=state["project"],
-    )
-    path = state["run_dir"] / "reviews.json"
-    _write_json(path, [review.to_dict() for review in reviews])
-    state = {**state, "reviews": reviews}
-    return _with_artifact(state, "reviews", path)
-
-
-def _stage_summary(state: dict[str, Any]) -> dict[str, Any]:
-    summary = _summary_markdown(
-        run_dir=state["run_dir"],
-        top_result=state["top_result"],
-        market_report=state["market_report"],
-        account_plan=state["account_plan"],
-        task=state["task"],
-        package=state["package"],
-        reviews=state["reviews"],
-    )
-    path = state["run_dir"] / "summary.md"
-    path.write_text(summary, encoding="utf-8")
-    return _with_artifact(state, "summary", path)
-
-
-def _with_artifact(state: dict[str, Any], stage_name: str, path: Path) -> dict[str, Any]:
-    refs = dict(state.get("_artifact_refs") or {})
-    refs[stage_name] = str(path)
-    return {**state, "_artifact_refs": refs}
 
 
 def _assert_active_models() -> None:
@@ -388,223 +245,19 @@ print(json.dumps({{'count': len(result.hot_notes), 'insufficient': result.insuff
             return cached
         raise RuntimeError(f"XHS collection failed with code {proc.returncode}; see {market_dir / 'crawler_stdout.log'}")
     data = json.loads(output_path.read_text(encoding="utf-8"))
-    return _top_notes_result_from_dict(data)
+    return top_notes_result_from_dict(data)
 
 
 def _cached_top_notes_result() -> TopNotesResult | None:
     candidates = []
-    for path in sorted((CASE_DIR / "live_runs").glob("*_holly_live/xhs_top_notes_result.json"), reverse=True):
+    for path in sorted(CASE.runs_dir.glob("*_holly_live/xhs_top_notes_result.json"), reverse=True):
         try:
-            result = _top_notes_result_from_dict(json.loads(path.read_text(encoding="utf-8")))
+            result = top_notes_result_from_dict(json.loads(path.read_text(encoding="utf-8")))
         except Exception:
             continue
         if result.hot_notes and not result.insufficient:
             candidates.append(result)
     return candidates[0] if candidates else None
-
-
-def _top_notes_result_from_dict(data: dict[str, Any]) -> TopNotesResult:
-    notes = [HotNote(**item) for item in data.get("hot_notes", [])]
-    return TopNotesResult(
-        platform=str(data.get("platform") or "xhs"),
-        queries=list(data.get("queries") or []),
-        hot_notes=notes,
-        insufficient=list(data.get("insufficient") or []),
-        source_data_dir=str(data.get("source_data_dir") or ""),
-        source_keyword_dirs=dict(data.get("source_keyword_dirs") or {}),
-        source_db=str(data.get("source_db") or ""),
-    )
-
-
-def _build_market_report(
-    analyzer: XHSNoteAnalyzer,
-    top_result: TopNotesResult,
-    brief_text: str,
-) -> SessionSkillReport:
-    context = {
-        "platform": "xhs",
-        "topic": "Holly Shit 开心拉屎反焦虑怪趣文创账号冷启动",
-        "account_position": "用便便精神、反焦虑、怪趣 IP 和原创文创产品做小红书种草与人格化内容。",
-        "target_audience": "高压学习和上班人群、喜欢怪趣文创和反差幽默的年轻女性、原创设计周边买家。",
-        "keywords": list(top_result.queries),
-        "case_brief": brief_text[:1200],
-        "data_dir": top_result.source_data_dir,
-        "top_k_per_keyword": TOP_K_PER_KEYWORD,
-        "download_media": False,
-    }
-    if top_result.insufficient:
-        raise RuntimeError(f"XHS hot-note collection insufficient: {top_result.insufficient}")
-    clusters, leftover, llm_used = analyzer._cluster_hot_notes(top_result.hot_notes)
-    skills = [xhs_skill_builder.build_note_skill(cluster, context) for cluster in clusters]
-    report = SessionSkillReport(
-        context=context,
-        keywords=list(top_result.queries),
-        skills=skills,
-        coverage={"total_notes": len(top_result.hot_notes), "buckets": {s.label: len(s.evidence_notes) for s in skills}},
-        leftover_note_ids=leftover,
-        source_data_dir=top_result.source_data_dir,
-        source_keyword_dirs=dict(top_result.source_keyword_dirs),
-        source_db=top_result.source_db,
-        insufficient=list(top_result.insufficient),
-        llm_enhanced=llm_used,
-    )
-    xhs_session_reporter.write_session_outputs(report)
-    return report
-
-
-def _client_brief(brief_text: str, account_plan: Any, top_result: TopNotesResult) -> ClientBrief:
-    source_refs = [
-        {
-            "type": "xhs_note",
-            "keyword": note.keyword,
-            "title": note.title,
-            "url": note.note_url,
-            "liked": note.liked,
-            "collected": note.collected,
-        }
-        for note in top_result.hot_notes
-    ]
-    return ClientBrief(
-        client_name="Holly",
-        brand_name="Holly Shit开心拉屎",
-        platform="xhs",
-        goals=[
-            "让小红书用户快速理解品牌：Shit人生也要拉得开心。",
-            "把线下卖得好的怪趣文创转成线上可关注、可收藏、可下单的内容资产。",
-            "为后续接 commission、卖杯子/包/钥匙扣/贴纸/冰箱贴等产品建立账号人设。",
-        ],
-        audience=list(account_plan.audience_profile),
-        positioning_notes=[
-            account_plan.recommended_positioning,
-            "品牌核心不是低俗玩梗，而是用荒诞幽默回收焦虑和身体自主权。",
-        ],
-        constraints=[
-            "保留 Holly Shit 的反叛、自信、搞笑、怪趣调性。",
-            "内容必须能落到具体产品或 IP，不只写抽象情绪。",
-            "小红书表达要有点击钩子、收藏理由和评论入口。",
-        ],
-        taboos=[
-            "不要把便便梗写成低俗猎奇。",
-            "不要虚构销量、价格、疗效或未提供的合作背书。",
-            "不要照搬真实竞品笔记句子。",
-        ],
-        source_materials=source_refs,
-        context={"case_brief": brief_text},
-    )
-
-
-def _select_task(calendar: Any) -> Any:
-    if not calendar.tasks:
-        raise RuntimeError("calendar has no content tasks")
-    return sorted(calendar.tasks, key=lambda task: (task.priority, task.scheduled_date or ""))[0]
-
-
-def _platform_rules(platform: str) -> list[dict[str, str]]:
-    if platform == "xhs":
-        return [
-            {"rule": "小红书图文首屏必须一眼看出情绪利益点和收藏理由。"},
-            {"rule": "标题、封面和正文开头要围绕同一个点击钩子。"},
-        ]
-    return []
-
-
-def _content_strategy(task: Any) -> dict[str, Any]:
-    return {
-        "artifact_type": task.content_type,
-        "creative_angle": task.brief.get("angle") or task.objective or task.topic,
-        "objective": task.objective,
-    }
-
-
-def _asset_library_from_user_assets(assets: list[Any]) -> AssetLibrary:
-    return AssetLibrary(
-        assets=[
-            AssetRecord(
-                asset_id=f"intake_asset_{index + 1}",
-                kind=asset.kind,
-                path=asset.path,
-                text=asset.text,
-                usage=list(asset.usable_for),
-                tags=[*asset.vision_roles, *asset.brand_signals],
-                source="intake",
-                metadata={"subject": asset.subject, "quality": asset.quality},
-            )
-            for index, asset in enumerate(assets)
-        ]
-    )
-
-
-def _summary_markdown(
-    *,
-    run_dir: Path,
-    top_result: TopNotesResult,
-    market_report: SessionSkillReport,
-    account_plan: Any,
-    task: Any,
-    package: Any,
-    reviews: list[Any],
-) -> str:
-    review_lines = []
-    for review in reviews:
-        data = review.to_dict()
-        issues = data.get("issues") or []
-        review_lines.append(f"- {data.get('reviewer', '')}: {data.get('status', '')}; issues={len(issues)}")
-        for issue in issues[:5]:
-            review_lines.append(f"  - {issue.get('severity', '')}: {issue.get('message', '')}")
-
-    note_lines: list[str] = []
-    for note in top_result.hot_notes:
-        note_lines.extend(
-            [
-                f"- `{note.keyword}` {note.title} | liked={note.liked} collected={note.collected} comments={note.comment}",
-                f"  {note.note_url}",
-            ]
-        )
-
-    return "\n".join(
-        [
-            "# Holly Live Case Summary",
-            "",
-            f"- Run dir: `{run_dir}`",
-            "- LLM: `lumina::gpt-5.5`",
-            "- Image: `relay::gpt-image-2`",
-            f"- XHS keywords: {', '.join(top_result.queries)}",
-            f"- Hot notes collected: {len(top_result.hot_notes)}",
-            "",
-            "## Market Evidence",
-            *note_lines,
-            "",
-            "## Learned Note Skills",
-            *[
-                f"- {skill.label}: goal={skill.goal}, tone={skill.tone}, evidence={len(skill.evidence_notes)}"
-                for skill in market_report.skills
-            ],
-            "",
-            "## Account Direction",
-            account_plan.recommended_positioning,
-            "",
-            "## Selected Task",
-            f"- {task.title}",
-            f"- topic: {task.topic}",
-            f"- objective: {task.objective}",
-            "",
-            "## Generated Note",
-            f"- title: {package.title}",
-            f"- tags: {' '.join(package.tags)}",
-            f"- cover: `{package.cover_path}`",
-            "",
-            package.body,
-            "",
-            "## Review",
-            *review_lines,
-            "",
-            "## Quality Notes",
-            "- 产出已经接入真实小红书搜索结果、真实 LLM、真实图片模型；market evidence 可回溯到 `xhs_top_notes_result.json` 和各 keyword 目录。",
-            "- 当前样本量为每个关键词 1 篇，适合端到端 smoke/live case，不足以作为稳定内容策略结论。",
-            "- 下一步优化应扩大关键词和 top_k，增加竞品账号维度，并对封面进行多候选 A/B 生成与人工选择。",
-            "",
-        ]
-    )
 
 
 def _write_json(path: Path, data: Any) -> None:

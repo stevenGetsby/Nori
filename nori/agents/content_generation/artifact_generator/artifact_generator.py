@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import Any
 
 from nori.agents.content_generation.content_producer import ContentProducerAgent
-from nori.agents.content_generation.models import ContentDesignSpec, ContentPackage
-from nori.agents.market_analysis.models import NoteSkill
+from nori.agents.content_generation.schemas import ContentDesignSpec, ContentPackage
+from nori.agents.market_analysis.schemas import NoteSkill
 from nori.core import AccountOperationProject, AgentBase, ClientBrief, ContentTask, IntentContract, LLMFactory, UserAsset
 
 

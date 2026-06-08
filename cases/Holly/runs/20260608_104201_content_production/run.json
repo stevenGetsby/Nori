@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "case_id": "Holly",
+  "run_id": "20260608_104201_content_production",
+  "workflow": "content_production",
+  "path": "cases/Holly/runs/20260608_104201_content_production",
+  "status": "failed",
+  "metadata": {
+    "error_type": "XHSNoteAnalyzerLLMError",
+    "error": "llms.chat 失败: AttributeError: 'CompletionsWithRawResponse' object has no attribute 'parse'"
+  },
+  "artifacts": [
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_104201_content_production:original_brief",
+      "case_id": "Holly",
+      "run_id": "20260608_104201_content_production",
+      "type": "original_brief",
+      "path": "cases/Holly/runs/20260608_104201_content_production/original_brief.md",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_104201_content_production:input_asset_1",
+      "case_id": "Holly",
+      "run_id": "20260608_104201_content_production",
+      "type": "input_asset_1",
+      "path": "data/backend/uploads/session_e8040bafd45e/asset_9287b6e5b2d1_20250617195920.jpg",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {
+        "asset_id": "asset_9287b6e5b2d1",
+        "filename": "20250617195920.jpg"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_104201_content_production:input_asset_2",
+      "case_id": "Holly",
+      "run_id": "20260608_104201_content_production",
+      "type": "input_asset_2",
+      "path": "data/backend/uploads/session_e8040bafd45e/asset_5894c347a0a5_49@2x.png",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {
+        "asset_id": "asset_5894c347a0a5",
+        "filename": "49@2x.png"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_104201_content_production:input_asset_3",
+      "case_id": "Holly",
+      "run_id": "20260608_104201_content_production",
+      "type": "input_asset_3",
+      "path": "data/backend/uploads/session_e8040bafd45e/asset_d2c27b48f113_50@2x.png",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {
+        "asset_id": "asset_d2c27b48f113",
+        "filename": "50@2x.png"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_104201_content_production:input_asset_4",
+      "case_id": "Holly",
+      "run_id": "20260608_104201_content_production",
+      "type": "input_asset_4",
+      "path": "data/backend/uploads/session_e8040bafd45e/asset_cef034a2dd83_1.png",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {
+        "asset_id": "asset_cef034a2dd83",
+        "filename": "1.png"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_104201_content_production:xhs_top_notes",
+      "case_id": "Holly",
+      "run_id": "20260608_104201_content_production",
+      "type": "xhs_top_notes",
+      "path": "cases/Holly/runs/20260608_104201_content_production/xhs_top_notes_result.json",
+      "created_by": "DataCollector",
+      "input_artifacts": [],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_104201_content_production:workflow_run",
+      "case_id": "Holly",
+      "run_id": "20260608_104201_content_production",
+      "type": "workflow_run",
+      "path": "cases/Holly/runs/20260608_104201_content_production/workflow_run.json",
+      "created_by": "RuntimeRunRecorder",
+      "input_artifacts": [
+        "session"
+      ],
+      "status": "failed",
+      "metadata": {}
+    }
+  ]
+}

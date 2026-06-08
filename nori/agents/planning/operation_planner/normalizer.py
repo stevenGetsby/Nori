@@ -6,7 +6,7 @@ from typing import Any
 
 from nori.core import AccountOperationProject
 from nori.shared.normalization import int_value, mapping, milestone_rows, string_list
-from nori.agents.user_profiling.models import AccountPositioning
+from nori.agents.user_profiling.schemas import AccountPositioning
 
 from nori.core import ContentCalendar, ContentTask, KPIPlan, OperationPlan
 

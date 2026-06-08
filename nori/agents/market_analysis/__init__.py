@@ -4,7 +4,7 @@ from __future__ import annotations
 from nori.core import MarketAnalysis
 from nori.core.lazy_exports import lazy_export
 
-from .models import (
+from .schemas import (
     CompetitorResearch,
     CompetitorSample,
     NoteEvidence,

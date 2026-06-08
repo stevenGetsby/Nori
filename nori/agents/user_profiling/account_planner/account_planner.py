@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from nori.core import AgentBase, LLMFactory
-from nori.agents.user_profiling.models import AccountPlanResult, AccountPlannerInput
+from nori.agents.user_profiling.schemas import AccountPlanResult, AccountPlannerInput
 from nori.shared.llm_json import attach_llm_error, try_stage_json
 
 from . import fallback as _plan_fallback
@@ -103,7 +103,6 @@ def _llm_plan(
 	data, error = try_stage_json(
 		system=prompts.system_prompt,
 		user=prompts.build_user_prompt(normalized, search_results),
-		chat_func=llm_gateway.chat_func,
 		chat_json_func=llm_gateway.chat_json_func,
 	)
 	if data is None:

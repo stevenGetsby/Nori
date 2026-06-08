@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from nori.agents.market_analysis.note_skill_fixture import note_skill_fixture
-from nori.agents.market_analysis.models import SessionSkillReport
+from nori.agents.market_analysis.schemas import SessionSkillReport
 
 
 def report_stamp(source_keyword_dirs: dict[str, str]) -> str:

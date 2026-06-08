@@ -1,7 +1,7 @@
 """共享图片预处理：压缩 + 编码，给 vision LLM / 图生图 API 用。
 
-- 单图 → data-uri：给 llms.chat 的 vision content 用
-- 单图 → bytes   ：给 llms.image 的 reference_images 用
+- 单图 → data-uri：给 nori.core.llms.chat 的 vision content 用
+- 单图 → bytes   ：给 nori.core.llms.image 的 reference_images 用
 
 超过 `max_bytes` 的图会被缩放到 `max_long_edge` 并转为 JPEG（质量 `jpeg_quality`）。
 """

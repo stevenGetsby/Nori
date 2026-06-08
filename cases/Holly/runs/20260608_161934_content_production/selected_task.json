@@ -1,0 +1,40 @@
+{
+  "task_id": "task_d02_01",
+  "title": "品牌价值观笔记：Shit人生也要拉得开心",
+  "scheduled_date": "2026-06-09",
+  "platform": "xhs",
+  "content_type": "note",
+  "topic": "解释 Holly Shit开心拉屎 的品牌理念：厕所哲学不是低俗玩梗，而是反焦虑表达",
+  "objective": "让新用户快速理解品牌核心表达，建立“不低俗、不鸡血、怪趣但有态度”的账号第一印象，并自然承接 IP 或贴纸、杯子等基础产品",
+  "status": "drafted",
+  "priority": 1,
+  "owner": "",
+  "brief": {
+    "cover_title": "厕所哲学，不是低俗玩梗",
+    "content_pillar": "厕所哲学金句",
+    "angle": "从“带薪拉屎是我应得的”“厕所时间神圣不可侵犯”切入，说明品牌用不体面的语言说出体面的诉求：允许自己暂停、喘气、合法躺平"
+  },
+  "required_assets": [
+    "品牌 logo 或账号头像视觉",
+    "核心 slogan 字卡：Shit人生也要拉得开心",
+    "1-2 张贴纸、杯子或手机支架实拍图",
+    "小女孩 IP 形象图或草图",
+    "同济设计生/小团队工作台照片"
+  ],
+  "references": [],
+  "package_id": "pkg_task_d02_01",
+  "notes": [
+    "避免把便便梗写成恶心猎奇，重点落在反焦虑、身体自主权、时间尊严",
+    "文案要明确解释“不是低俗玩梗，而是反焦虑表达”",
+    "结尾设置自然互动：你最想把哪句厕所哲学贴在工位上？",
+    "至少露出 1 个具体产品或 IP，不能只做情绪口号"
+  ],
+  "metadata": {
+    "source": "calendar_planner_llm",
+    "production": {
+      "status": "drafted",
+      "package_id": "pkg_task_d02_01",
+      "producer": "ContentProducerAgent"
+    }
+  }
+}

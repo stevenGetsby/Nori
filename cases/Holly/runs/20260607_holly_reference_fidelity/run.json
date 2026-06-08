@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "case_id": "Holly",
+  "run_id": "20260607_holly_reference_fidelity",
+  "workflow": "reference_fidelity_probe",
+  "path": "cases/Holly/runs/20260607_holly_reference_fidelity",
+  "status": "migrated",
+  "metadata": {
+    "migration": "case_centric_artifact_store"
+  },
+  "artifacts": [
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260607_holly_reference_fidelity:holly_single_ref_result",
+      "case_id": "Holly",
+      "run_id": "20260607_holly_reference_fidelity",
+      "type": "holly_single_ref_result",
+      "path": "cases/Holly/runs/20260607_holly_reference_fidelity/holly_single_ref_result.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260607_holly_reference_fidelity:outputs__cover_holly_single_ref_fidelity_20260607_020002",
+      "case_id": "Holly",
+      "run_id": "20260607_holly_reference_fidelity",
+      "type": "outputs__cover_holly_single_ref_fidelity_20260607_020002",
+      "path": "cases/Holly/runs/20260607_holly_reference_fidelity/outputs/cover_holly_single_ref_fidelity_20260607_020002.png",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    }
+  ]
+}

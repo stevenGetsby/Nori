@@ -34,7 +34,6 @@ def generate_keywords(
         user=_KEYWORD_PROMPT_BUILDER.build_user_prompt(context, max_n=max_n),
         timeout=30,
         error_type=error_type,
-        chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )
     items = data.get("keywords") if isinstance(data, dict) else None
@@ -74,7 +73,6 @@ def label_notes(
         user=_LABEL_PROMPT_BUILDER.build_user_prompt(items),
         timeout=120,
         error_type=error_type,
-        chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )
     out: dict[str, dict[str, str]] = {}

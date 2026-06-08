@@ -1,4 +1,4 @@
-from nori.agents.content_generation.models import AssetBundle
+from nori.agents.content_generation.schemas import AssetBundle
 from nori.core import UserAsset
 from nori.agents.content_generation.note_maker.package import NoteAssetCurator
 

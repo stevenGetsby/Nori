@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from nori._compat import dataclass, field
-from nori.agents.content_generation.models import ContentPackage, CoverResult, NoteDraft
+from nori.agents.content_generation.schemas import ContentPackage, CoverResult, NoteDraft
 from nori.core import AccountOperationProject, ClientBrief, ContentTask, IntentContract, StableArtifactAssembler, UserAsset
 
 

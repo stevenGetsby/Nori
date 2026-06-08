@@ -5,7 +5,7 @@ from collections.abc import Mapping
 
 from nori.core.workflow import WorkflowBase
 
-from .models import HumanGateSpec, StageSpec, WorkflowSpec
+from .schemas import HumanGateSpec, StageSpec, WorkflowSpec
 
 
 def workflow_spec_from_base(

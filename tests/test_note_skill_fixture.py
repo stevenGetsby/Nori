@@ -1,8 +1,8 @@
 import json
 
-import llms
+import nori.core.llms as llms
 
-from nori.agents.market_analysis.models import NoteEvidence, NoteSkill, SessionSkillReport
+from nori.agents.market_analysis.schemas import NoteEvidence, NoteSkill, SessionSkillReport
 from nori.agents.market_analysis import load_note_skills, note_skill_fixture, write_note_skill_fixture
 from nori.agents.market_analysis.note_skill_fixture import load_note_skills as direct_load_note_skills
 from nori.core import UserAsset
@@ -107,7 +107,7 @@ def test_loaded_note_skill_fixture_can_feed_note_maker(monkeypatch, tmp_path):
             "validation": {"status": "pass", "issues": []},
         }
 
-    monkeypatch.setattr("llms.chat_json", fake_chat_json)
+    monkeypatch.setattr("nori.core.llms.chat_json", fake_chat_json)
     path = write_note_skill_fixture([_skill()], tmp_path / "fixture.json")
     skills = load_note_skills(json.loads(path.read_text(encoding="utf-8")))
 

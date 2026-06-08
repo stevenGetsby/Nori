@@ -5,13 +5,13 @@ from nori.core import AccountOperationProject
 from typing import Any
 
 from nori.core import AgentBase, WorkflowBase
-from nori.agents.content_generation.models import ContentPackage
+from nori.agents.content_generation.schemas import ContentPackage
 from nori.core import ClientBrief, ContentTask, IntentContract
 
 from .package import ReviewInputPreparer
 from . import policy as _policy
 from . import state as _state
-from ..models import ComplianceReview
+from ..schemas import ComplianceReview
 
 
 _INPUT_PREPARER = ReviewInputPreparer()

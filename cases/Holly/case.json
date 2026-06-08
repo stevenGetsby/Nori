@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "case_id": "Holly",
+  "title": "Holly Shit开心拉屎",
+  "directories": {
+    "brief": "brief",
+    "assets": "assets",
+    "raw_assets": "assets/raw",
+    "selected_assets": "assets/selected",
+    "public_refs": "assets/public_refs",
+    "runs": "runs",
+    "outputs": "outputs",
+    "showcase": "showcase"
+  },
+  "artifact_index": "data/artifact_index"
+}

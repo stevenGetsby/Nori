@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from nori.agents.content_generation import ContentSpecAgent
-from nori.agents.market_analysis.models import NoteSkill
+from nori.agents.market_analysis.schemas import NoteSkill
 from nori.context import ContextCompiler, ContextResolver, ContextSlice, ContextView
 from nori.core import AssetLibrary, AssetRecord, ClientBrief, ContentTask, MarketAnalysis, UserProfile
 
@@ -130,8 +130,9 @@ def test_content_spec_agent_can_design_from_context_view_without_loose_context_d
 
 
 def test_context_pack_builder_canonical_owner_is_context_layer():
-    from nori.agents.planning import ContextPackBuilder as PlanningContextPackBuilder
+    import nori.agents.planning as planning
     from nori.context import ContextPackBuilder
 
     assert ContextPackBuilder.__module__ == "nori.context.compiler"
-    assert PlanningContextPackBuilder is ContextPackBuilder
+    assert "ContextPackBuilder" not in planning.__all__
+    assert not hasattr(planning, "ContextPackBuilder")

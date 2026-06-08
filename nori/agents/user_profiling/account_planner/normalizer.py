@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from nori.shared.normalization import dedupe_preserve_order, string_list
-from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPlanResult
 
 from . import keywords as _keywords
 from . import portrait as _portrait

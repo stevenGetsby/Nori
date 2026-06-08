@@ -4,7 +4,7 @@
 
 ## Purpose
 
-`api_config.yaml` is the private runtime config for `nori.nori_config` and `llms`. It selects providers and active models for LLM, vision, and image usage. The repository should only commit redacted examples such as `api_config.example.yaml`.
+`api_config.yaml` is the private runtime config for `nori.nori_config` and `nori.core.llms`. It selects providers and active models for LLM, vision, and image usage. The repository should only commit redacted examples such as `api_config.example.yaml`. Import the runtime gateway through `nori.core.llms`; the old top-level `llms/` compatibility package has been removed.
 
 ## Files
 
@@ -42,8 +42,8 @@ Rules:
 - Prefer `api_key_env` so the YAML contains no secrets. The environment variable name is trimmed before lookup and stored canonically.
 - `api_key: ${OPENAI_API_KEY}` is also supported for compatibility; whitespace inside `${ ... }` is ignored when resolving the environment variable name.
 - Literal `api_key` works but should only appear in ignored local files.
-- `api_key` and `base_url` must resolve to non-blank strings before `llms.client` constructs an OpenAI-compatible SDK client.
-- `base_url` should be OpenAI-compatible for `llms.client`.
+- `api_key` and `base_url` must resolve to non-blank strings before `nori.core.llms.client` constructs an OpenAI-compatible SDK client.
+- `base_url` should be OpenAI-compatible for `nori.core.llms.client`.
 - Live image generation uses the active `image` model's provider. If `active_models.direct.image` points at `relay::gpt-image-2`, the `relay` provider must resolve a real key and base URL; leaving the example `https://your-relay.example.com/v1` or an unset `RELAY_API_KEY` will fail before provider dispatch.
 
 ## Model Shape
@@ -84,7 +84,7 @@ models:
     supports_reference_image: true
 ```
 
-`llms.image(reference_images=...)` checks `supports_reference_image` before calling the provider SDK. If the active image model does not support reference images, it raises `ImageCapabilityError` instead of failing later inside provider-specific code.
+`nori.core.llms.image(reference_images=...)` checks `supports_reference_image` before calling the provider SDK. If the active image model does not support reference images, it raises `ImageCapabilityError` instead of failing later inside provider-specific code.
 
 Video/audio capability flags are preserved on resolved models for future adapters:
 
@@ -96,7 +96,7 @@ models:
     supports_audio: true
 ```
 
-`llms.image(...)` requires the active model to have `type: image`; using an LLM/video model for image usage raises `ImageCapabilityError` before provider dispatch.
+`nori.core.llms.image(...)` requires the active model to have `type: image`; using an LLM/video model for image usage raises `ImageCapabilityError` before provider dispatch.
 
 ## Active Models
 
@@ -121,7 +121,7 @@ active_models:
     image: relay::gpt-image-2
 ```
 
-`mode`, `NORI_MODE`, and mode block keys are trimmed before lookup. `NORI_MODE` overrides `mode` and selects the matching `active_models.<mode>` block. `llms.current_mode()`, `llms.set_mode(...)`, and `llms.ensure_ready(...)` use the same trimmed mode value, so readiness checks and active model selection do not diverge when environment variables contain surrounding whitespace.
+`mode`, `NORI_MODE`, and mode block keys are trimmed before lookup. `NORI_MODE` overrides `mode` and selects the matching `active_models.<mode>` block. `nori.core.llms.current_mode()`, `nori.core.llms.set_mode(...)`, and `nori.core.llms.ensure_ready(...)` use the same trimmed mode value, so readiness checks and active model selection do not diverge when environment variables contain surrounding whitespace.
 
 Active model values are normalized before resolution:
 
@@ -148,7 +148,7 @@ print(cfg.active_summary)
 PY
 ```
 
-`llms.validate_api_key(...)` is the shared runtime validator for provider API keys, including native Google image calls. `llms.validate_client_config(...)` extends it for OpenAI-compatible clients by also requiring `base_url`. `llms.ensure_ready("llm")`, `llms.get_client(...)`, and `llms.get_async_client(...)` all fail with `LLMClientConfigError` when required config is blank. In trimmed `ghc` mode, `ensure_ready(...)` also probes `{base_url}/models`.
+`nori.core.llms.validate_api_key(...)` is the shared runtime validator for provider API keys, including native Google image calls. `nori.core.llms.validate_client_config(...)` extends it for OpenAI-compatible clients by also requiring `base_url`. `nori.core.llms.ensure_ready("llm")`, `nori.core.llms.get_client(...)`, and `nori.core.llms.get_async_client(...)` all fail with `LLMClientConfigError` when required config is blank. In trimmed `ghc` mode, `ensure_ready(...)` also probes `{base_url}/models`.
 
 Minimal live smoke commands:
 
@@ -156,7 +156,7 @@ Minimal live smoke commands:
 python -m pip install 'socksio>=1.0.0'  # only needed when the local proxy is SOCKS-backed
 
 python - <<'PY'
-import llms
+import nori.core.llms as llms
 print(llms.chat([
     {"role": "system", "content": "Reply with exactly: Nori live check OK"},
     {"role": "user", "content": "Run a minimal live connectivity check."},
@@ -164,7 +164,7 @@ print(llms.chat([
 PY
 
 python - <<'PY'
-import llms
+import nori.core.llms as llms
 images = llms.image(
     "Nori image API smoke test: a white flower on a clean table, no text.",
     usage="image",

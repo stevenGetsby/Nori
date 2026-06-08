@@ -194,7 +194,7 @@ class ContextPack:
         )
 
     def context_slices_by_kind(self, kind: str) -> list[Any]:
-        from nori.context.models import ContextSlice
+        from nori.context.schemas import ContextSlice
 
         return [
             ContextSlice.from_dict(item)

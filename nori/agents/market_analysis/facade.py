@@ -5,7 +5,7 @@ from typing import Any
 
 from nori.core import MarketAnalysis, WorkflowBase, named_workflow_steps
 
-from .models import CompetitorResearch
+from .schemas import CompetitorResearch
 
 
 class MarketAnalysisFacade(WorkflowBase):

@@ -1,0 +1,214 @@
+{
+  "calendar_id": "cal_2026-06-07_7d",
+  "start_date": "2026-06-07",
+  "end_date": "2026-06-13",
+  "cadence": "7 天内完成 5 条笔记制作，其中第 1-2 天建立账号视觉和内容模板，第 3-7 天按“理念种草 1 条、产品故事 2 条、IP剧情 1 条、市集反馈 1 条”的节奏推进；每条内容均需预留封面标题、产品露出、评论引导和收藏理由。",
+  "themes": [
+    "厕所快乐哲学：用轻松有梗的方式表达厕所时间、合法躺平、反内耗和身体自主权。",
+    "设计生造物记：记录灵感、草图、打样、翻车、修改和成品诞生过程。",
+    "IP发疯小剧场：用小女孩、小狗、小猫承载打工人、学生党和年轻人的情绪场景。",
+    "市集真实反馈：把线下被问、被夸、被吐槽的真实反应转成线上信任内容。"
+  ],
+  "tasks": [
+    {
+      "task_id": "task_d01_01",
+      "title": "Holly Shit开心拉屎厕所快乐哲学：用轻松有梗的方式表达厕所时间、合法躺平、反内耗和身体自主权。｜Holly Shit开心拉屎",
+      "scheduled_date": "2026-06-07",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "Holly Shit开心拉屎厕所快乐哲学：用轻松有梗的方式表达厕所时间、合法躺平、反内耗和身体自主权。",
+      "objective": "让小红书用户在 7 天内快速理解 Holly Shit开心拉屎的核心表达：用怪趣文创讲反焦虑快乐哲学。",
+      "status": "planned",
+      "priority": 1,
+      "owner": "",
+      "brief": {
+        "brand_name": "Holly Shit开心拉屎",
+        "audience": [
+          "喜欢有梗、有态度、带一点叛逆感文创周边的年轻用户",
+          "对打工焦虑、内耗、鸡血奋斗感到疲惫，想用幽默方式自我松绑的人群",
+          "关注独立设计、校园设计、原创IP和品牌从0到1过程的内容消费者",
+          "会在线下市集购买杯子、包包、挂件、贴纸、冰箱贴等轻量周边的兴趣用户",
+          "愿意为情绪价值、表达态度和社交谈资买单的学生党与年轻打工人"
+        ],
+        "cover_title": "Holly Shit开心拉屎厕所快乐",
+        "content_pillar": "厕所快乐哲学：用轻松有梗的方式表达厕所时间、合法躺平、反内耗和身体自主权。"
+      },
+      "required_assets": [
+        "xhs_note"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "生成前需做内容合规与素材可用性检查。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_fallback"
+      }
+    },
+    {
+      "task_id": "task_d03_02",
+      "title": "Holly Shit开心拉屎设计生造物记：记录灵感、草图、打样、翻车、修改和成品诞生过程。｜Holly Shit开心拉屎",
+      "scheduled_date": "2026-06-09",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "Holly Shit开心拉屎设计生造物记：记录灵感、草图、打样、翻车、修改和成品诞生过程。",
+      "objective": "把线下市集卖得好的杯子、包包、挂件、贴纸、冰箱贴、手机支架转化为可收藏、可种草的内容资产。",
+      "status": "planned",
+      "priority": 2,
+      "owner": "",
+      "brief": {
+        "brand_name": "Holly Shit开心拉屎",
+        "audience": [
+          "喜欢有梗、有态度、带一点叛逆感文创周边的年轻用户",
+          "对打工焦虑、内耗、鸡血奋斗感到疲惫，想用幽默方式自我松绑的人群",
+          "关注独立设计、校园设计、原创IP和品牌从0到1过程的内容消费者",
+          "会在线下市集购买杯子、包包、挂件、贴纸、冰箱贴等轻量周边的兴趣用户",
+          "愿意为情绪价值、表达态度和社交谈资买单的学生党与年轻打工人"
+        ],
+        "cover_title": "Holly Shit开心拉屎设计生造",
+        "content_pillar": "设计生造物记：记录灵感、草图、打样、翻车、修改和成品诞生过程。"
+      },
+      "required_assets": [
+        "xhs_note"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "生成前需做内容合规与素材可用性检查。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_fallback"
+      }
+    },
+    {
+      "task_id": "task_d04_03",
+      "title": "Holly Shit开心拉屎IP发疯小剧场：用小女孩、小狗、小猫承载打工人、学生党和年轻人的情绪场景。｜Holly Shit开心拉屎",
+      "scheduled_date": "2026-06-10",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "Holly Shit开心拉屎IP发疯小剧场：用小女孩、小狗、小猫承载打工人、学生党和年轻人的情绪场景。",
+      "objective": "建立“设计生文创主理人”账号人设，为后续涨粉、接 commission 和产品转化打基础。",
+      "status": "planned",
+      "priority": 3,
+      "owner": "",
+      "brief": {
+        "brand_name": "Holly Shit开心拉屎",
+        "audience": [
+          "喜欢有梗、有态度、带一点叛逆感文创周边的年轻用户",
+          "对打工焦虑、内耗、鸡血奋斗感到疲惫，想用幽默方式自我松绑的人群",
+          "关注独立设计、校园设计、原创IP和品牌从0到1过程的内容消费者",
+          "会在线下市集购买杯子、包包、挂件、贴纸、冰箱贴等轻量周边的兴趣用户",
+          "愿意为情绪价值、表达态度和社交谈资买单的学生党与年轻打工人"
+        ],
+        "cover_title": "Holly Shit开心拉屎IP发疯",
+        "content_pillar": "IP发疯小剧场：用小女孩、小狗、小猫承载打工人、学生党和年轻人的情绪场景。"
+      },
+      "required_assets": [
+        "xhs_note"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "生成前需做内容合规与素材可用性检查。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_fallback"
+      }
+    },
+    {
+      "task_id": "task_d05_04",
+      "title": "Holly Shit开心拉屎市集真实反馈：把线下被问、被夸、被吐槽的真实反应转成线上信任内容。｜Holly Shit开心拉屎",
+      "scheduled_date": "2026-06-11",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "Holly Shit开心拉屎市集真实反馈：把线下被问、被夸、被吐槽的真实反应转成线上信任内容。",
+      "objective": "形成可持续复用的内容栏目：品牌理念、设计过程、IP剧情、市集反馈、产品场景种草。",
+      "status": "planned",
+      "priority": 4,
+      "owner": "",
+      "brief": {
+        "brand_name": "Holly Shit开心拉屎",
+        "audience": [
+          "喜欢有梗、有态度、带一点叛逆感文创周边的年轻用户",
+          "对打工焦虑、内耗、鸡血奋斗感到疲惫，想用幽默方式自我松绑的人群",
+          "关注独立设计、校园设计、原创IP和品牌从0到1过程的内容消费者",
+          "会在线下市集购买杯子、包包、挂件、贴纸、冰箱贴等轻量周边的兴趣用户",
+          "愿意为情绪价值、表达态度和社交谈资买单的学生党与年轻打工人"
+        ],
+        "cover_title": "Holly Shit开心拉屎市集真实",
+        "content_pillar": "市集真实反馈：把线下被问、被夸、被吐槽的真实反应转成线上信任内容。"
+      },
+      "required_assets": [
+        "xhs_note"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "生成前需做内容合规与素材可用性检查。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_fallback"
+      }
+    },
+    {
+      "task_id": "task_d07_05",
+      "title": "Holly Shit开心拉屎周边不硬广种草：围绕杯子、包包、挂件、贴纸、冰箱贴、手机支架讲使用场景和态度表达。｜Holly Shit开心拉屎",
+      "scheduled_date": "2026-06-13",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "Holly Shit开心拉屎周边不硬广种草：围绕杯子、包包、挂件、贴纸、冰箱贴、手机支架讲使用场景和态度表达。",
+      "objective": "让小红书用户在 7 天内快速理解 Holly Shit开心拉屎的核心表达：用怪趣文创讲反焦虑快乐哲学。",
+      "status": "planned",
+      "priority": 5,
+      "owner": "",
+      "brief": {
+        "brand_name": "Holly Shit开心拉屎",
+        "audience": [
+          "喜欢有梗、有态度、带一点叛逆感文创周边的年轻用户",
+          "对打工焦虑、内耗、鸡血奋斗感到疲惫，想用幽默方式自我松绑的人群",
+          "关注独立设计、校园设计、原创IP和品牌从0到1过程的内容消费者",
+          "会在线下市集购买杯子、包包、挂件、贴纸、冰箱贴等轻量周边的兴趣用户",
+          "愿意为情绪价值、表达态度和社交谈资买单的学生党与年轻打工人"
+        ],
+        "cover_title": "Holly Shit开心拉屎周边不硬",
+        "content_pillar": "周边不硬广种草：围绕杯子、包包、挂件、贴纸、冰箱贴、手机支架讲使用场景和态度表达。"
+      },
+      "required_assets": [
+        "xhs_note"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "生成前需做内容合规与素材可用性检查。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_fallback"
+      }
+    }
+  ],
+  "notes": [
+    "规则 fallback 仅用于兜底排期；正式排期应优先由 LLM 生成。",
+    "所有任务默认停留在 planned，不触发真实发布。"
+  ],
+  "metadata": {
+    "planner": "rule_fallback",
+    "source_plan_id": "plan_7d",
+    "source_kpi_plan_id": "kpi_plan_7d",
+    "horizon_days": 7,
+    "theme_count": 4,
+    "critic": {
+      "source": "rules",
+      "status": "warn",
+      "issues": [
+        "当前排期仍依赖规则兜底，应优先切换为 LLM 主线"
+      ],
+      "checks": {
+        "themes": true,
+        "tasks": true,
+        "date_range": true,
+        "planned_status": true,
+        "task_briefs": true
+      }
+    }
+  }
+}

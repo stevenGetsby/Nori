@@ -1,0 +1,20 @@
+{
+  "reference_url": "https://nori.tos-cn-beijing.volces.com/nori/reference-fidelity-probes/reference-probe/public-read-check/20260607/probe_public.png",
+  "prompt": "Use the supplied reference image as the only source. Recreate the same poster faithfully. Preserve all visible text, colors, objects, and layout. Do not invent a new scene or any extra text.",
+  "records": [
+    {
+      "variant": "images",
+      "ok": true,
+      "output_path": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260607_reference_fidelity_probe/outputs_public_variants/cover_public_oss_probe_images_20260607_014514.png",
+      "elapsed_seconds": 97.41,
+      "source_prefix": "https://sd2oss-american.oss-us-west-1.aliyuncs.com/temp_images/2026/06/06/img-70"
+    },
+    {
+      "variant": "image",
+      "ok": true,
+      "output_path": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260607_reference_fidelity_probe/outputs_public_variants/cover_public_oss_probe_image_20260607_014701.png",
+      "elapsed_seconds": 105.5,
+      "source_prefix": "https://sd2oss-american.oss-us-west-1.aliyuncs.com/temp_images/2026/06/06/img-43"
+    }
+  ]
+}

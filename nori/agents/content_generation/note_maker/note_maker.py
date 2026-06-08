@@ -15,9 +15,9 @@ from typing import Any
 
 from nori.core import AgentBase, LLMFactory
 from nori.shared.llm_json import call_stage_json
-from nori.agents.content_generation.models import NoteDraft
+from nori.agents.content_generation.schemas import NoteDraft
 from nori.core import UserAsset
-from nori.agents.market_analysis.models import NoteSkill
+from nori.agents.market_analysis.schemas import NoteSkill
 
 from .package import NoteAssetCurator, NoteComposer, NoteSkillSelector
 
@@ -91,7 +91,6 @@ class NoteMakerAgent(AgentBase):
             user=user,
             timeout=timeout,
             error_type=NoteMakerLLMError,
-            chat_func=self.llm_factory.chat_func,
             chat_json_func=self.llm_factory.chat_json_func,
         )
 

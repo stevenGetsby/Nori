@@ -1,0 +1,34 @@
+{
+  "task_id": "task_d01_01",
+  "title": "2026-06-08｜账号第一条：Shit人生也要拉得开心",
+  "scheduled_date": "2026-06-08",
+  "platform": "xhs",
+  "content_type": "note",
+  "topic": "品牌认知与反焦虑态度开场",
+  "objective": "让用户快速理解 Holly Shit开心拉屎不是低俗玩梗，而是用怪趣文创表达反焦虑、身体自主权和合法躺平。",
+  "status": "planned",
+  "priority": 1,
+  "owner": "",
+  "brief": {
+    "cover_title": "Shit人生，也要拉得开心",
+    "content_pillar": "拉屎哲学",
+    "angle": "从“厕所时间神圣不可侵犯”切入，解释品牌如何用不体面的语言说出体面的诉求，并自然带出贴纸、杯子、挂件等周边。"
+  },
+  "required_assets": [
+    "品牌 logo 或品牌名视觉素材",
+    "贴纸、杯子、挂件、包包、冰箱贴、手机支架合照",
+    "IP 小女孩、小狗、小猫基础形象图",
+    "主理人手写草稿或设计过程图"
+  ],
+  "references": [],
+  "package_id": "",
+  "notes": [
+    "状态：planned",
+    "语气要反叛、自信、搞笑，但避免低俗猎奇。",
+    "必须绑定至少 2 类具体产品，可用“这些话后来被我做成了贴纸、杯子和挂件”等表达。",
+    "不要虚构销量、价格、疗效或合作背书。"
+  ],
+  "metadata": {
+    "source": "calendar_planner_llm"
+  }
+}

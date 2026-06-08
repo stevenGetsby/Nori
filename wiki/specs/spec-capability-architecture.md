@@ -23,12 +23,12 @@ The goal is to keep session state, memory, context assembly, workflow execution,
 
 | API | Purpose |
 | --- | --- |
-| `nori.capabilities.capability_registry_snapshot()` | JSON-serializable registry for the five agent-owned capability groups. |
-| `nori.capabilities.build_capability_snapshot(project, ...)` | Builds a complete `CapabilitySnapshot` from an `AccountOperationProject` or persisted project dict. |
-| `nori.capabilities.validate_capability_snapshot(snapshot)` | Validates a `CapabilitySnapshot` object or persisted snapshot dict. |
+| `nori.core.capability_registry_snapshot()` | JSON-serializable registry for the five agent-owned capability groups. |
+| `nori.agents.learning_loop.build_capability_snapshot(project, ...)` | Builds a complete `CapabilitySnapshot` from an `AccountOperationProject` or persisted project dict. |
+| `nori.agents.learning_loop.validate_capability_snapshot(snapshot)` | Validates a `CapabilitySnapshot` object or persisted snapshot dict. |
 | `nori.workflows.RuntimeRunRecorder` | Creates session/context/workflow snapshots for scripts, CLI, API, and future UI runs. |
 
-There is no `nori.domain` compatibility layer; the product has not shipped yet, so new code uses the capability architecture directly.
+There is no `nori.domain` or `nori.capabilities` compatibility layer; the product has not shipped yet, so new code imports from the owning layer directly.
 
 ## Capability Groups
 
@@ -46,10 +46,10 @@ There is no `nori.domain` compatibility layer; the product has not shipped yet, 
 | --- | --- |
 | `nori.sessions` | `Session`, `Turn`, `TaskGoal`, `SessionManager`. |
 | `nori.context` | `ContextCompiler`, `ContextPackBuilder`, `ContextView`, `ContextBundle`, `ContextSource`, `ContextResolver`, `attach_context_pack(...)`. |
-| `nori.memory` | `StableProfile`, `SessionMemory`, `TaskMemory`, stores, retrieval, promotion. |
+| `nori.memory` | `StableProfile`, `SessionMemory`, `TaskMemory`, LangGraph-backed store subclass, retrieval, promotion. |
 | `nori.workflows` | `WorkflowRun`, `StageRun`, `WorkflowRunner`, `RuntimeRunRecorder`, human gates, and artifact-ref recording. |
 
-`WorkflowRunner` is backed by LangGraph. It compiles `WorkflowSpec` into a `StateGraph`, wraps each coarse-grained `StageSpec.handler` with LangChain Core `RunnableLambda`, and records stage status plus artifact references into `WorkflowRun`.
+`WorkflowRunner` is backed by LangGraph. It compiles `WorkflowSpec` into a `StateGraph`, wraps each coarse-grained `StageSpec.handler` with LangChain Core `RunnableLambda`, keeps LangGraph checkpointing disabled by default for runtime-only state, and records stage status plus artifact references into `WorkflowRun`.
 
 `StageSpec` can declare a `HumanGateSpec`. The default `human_gate_mode` is `skip`, so tests and automated live runs do not block. Product-facing runs can switch to `pause`; the workflow then records `waiting_for_human` without marking the run as failed.
 
@@ -78,7 +78,7 @@ Current gates catch:
 | Runtime first | New scripts/apps should create session/context/workflow state through `RuntimeRunRecorder`. |
 | Core/runtime split | `nori.core.WorkflowBase` defines workflow shape; `nori.workflows` owns runtime specs, execution, human gates, and run records. |
 | Context bridge | `ContextPack` stays in business/core contracts; `ContextBundle` stays in runtime context; `attach_context_pack(...)` is the bridge. |
-| Context compiler owner | `ContextCompiler` / `ContextPackBuilder` belongs to `nori.context`; planning can re-export it but should not own context compilation. |
+| Context compiler owner | `ContextCompiler` / `ContextPackBuilder` belongs to `nori.context`; planning must not re-export or own context compilation. |
 | Artifact bridge | Long-running stages write artifacts through `ArtifactStore`; workflow runtime records the returned refs instead of duplicating artifact persistence. |
 | Graph execution | Multi-stage workflows should enter through `WorkflowSpec` + `WorkflowRunner`; do not recreate manual stage loops in scripts. |
 | Coarse graph nodes | LangGraph nodes should represent checkpoint/retry/human-gate boundaries, not every helper or normalizer. |

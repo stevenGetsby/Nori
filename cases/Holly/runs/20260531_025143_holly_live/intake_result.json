@@ -1,0 +1,158 @@
+{
+  "intention": {
+    "goal": "涨粉",
+    "format": "小红书图文",
+    "tone": [
+      "有趣",
+      "亲和",
+      "犀利",
+      "走心"
+    ],
+    "anti": [
+      "不要硬广",
+      "不要低价感",
+      "保持人设",
+      "不要太商业",
+      "不要违规"
+    ]
+  },
+  "context": {
+    "creative_assets": [
+      "品牌标志",
+      "设计语言",
+      "人设",
+      "IP角色",
+      "口号",
+      "图片资产"
+    ],
+    "commercial_assets": [],
+    "guardrails": [
+      "不要违规",
+      "不要硬广",
+      "不要低价感",
+      "保持人设",
+      "不要太商业"
+    ],
+    "data_refs": [],
+    "images": [
+      {
+        "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+        "kind": "jpg",
+        "usage": "context"
+      },
+      {
+        "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 49@2x.png",
+        "kind": "png",
+        "usage": "context"
+      },
+      {
+        "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+        "kind": "png",
+        "usage": "context"
+      },
+      {
+        "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png",
+        "kind": "png",
+        "usage": "context"
+      }
+    ]
+  },
+  "ready": true,
+  "missing": [],
+  "questions": [
+    "目前小红书账号是否已经存在？如果有，现有粉丝量、笔记数据和卖得最好的内容/产品是什么？",
+    "你最想吸引的购买人群是谁：同校学生、年轻打工人、设计爱好者、礼物消费人群，还是文创渠道/品牌合作方？"
+  ],
+  "assets": [
+    {
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+      "text": "",
+      "vision_roles": [
+        "product_shot",
+        "raw_material"
+      ],
+      "subject": "两款搞怪便签纸实拍，适合展示HollyShit文创产品与反焦虑幽默调性",
+      "brand_signals": [
+        "MEMO PAPER",
+        "HollyShit",
+        "Just Doo It.",
+        "Shit happens but keep going",
+        "HOLY SHIT!"
+      ],
+      "usable_for": [
+        "body"
+      ],
+      "quality": "medium"
+    },
+    {
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 49@2x.png",
+      "text": "",
+      "vision_roles": [
+        "product_shot",
+        "ip_character"
+      ],
+      "subject": "白色印花布包置于金属篮，展示搞怪屎尿屁IP元素",
+      "brand_signals": [
+        "HOLLY SIT"
+      ],
+      "usable_for": [
+        "cover",
+        "body"
+      ],
+      "quality": "medium"
+    },
+    {
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+      "text": "",
+      "vision_roles": [
+        "product_shot",
+        "ip_character",
+        "scene_photo"
+      ],
+      "subject": "椅子上的帆布包展示搞怪屎尿屁IP插画，适合文创产品种草",
+      "brand_signals": [],
+      "usable_for": [
+        "cover",
+        "body"
+      ],
+      "quality": "high"
+    },
+    {
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png",
+      "text": "",
+      "vision_roles": [
+        "reference_style",
+        "brand_logo"
+      ],
+      "subject": "黑白颗粒感品牌海报，传达反完美主义与搞怪屎尿屁态度",
+      "brand_signals": [
+        "Done is the New Daring",
+        "GET SHIT DOWN",
+        "完成比完美更性感",
+        "Holly Shit!"
+      ],
+      "usable_for": [
+        "cover",
+        "body"
+      ],
+      "quality": "medium"
+    },
+    {
+      "kind": "text",
+      "path": "",
+      "text": "我是一个同济大学设计创意学院的学生，因为一个很偶然的机会，我用一周的时间仓促的做了几个文创产品做的很好，大家都很喜欢，于是我打算继续做下去。现在市集可以卖的很好，但是线上卖不动，于是我想做个小红书账号，给大家分享我的文创的品牌理念和做产品的小故事。这是我的想法，你有什么其他做账号的想法吗？\n我的文创品牌素材如下：\n关键词：\n反焦虑的快乐哲学\nSlogan：\nShit人生也要拉的开心\n品牌风格：\n不羁 自信 有趣 搞怪\n品牌理念：\n“Holly Shit开心拉屎”设计品牌致力于把排泄从羞耻行为回归到身体权利与精神庇护。\n“厕所时间神圣不可侵犯”“带薪拉屎是我应得的”用粗俗的话语把被剥夺的时间和尊严抢回来。\n不要永远鸡血奋斗，请允许自己在厕所里合法躺平。\n我们致力于用最不体面的语言，说出人们最体面的诉求。\n品牌IP形象：\n小女孩——每天Shitting的打工人\n小狗——草丛里拉屎尿尿\n小猫——爱玩蛋蛋\n可以围绕“屎尿屁”文学开展，用冲击力的画面传递价值，但是内容不要违规，不要太恶俗\n我的产品多数是：杯子，包包，挂件，贴纸，冰箱贴，手机支架\n我有一个小团队，后期需要的话她们也可以出镜，请你帮我先找一下我账号的定位，我应该是一个什么人设，在可以涨粉接单的同时还可以卖我的产品。",
+      "vision_roles": [],
+      "subject": "",
+      "brand_signals": [],
+      "usable_for": [],
+      "quality": ""
+    }
+  ],
+  "metadata": {
+    "llm_enhanced": true
+  }
+}

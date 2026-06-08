@@ -6,7 +6,7 @@ from nori.core import ClientBrief
 
 from datetime import date
 
-from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPlanResult
 from nori.agents.planning.operation_planner.package import OperationPlannerInputPreparer
 
 

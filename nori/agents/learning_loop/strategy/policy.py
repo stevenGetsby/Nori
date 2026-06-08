@@ -4,10 +4,10 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
-from nori.agents.content_generation.models import ContentPackage
+from nori.agents.content_generation.schemas import ContentPackage
 from nori.core import ContentTask
 
-from ..models import ComplianceReview, MetricsSnapshot
+from ..schemas import ComplianceReview, MetricsSnapshot
 
 
 def ref_identity(ref: ContentPackage | ContentTask | str | dict[str, Any]) -> tuple[str, str]:

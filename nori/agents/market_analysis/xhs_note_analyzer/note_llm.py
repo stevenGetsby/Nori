@@ -1,10 +1,10 @@
 """Optional LLM enhancement helpers for single XHS note seed drafts."""
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any
 
 from nori.core import LLMFactory
-from nori.agents.market_analysis.models import XHSNoteSample, XHSSeedSkillDraft
+from nori.agents.market_analysis.schemas import XHSNoteSample, XHSSeedSkillDraft
 from nori.shared.llm_json import attach_llm_error, try_stage_json
 from nori.shared.normalization import dedupe_preserve_order, string_list as _shared_string_list
 from .package import XHSNoteEnhancementPromptBuilder
@@ -19,15 +19,13 @@ def enhance_note(
     note: XHSNoteSample,
     rule_draft: XHSSeedSkillDraft,
     *,
-    chat_func: Callable[..., str] | None = None,
-    chat_json_func: Callable[..., dict[str, Any]] | None = None,
+    chat_json_func=None,
 ) -> XHSSeedSkillDraft:
-    llm_factory = LLMFactory(chat_func=chat_func, chat_json_func=chat_json_func)
+    llm_factory = LLMFactory(chat_json_func=chat_json_func)
     data, error = try_stage_json(
         system=_PROMPT_BUILDER.system_prompt,
         user=_PROMPT_BUILDER.build_user_prompt(note, rule_draft),
         timeout=60,
-        chat_func=llm_factory.chat_func,
         chat_json_func=llm_factory.chat_json_func,
     )
     if data is None:

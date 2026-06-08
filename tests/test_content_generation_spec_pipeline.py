@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from nori.agents.content_generation import ArtifactGenerationAgent, ContentSpecAgent
-from nori.agents.content_generation.models import ContentDesignSpec, ContentPackage
-from nori.agents.market_analysis.models import NoteSkill
+from nori.agents.content_generation.schemas import ContentDesignSpec, ContentPackage
+from nori.agents.market_analysis.schemas import NoteSkill
 from nori.core import ClientBrief, ContentTask, IntentContract, UserAsset
 
 

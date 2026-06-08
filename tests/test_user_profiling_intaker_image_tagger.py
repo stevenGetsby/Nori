@@ -1,8 +1,8 @@
 import base64
 
-import llms
+import nori.core.llms as llms
 
-from nori.agents.user_profiling.models import UserInput
+from nori.agents.user_profiling.schemas import UserInput
 from nori.agents.user_profiling.intaker import image_tagger
 
 
@@ -53,20 +53,17 @@ def test_image_tagger_tag_one_image_uses_chat_json_helper(tmp_path, monkeypatch)
     image_path = tmp_path / "a.png"
     image_path.write_bytes(_TINY_PNG_BYTES)
     calls: list[dict] = []
-    sentinel_chat = object()
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "_chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         return {"vision_roles": ["product_shot"], "usable_for": ["cover"], "quality": "high"}
 
-    monkeypatch.setattr(llms, "chat", sentinel_chat)
     monkeypatch.setattr(llms, "chat_json", fake_chat_json)
 
     tag = image_tagger.tag_one_image_llm(str(image_path), "给品牌种草")
 
     assert tag == {"vision_roles": ["product_shot"], "usable_for": ["cover"], "quality": "high"}
     assert calls[0]["usage"] == "vision"
-    assert calls[0]["_chat"] is sentinel_chat
     assert calls[0]["kwargs"]["timeout"] == 60
     assert calls[0]["kwargs"]["json_mode"] is True
     user_parts = calls[0]["messages"][1]["content"]

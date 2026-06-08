@@ -9,7 +9,6 @@ ROOT = Path(__file__).resolve().parents[1]
 
 ALLOWED_NORI_TOP_LEVEL_DIRS = {
     "agents",
-    "capabilities",
     "context",
     "core",
     "memory",
@@ -71,6 +70,7 @@ PROMPT_OWNING_STAGE_PACKAGES: set[str] = set()
 
 
 DOMAIN_PACKAGE_ROOTS = [
+    "nori.agents.supervisor",
     "nori.agents.user_profiling",
     "nori.agents.market_analysis",
     "nori.agents.planning",
@@ -80,6 +80,7 @@ DOMAIN_PACKAGE_ROOTS = [
 
 
 BUSINESS_MODULE_IMPORT_ROOTS = {
+    "nori.agents.supervisor",
     "nori.agents.user_profiling",
     "nori.agents.market_analysis",
     "nori.agents.planning",
@@ -227,8 +228,9 @@ REMOVED_LEGACY_IMPORTS = [
     "nori._model_coercion",
     "nori.config_models",
     "nori.agents.planning.models",
-    "llms.errors",
-    "llms.structured_models",
+    "llms",
+    "nori.core.llms.errors",
+    "nori.core.llms.structured_models",
 ]
 
 
@@ -286,10 +288,40 @@ def test_workflow_implementation_files_are_grouped_by_stage_package():
         assert "prompt.py" not in files
 
 
-def test_workflow_stage_packages_keep_contracts_in_models_not_schema_reexports():
+SCHEMA_OWNER_PACKAGES = {
+    "nori/agents/supervisor",
+    "nori/agents/content_generation",
+    "nori/agents/learning_loop",
+    "nori/agents/market_analysis",
+    "nori/agents/user_profiling",
+    "nori/context",
+    "nori/memory",
+    "nori/sessions",
+    "nori/workflows",
+}
+
+
+def test_owner_packages_keep_contracts_in_schemas_package_not_models_files():
+    for package in SCHEMA_OWNER_PACKAGES:
+        package_path = ROOT / package
+        assert (package_path / "schemas" / "__init__.py").is_file(), package
+        assert not (package_path / "models.py").exists(), package
+
+
+def test_schema_package_roots_are_export_surfaces_not_implementation_modules():
+    for package in SCHEMA_OWNER_PACKAGES:
+        init_path = ROOT / package / "schemas" / "__init__.py"
+        tree = ast.parse(init_path.read_text())
+        class_defs = [node.name for node in ast.walk(tree) if isinstance(node, ast.ClassDef)]
+        assert class_defs == [], package
+        assert "dataclass" not in init_path.read_text(), package
+
+
+def test_workflow_stage_packages_do_not_keep_schema_compat_files():
     for package in WORKFLOW_STAGE_PACKAGES:
         package_path = ROOT / package
         assert not (package_path / "schema.py").exists(), package
+        assert not (package_path / "models.py").exists(), package
 
 
 def test_workflow_stage_packages_only_keep_prompt_files_when_they_own_prompts():
@@ -344,6 +376,14 @@ def test_domain_package_roots_use_shared_lazy_export_helper():
         assert "return lazy_export(__name__, _LAZY_EXPORTS, name)" in source, module_name
 
 
+def test_core_package_root_uses_shared_lazy_export_helper():
+    source = (ROOT / "nori/core/__init__.py").read_text()
+
+    assert "lazy_export" in source
+    assert "import_module" not in source
+    assert "_LAZY_EXPORTS" in source
+
+
 def test_domain_package_public_exports_are_importable():
     for module_name in DOMAIN_PACKAGE_ROOTS:
         module = importlib.import_module(module_name)
@@ -372,28 +412,16 @@ def test_tests_use_current_capability_names_not_context_building_prefix():
     assert stale_tests == []
 
 
-def test_core_model_contracts_have_owned_modules_and_facade_only():
+def test_core_model_contracts_have_owned_modules_without_models_facade():
     import nori.core as core
-    import nori.core.models as model_facade
 
     for name, module_name in CORE_MODEL_OWNERS.items():
         owner_module = importlib.import_module(f"nori.core.{module_name}")
         owner_value = getattr(owner_module, name)
-        assert getattr(model_facade, name) is owner_value
         assert getattr(core, name) is owner_value
         assert owner_value.__module__ == f"nori.core.{module_name}"
 
-    source = ast.parse((ROOT / "nori/core/models.py").read_text())
-    dataclass_defs = [
-        node.name
-        for node in source.body
-        if isinstance(node, ast.ClassDef)
-        and any(
-            isinstance(decorator, ast.Name) and decorator.id == "dataclass"
-            for decorator in node.decorator_list
-        )
-    ]
-    assert dataclass_defs == []
+    assert not (ROOT / "nori/core/models.py").exists()
 
 
 def test_system_architecture_links_to_reference_module_map_instead_of_file_inventory():
@@ -419,6 +447,35 @@ def test_upstream_domain_facades_do_not_import_downstream_domains():
         assert not _imports_from_forbidden_modules(facade_path, modules=forbidden_modules), rel_root
 
 
+def test_agents_do_not_depend_on_workflow_runtime():
+    for path in (ROOT / "nori" / "agents").rglob("*.py"):
+        rel_path = path.relative_to(ROOT)
+        assert not _imports_from_forbidden_modules(path, modules={"nori.workflows"}), rel_path
+
+
+def test_content_production_workflow_does_not_depend_on_entrypoint_or_provider_globals():
+    forbidden_modules = {"scripts", "scripts.run_holly_live_case", "llms"}
+    for path in (ROOT / "nori" / "workflows" / "content_production").glob("*.py"):
+        rel_path = path.relative_to(ROOT)
+        assert not _imports_from_forbidden_modules(path, modules=forbidden_modules), rel_path
+
+
+def test_content_production_workflow_uses_agent_public_boundaries():
+    forbidden_modules = {
+        "nori.agents.content_generation.artifact_generator.artifact_generator",
+        "nori.agents.content_generation.spec_designer.spec_designer",
+        "nori.agents.learning_loop.review.review_gate",
+        "nori.agents.planning.calendar_planner.calendar_planner",
+        "nori.agents.planning.kpi_planner.kpi_planner",
+        "nori.agents.planning.operation_planner.operation_planner",
+        "nori.agents.user_profiling.account_planner.account_planner",
+        "nori.agents.user_profiling.intaker.intaker",
+    }
+    for path in (ROOT / "nori" / "workflows" / "content_production").glob("*.py"):
+        rel_path = path.relative_to(ROOT)
+        assert not _imports_from_forbidden_modules(path, modules=forbidden_modules), rel_path
+
+
 def test_user_profiling_runtime_does_not_import_content_generation():
     for path in (ROOT / "nori" / "agents" / "user_profiling").rglob("*.py"):
         rel_path = path.relative_to(ROOT)
@@ -431,9 +488,9 @@ def test_downstream_runtime_imports_shared_workflow_contracts_from_core():
         "nori.agents.learning_loop",
     }
     forbidden_sources = {
-        "nori.agents.content_generation.models",
+        "nori.agents.content_generation.schemas",
         "nori.agents.planning.models",
-        "nori.agents.user_profiling.models",
+        "nori.agents.user_profiling.schemas",
     }
     for root in forbidden_roots:
         for path in (ROOT / root.replace(".", "/")).rglob("*.py"):
@@ -467,11 +524,10 @@ def test_runtime_code_imports_public_contracts_from_core_boundary():
     private_contract_modules = {
         "nori._model_coercion",
         "nori.config_models",
-        "llms.errors",
-        "llms.structured_models",
+        "nori.core.llms.errors",
+        "nori.core.llms.structured_models",
     }
-    private_llms_relative_contract_modules = {"errors", "structured_models"}
-    for root in (ROOT / "nori", ROOT / "llms"):
+    for root in (ROOT / "nori",):
         for path in root.rglob("*.py"):
             rel_path = path.relative_to(ROOT)
             tree = ast.parse(path.read_text())
@@ -481,8 +537,6 @@ def test_runtime_code_imports_public_contracts_from_core_boundary():
                     assert not (imported & private_contract_modules), rel_path
                 if isinstance(node, ast.ImportFrom):
                     assert node.module not in private_contract_modules, rel_path
-                    if rel_path.parts[0] == "llms" and node.level == 1:
-                        assert node.module not in private_llms_relative_contract_modules, rel_path
 
 
 def test_legacy_import_roots_are_not_importable():
@@ -570,7 +624,7 @@ def _imports_from_forbidden_modules(path: Path, *, modules: set[str]) -> bool:
 
 
 def _imports_from_legacy_contract_owner(path: Path, node: ast.ImportFrom) -> bool:
-    if node.module in {"nori.agents.user_profiling.models", "nori.agents.planning.models", "nori.agents.content_generation.models"}:
+    if node.module in {"nori.agents.user_profiling.schemas", "nori.agents.planning.models", "nori.agents.content_generation.schemas"}:
         return True
     if node.level == 1 and node.module == "models":
         if path.parts[:2] in {

@@ -7,7 +7,7 @@ from nori.memory import MemoryQuery, MemoryRetriever, MemoryStore
 
 from nori.core import ContextPack
 
-from .models import ContextBundle, ContextSlice, ContextSource, ContextTrace, ContextView
+from .schemas import ContextBundle, ContextSlice, ContextSource, ContextTrace, ContextView
 
 
 class ContextResolver:

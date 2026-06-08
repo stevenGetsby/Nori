@@ -3,11 +3,11 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-import llms
+import nori.core.llms as llms
 
 
 class LLMFactory:
-    """Small injectable facade around the project-level ``llms`` package."""
+    """Small injectable facade around the core LLM infra gateway."""
 
     def __init__(
         self,
@@ -24,7 +24,6 @@ class LLMFactory:
         return self.chat_func(messages, **kwargs)
 
     def chat_json(self, messages: list[dict[str, Any]], **kwargs: Any) -> dict[str, Any]:
-        kwargs.setdefault("_chat", self.chat_func)
         return self.chat_json_func(messages, **kwargs)
 
     def image(self, prompt: str, **kwargs: Any) -> list[str]:

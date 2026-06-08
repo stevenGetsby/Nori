@@ -11,20 +11,20 @@ from nori.core import (
     KPIPlan,
     OperationPlan,
 )
-from nori.agents.content_generation.models import (
+from nori.agents.content_generation.schemas import (
     AssetBundle,
     CandidateTitle,
     CoverResult,
     NoteDraft,
 )
-from nori.agents.market_analysis.models import (
+from nori.agents.market_analysis.schemas import (
     NoteEvidence,
     NoteSkill,
     SessionSkillReport,
     XHSNoteSample,
     XHSSeedSkillDraft,
 )
-from nori.agents.user_profiling.models import (
+from nori.agents.user_profiling.schemas import (
     AccountPlanResult,
     AccountPlannerInput,
     IntakeResult,
@@ -104,8 +104,8 @@ def test_front_pipeline_result_models_round_trip_from_dict():
 
 
 def test_models_are_defined_in_dedicated_modules():
-    assert UserInput.__module__ == "nori.agents.user_profiling.models"
-    assert AccountPlannerInput.__module__ == "nori.agents.user_profiling.models"
+    assert UserInput.__module__ == "nori.agents.user_profiling.schemas.profile"
+    assert AccountPlannerInput.__module__ == "nori.agents.user_profiling.schemas.profile"
     assert UserAsset.__module__ == "nori.core.asset_models"
     assert ClientBrief.__module__ == "nori.core.planning_models"
     assert OperationPlan.__module__ == "nori.core.planning_models"
@@ -115,13 +115,13 @@ def test_models_are_defined_in_dedicated_modules():
     assert AccountOperationProject.__module__ == "nori.core.project"
     assert AssetRecord.__module__ == "nori.core.asset_models"
     assert AssetLibrary.__module__ == "nori.core.asset_models"
-    assert NoteDraft.__module__ == "nori.agents.content_generation.models"
-    assert CoverResult.__module__ == "nori.agents.content_generation.models"
-    assert NoteEvidence.__module__ == "nori.agents.market_analysis.models"
-    assert NoteSkill.__module__ == "nori.agents.market_analysis.models"
-    assert SessionSkillReport.__module__ == "nori.agents.market_analysis.models"
-    assert XHSNoteSample.__module__ == "nori.agents.market_analysis.models"
-    assert XHSSeedSkillDraft.__module__ == "nori.agents.market_analysis.models"
+    assert NoteDraft.__module__ == "nori.agents.content_generation.schemas.generation"
+    assert CoverResult.__module__ == "nori.agents.content_generation.schemas.generation"
+    assert NoteEvidence.__module__ == "nori.agents.market_analysis.schemas.market"
+    assert NoteSkill.__module__ == "nori.agents.market_analysis.schemas.market"
+    assert SessionSkillReport.__module__ == "nori.agents.market_analysis.schemas.market"
+    assert XHSNoteSample.__module__ == "nori.agents.market_analysis.schemas.market"
+    assert XHSSeedSkillDraft.__module__ == "nori.agents.market_analysis.schemas.market"
 
 
 def test_xhs_note_models_round_trip_from_dict():

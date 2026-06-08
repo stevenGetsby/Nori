@@ -6,7 +6,7 @@ from nori.core import (
     KPIPlan,
     OperationPlan,
 )
-from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPlanResult
 from nori.agents.planning import planner_critics
 
 

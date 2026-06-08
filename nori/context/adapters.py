@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from nori.core import ContextPack
 
-from .models import ContextBundle, ContextSource, ContextTrace
+from .schemas import ContextBundle, ContextSource, ContextTrace
 
 
 def attach_context_pack(

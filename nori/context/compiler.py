@@ -16,7 +16,7 @@ from nori.core import (
     named_workflow_steps,
 )
 
-from .models import ContextSlice
+from .schemas import ContextSlice
 
 
 class ContextCompiler(WorkflowBase):

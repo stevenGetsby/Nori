@@ -26,6 +26,8 @@ class PublishedReference:
     def to_dict(self) -> dict[str, Any]:
         return {
             "original_path": self.original_path,
+            "url": self.url,
+            "public_url": self.public_url,
             "url_public": self.public_url,
             "key": self.key,
             "uploaded": self.uploaded,
@@ -51,6 +53,7 @@ class PublishedReferences:
             "reference_upload_count": len(self.uploads),
             "reference_object_keys": [item.key for item in self.uploads],
             "reference_public_urls": [item.public_url for item in self.uploads],
+            "reference_items": [item.to_dict() for item in self.items],
         }
 
 
@@ -91,9 +94,10 @@ class ReferenceImagePublisher:
         project: str = "",
         session: str = "",
         now: datetime | None = None,
+        public_url_map: dict[str, str] | None = None,
     ) -> PublishedReferences:
         items = [
-            self.publish_path(path, project=project, session=session, now=now)
+            self.publish_path(path, project=project, session=session, now=now, public_url_map=public_url_map)
             for path in paths
             if path
         ]
@@ -106,9 +110,20 @@ class ReferenceImagePublisher:
         project: str = "",
         session: str = "",
         now: datetime | None = None,
+        public_url_map: dict[str, str] | None = None,
     ) -> PublishedReference:
         if path.startswith(("http://", "https://")):
             return PublishedReference(original_path=path, input_value=path, url=path, public_url=path, reason="remote")
+        mapped_url = _public_url_for_path(path, public_url_map)
+        if mapped_url:
+            return PublishedReference(
+                original_path=path,
+                input_value=mapped_url,
+                url=mapped_url,
+                public_url=mapped_url,
+                uploaded=True,
+                reason="public_url_map",
+            )
         if not self.enabled:
             raw = image_to_bytes(path)
             return PublishedReference(original_path=path, input_value=raw, reason="local_bytes")
@@ -166,6 +181,21 @@ def reference_publish_context(intent: dict[str, Any], out_dir: str | Path) -> di
         or "session"
     )
     return {"project": slug(str(raw_project)), "session": slug(str(raw_session))}
+
+
+def _public_url_for_path(path: str, public_url_map: dict[str, str] | None) -> str:
+    if not isinstance(public_url_map, dict) or not public_url_map:
+        return ""
+    candidates = [path]
+    try:
+        candidates.append(str(Path(path).resolve()))
+    except Exception:  # noqa: BLE001
+        pass
+    for key in candidates:
+        value = str(public_url_map.get(key) or "").strip()
+        if value.startswith(("http://", "https://")):
+            return value
+    return ""
 
 
 __all__ = [

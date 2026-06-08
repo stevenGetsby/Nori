@@ -17,18 +17,19 @@ def test_content_generation_public_entrypoint_no_longer_exports_generation_agent
 
 
 def test_holly_live_workflow_uses_spec_then_artifact_execution_stages():
-    path = ROOT / "scripts" / "run_holly_live_case.py"
-    source = path.read_text()
-    tree = ast.parse(source)
+    workflow_path = ROOT / "nori" / "workflows" / "content_production" / "workflow.py"
+    stages_path = ROOT / "nori" / "workflows" / "content_production" / "stages.py"
+    workflow_tree = ast.parse(workflow_path.read_text())
+    stages_tree = ast.parse(stages_path.read_text())
     imported_names = {
         alias.name
-        for node in ast.walk(tree)
+        for node in ast.walk(stages_tree)
         if isinstance(node, ast.ImportFrom) and node.module == "nori.agents.content_generation"
         for alias in node.names
     }
     stage_names = [
         call.args[0].value
-        for call in ast.walk(tree)
+        for call in ast.walk(workflow_tree)
         if isinstance(call, ast.Call)
         and isinstance(call.func, ast.Name)
         and call.func.id == "StageSpec"

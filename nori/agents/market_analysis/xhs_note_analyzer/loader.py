@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from nori.agents.market_analysis.models import XHSNoteSample
+from nori.agents.market_analysis.schemas import XHSNoteSample
 
 
 def load_note_sample(meta_path: str | Path) -> XHSNoteSample:

@@ -1,6 +1,8 @@
 """Registry for Nori's runtime capability modules."""
 from __future__ import annotations
 
+from typing import Any
+
 from nori._compat import dataclass
 
 
@@ -84,9 +86,19 @@ def get_capability_module(name: str) -> CapabilityModule | None:
     return None
 
 
+def capability_registry_snapshot() -> dict[str, Any]:
+    """Return a JSON-serializable view of the agent-owned capability registry."""
+
+    return {
+        "module_names": capability_module_names(),
+        "modules": [module.to_dict() for module in CAPABILITY_MODULES],
+    }
+
+
 __all__ = [
     "CAPABILITY_MODULES",
     "CapabilityModule",
     "capability_module_names",
+    "capability_registry_snapshot",
     "get_capability_module",
 ]

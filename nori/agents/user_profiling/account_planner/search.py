@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
-from nori.agents.user_profiling.models import AccountPlanResult, AccountPlannerInput
+from nori.agents.user_profiling.schemas import AccountPlanResult, AccountPlannerInput
 
 from . import normalizer as _plan_normalizer
 

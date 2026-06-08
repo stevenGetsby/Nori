@@ -1,8 +1,9 @@
 from nori.core import AccountOperationProject
 from nori.core import ContentTask, KPIPlan, OperationPlan, ClientBrief
 import importlib
+import json
 
-import llms
+import nori.core.llms as llms
 
 from nori.agents.planning import KPIPlannerAgent, plan_kpi
 
@@ -69,11 +70,11 @@ def test_kpi_planner_accepts_dict_inputs():
 
 
 def test_kpi_planner_uses_llm_json_when_available(monkeypatch):
-    def fake_chat(messages, *, usage="llm", **kwargs):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
         assert usage == "llm"
-        assert kwargs["response_format"] == {"type": "json_object"}
+        assert kwargs["json_mode"] is True
         assert "运营计划" in messages[1]["content"]
-        return """
+        return json.loads("""
         {
           "targets": {
             "content_tasks": 4,
@@ -86,9 +87,9 @@ def test_kpi_planner_uses_llm_json_when_available(monkeypatch):
           ],
           "measurement_notes": ["手动记录小红书后台数据", "不做自动抓取"]
         }
-        """
+        """)
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
 
     kpi = KPIPlannerAgent(use_llm=True).run(_operation_plan())
 
@@ -101,10 +102,10 @@ def test_kpi_planner_uses_llm_json_when_available(monkeypatch):
 
 
 def test_kpi_planner_llm_failure_keeps_fallback(monkeypatch):
-    def fake_chat(messages, *, usage="llm", **kwargs):
-        return "not json"
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        raise llms.ChatJSONError("bad json", "not json")
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
 
     kpi = KPIPlannerAgent(use_llm=True).run(_operation_plan())
 

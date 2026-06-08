@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 __all__ = [
+    "api",
     "agents",
-    "capabilities",
     "context",
     "core",
     "memory",

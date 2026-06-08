@@ -12,7 +12,7 @@ from ..cover_director import CoverDirectorAgent
 from ..note_maker import NoteMakerAgent
 from .package import ContentPackageAssembler
 from . import state as _production_state
-from ..models import ContentPackage
+from ..schemas import ContentPackage
 
 
 class ContentProductionError(RuntimeError):

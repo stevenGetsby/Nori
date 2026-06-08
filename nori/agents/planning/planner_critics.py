@@ -4,7 +4,7 @@ from __future__ import annotations
 from nori.core import AccountOperationProject
 from typing import Any
 
-from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPlanResult
 from nori.core import ClientBrief, ContentCalendar, KPIPlan, OperationPlan
 
 from .calendar_planner import normalizer as _calendar_normalizer

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "case_id": "Holly",
+  "run_id": "20260529_012048_preflight",
+  "workflow": "holly_preflight",
+  "path": "cases/Holly/runs/20260529_012048_preflight",
+  "status": "migrated",
+  "metadata": {
+    "migration": "case_centric_artifact_store"
+  },
+  "artifacts": []
+}

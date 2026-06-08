@@ -44,6 +44,7 @@ def show_entrypoints() -> None:
     print("Nori 当前没有内置 web server 入口。可用入口：")
     print("  python main.py --show-config")
     print("  python main.py --run-holly-live")
+    print("  python scripts/backend_holly_smoke.py --help")
     print("  python scripts/run_holly_live_case.py")
     print("  python scripts/continue_holly_live_case.py")
     print("  python scripts/smoke_note_maker.py --help")

@@ -39,7 +39,7 @@ The stage connects P1 planning contracts with P0 generation agents. It does not 
 
 | API | Contract |
 | --- | --- |
-| `ContextPackBuilder().build(...)` / `.build_from_project(...)` | Build the task-level context pack used by production orchestration. Canonical owner is `nori.context`; planning only re-exports it. |
+| `ContextPackBuilder().build(...)` / `.build_from_project(...)` | Build the task-level context pack used by production orchestration. Canonical owner is `nori.context`; planning does not re-export it. |
 | `ContextResolver().for_agent("ContentSpecAgent", pack) -> ContextView` | Select only the slices needed for spec design. |
 | `ContentSpecAgent().run(context_view=...) -> ContentDesignSpec` | Preferred production path. Produce an inspectable generation blueprint from platform, market, skill, content strategy, asset, and constraint context slices. |
 | `ContentSpecAgent().run(task, skills, assets=None, client_brief=None, project=None, intent_contract=None, intent=None, context=None) -> ContentDesignSpec` | Direct-input path for focused tests and manual calls when a compiled context view is not available. |

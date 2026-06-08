@@ -85,7 +85,6 @@ class AgentBase:
             usage=usage,
             json_mode=json_mode,
             error_type=error_type,
-            chat_func=self.llm_factory.chat_func,
             chat_json_func=self.llm_factory.chat_json_func,
         )
 
@@ -104,7 +103,6 @@ class AgentBase:
             usage=usage,
             json_mode=json_mode,
             error_type=error_type,
-            chat_func=self.llm_factory.chat_func,
             chat_json_func=self.llm_factory.chat_json_func,
         )
 
@@ -123,7 +121,6 @@ class AgentBase:
             timeout=timeout,
             usage=usage,
             json_mode=json_mode,
-            chat_func=self.llm_factory.chat_func,
             chat_json_func=self.llm_factory.chat_json_func,
         )
 

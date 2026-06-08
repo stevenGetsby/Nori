@@ -6,7 +6,7 @@ from typing import Any
 
 from nori.core import ContentTask
 
-from ..models import ContentPackage
+from ..schemas import ContentPackage
 
 
 def production_error(exc: Exception, task: ContentTask, *, stage: str | None = None) -> dict[str, Any]:

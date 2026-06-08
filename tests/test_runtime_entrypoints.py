@@ -29,7 +29,7 @@ def test_main_default_reports_real_entrypoints_without_stale_server_import():
 
 
 def test_smoke_scripts_import_from_canonical_modules_and_expose_help():
-    for script in ("scripts/smoke_note_maker.py", "scripts/smoke_session_skill.py"):
+    for script in ("scripts/smoke_note_maker.py", "scripts/smoke_session_skill.py", "scripts/backend_holly_smoke.py"):
         result = _run(script, "--help")
 
         assert result.returncode == 0, result.stderr
@@ -52,6 +52,7 @@ def test_runtime_entrypoints_do_not_reference_removed_legacy_roots():
         ROOT / "scripts" / "smoke_session_skill.py",
         ROOT / "scripts" / "run_holly_live_case.py",
         ROOT / "scripts" / "continue_holly_live_case.py",
+        ROOT / "scripts" / "backend_holly_smoke.py",
     ]
     text = "\n".join(path.read_text(encoding="utf-8") for path in paths)
 

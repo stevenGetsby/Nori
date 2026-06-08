@@ -9,7 +9,7 @@ from typing import Any
 from nori.context import ContextBundle, ContextResolver
 from nori.sessions import Session, SessionManager, TaskGoal
 
-from .models import StageRun, WorkflowRun
+from .schemas import StageRun, WorkflowRun
 
 
 @dataclass(frozen=True)

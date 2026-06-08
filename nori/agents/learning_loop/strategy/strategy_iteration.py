@@ -6,13 +6,13 @@ from datetime import date
 from typing import Any
 
 from nori.core import AgentBase
-from nori.agents.content_generation.models import ContentPackage
+from nori.agents.content_generation.schemas import ContentPackage
 from nori.core import ContentTask
 
 from .package import StrategyIterationInputPreparer
 from . import policy as _policy
 from . import state as _state
-from ..models import ComplianceReview, MetricsSnapshot, StrategyIteration
+from ..schemas import ComplianceReview, MetricsSnapshot, StrategyIteration
 
 
 _INPUT_PREPARER = StrategyIterationInputPreparer()

@@ -3,13 +3,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from nori.agents.content_generation.models import ContentDesignSpec
+from nori.agents.content_generation.schemas import ContentDesignSpec
 from nori.agents.content_generation.social_card_guides import (
     social_card_acceptance_checks,
     social_card_profile,
     social_card_visual_rules,
 )
-from nori.agents.market_analysis.models import NoteSkill
+from nori.agents.market_analysis.schemas import NoteSkill
 from nori.context import ContextView
 from nori.core import AccountOperationProject, AgentBase, ClientBrief, ContentTask, IntentContract, LLMFactory, UserAsset
 
@@ -123,7 +123,7 @@ def _normalize_context_view(value: ContextView | dict[str, Any] | None) -> Conte
     if isinstance(value, ContextView):
         return value
     if isinstance(value, dict):
-        from nori.context.models import ContextSlice, ContextTrace
+        from nori.context.schemas import ContextSlice, ContextTrace
 
         slices = [ContextSlice.from_dict(item) for item in value.get("slices") or []]
         if not slices and value.get("payload"):

@@ -4,7 +4,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
-from nori.agents.market_analysis.models import NoteEvidence, NoteSkill
+from nori.agents.market_analysis.schemas import NoteEvidence, NoteSkill
 from nori.shared.normalization import dedupe_preserve_order
 from . import rules as xhs_note_rules
 

@@ -102,7 +102,6 @@ def _llm_calendar(
             start_date=start_date,
             horizon_days=horizon_days,
         ),
-        chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )
     if data is None:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from nori.agents.content_generation.content_producer.package import ContentPackageAssembler, PreparedContentPackageInput
-from nori.agents.content_generation.models import CandidateTitle, CoverResult, NoteDraft
+from nori.agents.content_generation.schemas import CandidateTitle, CoverResult, NoteDraft
 from nori.core import AccountOperationProject, ClientBrief, ContentTask, StableArtifactAssembler, UserAsset
 
 

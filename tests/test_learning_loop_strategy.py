@@ -8,8 +8,8 @@ from nori.agents.learning_loop import (
     create_strategy_iteration,
     record_metrics_snapshot,
 )
-from nori.agents.content_generation.models import ContentPackage
-from nori.agents.learning_loop.models import ComplianceReview
+from nori.agents.content_generation.schemas import ContentPackage
+from nori.agents.learning_loop.schemas import ComplianceReview
 
 
 def _package() -> ContentPackage:

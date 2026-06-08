@@ -7,7 +7,7 @@ from typing import Any
 
 from nori.core import AgentInputPreparer, AgentPromptBuilder
 from nori.shared.prompting import json_prompt
-from nori.agents.user_profiling.models import AccountPlannerInput
+from nori.agents.user_profiling.schemas import AccountPlannerInput
 
 
 @dataclass(frozen=True)

@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable, TypeVar
 
-from nori.agents.content_generation.models import NoteDraft
+from nori.agents.content_generation.schemas import NoteDraft
 from nori.agents.content_generation.social_card_guides import cover_prompt_guidance
 from nori.core import AgentPromptBuilder, UserAsset
 from nori.shared.image_io import image_to_bytes

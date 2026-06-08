@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 from nori.core import AccountOperationProject
-from ..models import ComplianceReview
+from ..schemas import ComplianceReview
 
 
 def attach_review(project: AccountOperationProject | None, review: ComplianceReview) -> None:

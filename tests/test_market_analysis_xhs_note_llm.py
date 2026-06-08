@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import llms
+import nori.core.llms as llms
 
-from nori.agents.market_analysis.models import XHSNoteSample
+from nori.agents.market_analysis.schemas import XHSNoteSample
 from nori.agents.market_analysis.xhs_note_analyzer import note_llm as xhs_note_llm
 from nori.agents.market_analysis.xhs_note_analyzer import rules as xhs_note_rules
 
@@ -35,8 +35,8 @@ def _draft():
 def test_enhance_note_routes_optional_json_stage_through_shared_helper(monkeypatch):
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         return {
             "match": {"scene": "chat_json 场景", "goals": ["收藏"], "note_type": "图文"},
             "craft": {"creative_goal": "通过统一 JSON helper 增强规则。"},
@@ -52,7 +52,7 @@ def test_enhance_note_routes_optional_json_stage_through_shared_helper(monkeypat
     assert enhanced.validation["llm_enhanced"] is True
     assert calls
     assert calls[0]["usage"] == "llm"
-    assert calls[0]["chat"] is llms.chat
+    assert "_chat" not in calls[0]["kwargs"]
     assert calls[0]["kwargs"]["timeout"] == 60
     assert calls[0]["kwargs"]["json_mode"] is True
     assert "规则草案" in calls[0]["messages"][1]["content"]
@@ -85,10 +85,10 @@ def test_normalize_llm_draft_preserves_fallbacks_and_caps_fields():
 
 
 def test_enhance_note_fallback_attaches_redacted_llm_error(monkeypatch):
-    def broken_chat(*args, **kwargs):
+    def broken_chat_json(*args, **kwargs):
         raise RuntimeError("llm down")
 
-    monkeypatch.setattr(llms, "chat", broken_chat)
+    monkeypatch.setattr(llms, "chat_json", broken_chat_json)
 
     fallback = xhs_note_llm.enhance_note(_note(), _draft())
 

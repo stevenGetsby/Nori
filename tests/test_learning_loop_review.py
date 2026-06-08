@@ -8,7 +8,7 @@ from nori.agents.learning_loop import (
     ReviewGateAgent,
     review_content_package,
 )
-from nori.agents.content_generation.models import ContentPackage
+from nori.agents.content_generation.schemas import ContentPackage
 
 
 def _task() -> ContentTask:

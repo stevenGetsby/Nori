@@ -15,7 +15,7 @@ from nori.core import (
     named_workflow_steps,
 )
 
-from .models import ContentPackage
+from .schemas import ContentPackage
 
 
 class ContentGenerationFacade(WorkflowBase):

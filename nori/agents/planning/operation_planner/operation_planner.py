@@ -6,7 +6,7 @@ from datetime import date
 from typing import Any
 
 from nori.core import AgentBase, LLMFactory
-from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPlanResult
 from nori.shared.llm_json import attach_llm_error, try_stage_json
 from nori.core import ClientBrief
 
@@ -101,7 +101,6 @@ def _llm_project(
     data, error = try_stage_json(
         system=prompts.system_prompt,
         user=prompts.build_user_prompt(brief, account_plan, horizon_days=horizon_days),
-        chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )
     if data is None:

@@ -5,7 +5,7 @@ from typing import Any
 
 from nori.core import AccountOperationProject, AgentInputPreparer
 
-from ..models import ComplianceReview, MetricsSnapshot
+from ..schemas import ComplianceReview, MetricsSnapshot
 
 
 class StrategyIterationInputPreparer(AgentInputPreparer):

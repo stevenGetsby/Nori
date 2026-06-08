@@ -1,7 +1,7 @@
 """Rules for promoting task/session observations into stable memory."""
 from __future__ import annotations
 
-from .models import MemoryRecord, SessionMemory, StableProfile, utc_now_iso
+from .schemas import MemoryRecord, SessionMemory, StableProfile, utc_now_iso
 
 
 class MemoryPromotionPolicy:

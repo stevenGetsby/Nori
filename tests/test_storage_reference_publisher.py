@@ -65,6 +65,8 @@ def test_reference_publisher_uploads_local_image_to_store(tmp_path):
     assert refs.items[0].uploaded is True
     assert refs.items[0].key.startswith("nori/reference-images/holly/session_1/20260607/")
     assert refs.to_extra()["reference_object_keys"] == [refs.items[0].key]
+    assert refs.to_extra()["reference_items"][0]["original_path"] == str(path)
+    assert refs.to_extra()["reference_items"][0]["public_url"] == refs.items[0].public_url
     assert store.calls[0]["payload"] == PNG_BYTES
     assert store.calls[0]["content_type"] == "image/png"
 
@@ -77,6 +79,22 @@ def test_reference_publisher_disabled_keeps_local_bytes(tmp_path):
     assert refs.inputs == [PNG_BYTES]
     assert refs.items[0].uploaded is False
     assert refs.items[0].reason == "local_bytes"
+
+
+def test_reference_publisher_uses_request_scoped_public_url_map_before_local_bytes(tmp_path):
+    path = tmp_path / "ref.png"
+    path.write_bytes(PNG_BYTES)
+    public_url = "https://backend.example.test/sessions/session_1/assets/asset_1/file"
+
+    refs = ReferenceImagePublisher.disabled().publish_paths(
+        [str(path)],
+        public_url_map={str(path): public_url},
+    )
+
+    assert refs.inputs == [public_url]
+    assert refs.items[0].uploaded is True
+    assert refs.items[0].public_url == public_url
+    assert refs.items[0].reason == "public_url_map"
 
 
 def test_image_content_type_detects_common_image_bytes():

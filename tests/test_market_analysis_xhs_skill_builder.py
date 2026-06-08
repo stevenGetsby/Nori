@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from data_collect import HotNote
-from nori.agents.market_analysis.models import NoteSkill
+from nori.agents.market_analysis.schemas import NoteSkill
 from nori.agents.market_analysis.xhs_note_analyzer import skill_builder as xhs_skill_builder
 
 

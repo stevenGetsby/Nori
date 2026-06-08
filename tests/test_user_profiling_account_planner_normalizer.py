@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPlanResult
 from nori.agents.user_profiling.account_planner import normalizer as account_plan_normalizer
 
 

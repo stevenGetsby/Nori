@@ -37,13 +37,13 @@ UserInput(text/images)
 
 | Contract | Source |
 | --- | --- |
-| `UserInput`, `IntakeResult` | `nori/agents/user_profiling/models.py`; front-pipeline inputs/results support `to_dict()` / `from_dict()` round trips. |
-| `UserAsset` | `nori/core/asset_models.py`; cross-stage asset contract produced by Intake and consumed by NoteMaker/CoverDirector/ContentProducer. `nori.agents.content_generation.models` re-exports the same class for existing generation call sites. |
-| `AssetBundle`, `CandidateTitle`, `NoteDraft` | `nori/agents/content_generation/models.py`; generation artifacts support `to_dict()` / `from_dict()` round trips, and `UserAsset.from_dict()` is the canonical dict-asset normalization path for NoteMaker/ContentProducer. |
-| `ContextSlice`, `ContextView` | `nori/context/models.py`; agent-facing context projections for platform strategy, market hotspots, learned skills, content strategy, asset context, and constraints. |
-| `ContentDesignSpec` | `nori/agents/content_generation/models.py`; bridge contract between skill/context decisions and artifact execution. It stores selected skill refs, evidence refs, structure, media plan, copy/visual rules, constraints, and acceptance checks. |
-| `CoverResult` | `nori/agents/content_generation/models.py`; cover artifacts support `to_dict()` / `from_dict()` round trips. |
-| `NoteSkill` | `nori/agents/market_analysis/models.py` |
+| `UserInput`, `IntakeResult` | `nori/agents/user_profiling/schemas/profile.py`; front-pipeline inputs/results support `to_dict()` / `from_dict()` round trips. |
+| `UserAsset` | `nori/core/asset_models.py`; cross-stage asset contract produced by Intake and consumed by NoteMaker/CoverDirector/ContentProducer. `nori.agents.content_generation.schemas` re-exports the same class for existing generation call sites. |
+| `AssetBundle`, `CandidateTitle`, `NoteDraft` | `nori/agents/content_generation/schemas/generation.py`; generation artifacts support `to_dict()` / `from_dict()` round trips, and `UserAsset.from_dict()` is the canonical dict-asset normalization path for NoteMaker/ContentProducer. |
+| `ContextSlice`, `ContextView` | `nori/context/schemas/context.py`; agent-facing context projections for platform strategy, market hotspots, learned skills, content strategy, asset context, and constraints. |
+| `ContentDesignSpec` | `nori/agents/content_generation/schemas/generation.py`; bridge contract between skill/context decisions and artifact execution. It stores selected skill refs, evidence refs, structure, media plan, copy/visual rules, constraints, and acceptance checks. |
+| `CoverResult` | `nori/agents/content_generation/schemas/generation.py`; cover artifacts support `to_dict()` / `from_dict()` round trips. |
+| `NoteSkill` | `nori/agents/market_analysis/schemas/market.py` |
 | `load_note_skills`, `write_note_skill_fixture` | `nori/agents/market_analysis/note_skill_fixture.py` |
 
 ## Agent Boundaries
@@ -100,15 +100,12 @@ This keeps skill strategy decoupled from concrete execution: future HTML/card re
 
 | Helper | Contract |
 | --- | --- |
-| `llms.chat(...)` / `llms.achat(...)` | Public facades over `llms.chat_runner.chat_text` / `achat_text`, which check active model type through `llms.capabilities.ensure_chat_capability` before provider dispatch. Text chat accepts `type=llm` or `type=vision`; `usage="vision"` and multimodal message parts require `supports_vision=true`, otherwise `ChatCapabilityError`. Provider response text normalization lives in `llms.results.extract_chat_text`; empty text content, empty `choices`, or missing `message.content` raise `ChatResultError` instead of leaking empty success or low-level shape errors. |
-| `llms.chat_json(..., json_mode=True)` | Requests JSON object mode but retries once without `response_format` when a provider rejects JSON mode. Retry classification is limited to `response_format`, `json_object`, or JSON-specific unsupported errors so unrelated provider failures are not hidden. Default `json_mode=False` remains unchanged for broad provider compatibility. |
-| `llms.chat_json_with_raw(...)` | Uses the same JSON-mode retry contract as `chat_json`, and returns `(data, raw)` so structured helpers can retain original model text without duplicating `chat` wrappers. |
-| `llms.json_calls.*` | Canonical JSON-mode raw-call and retry plumbing. It owns `response_format` fallback classification and copies request params before retrying. |
-| `llms.parse_json_object(...)` | Accepts whole-object, fenced, and embedded JSON. Embedded parsing scans for the first valid JSON object instead of using greedy brace matching, so extra prose or later objects do not invalidate an otherwise usable first object. Implementation lives in `llms.json_parser`, while package and `llms.call` imports keep the same function identity. |
-| `llms.current_mode()` / `llms.set_mode(...)` / `llms.ensure_ready(...)` | Use a trimmed runtime mode value so `NORI_MODE=" ghc "` selects the same active block and readiness probe path as `NoriConfig`. |
-| `nori.shared.call_stage_json(...)` | Shared generation-stage wrapper around `llms.chat_json(json_mode=True)` that preserves injected chat functions and raises the caller's domain exception type. |
+| `nori.core.llms.chat(...)` / `nori.core.llms.achat(...)` | Execute through `nori.core.llms.lm.LanguageModelClient`, which uses LangChain chat adapters from `init_chat_model`, checks active model type through `nori.core.llms.capabilities.ensure_chat_capability` before provider dispatch, and preserves Nori's active-model config. Text chat accepts `type=llm` or `type=vision`; `usage="vision"` and multimodal message parts require `supports_vision=true`, otherwise `ChatCapabilityError`. Chat text comes from the LangChain message `content`; empty or missing content raises `ChatResultError` instead of leaking empty success. |
+| `nori.core.llms.chat_json(...)` | Executes through LangChain `with_structured_output(..., include_raw=True)`. Without a schema it binds `method="json_mode"`; with a schema it defaults to `json_schema` unless `structured_method` is provided. The gateway returns only JSON objects and wraps LangChain parse failures as `ChatJSONError`. |
+| `nori.core.llms.current_mode()` / `nori.core.llms.set_mode(...)` / `nori.core.llms.ensure_ready(...)` | Use a trimmed runtime mode value so `NORI_MODE=" ghc "` selects the same active block and readiness probe path as `NoriConfig`. |
+| `nori.shared.call_stage_json(...)` | Shared generation-stage wrapper around `nori.core.llms.chat_json(json_mode=True)` that raises the caller's domain exception type. |
 | `nori.shared.call_stage_messages_json(...)` | Shared required-stage wrapper for pre-built messages, including Intake vision's multimodal `usage="vision"` JSON tagging call. |
-| `nori.shared.try_stage_messages_json(...)` | Shared optional-stage wrapper for pre-built messages, including future multimodal/custom-message fallback paths. It returns `(data, error)` instead of raising so deterministic fallbacks can continue. Parse failures reuse the same `empty_response` / `parse_error` classification as optional `llms` structured helpers. |
+| `nori.shared.try_stage_messages_json(...)` | Shared optional-stage wrapper for pre-built messages, including future multimodal/custom-message fallback paths. It returns `(data, error)` instead of raising so deterministic fallbacks can continue. Parse failures reuse the same `empty_response` / `parse_error` classification as optional `nori.core.llms` structured helpers. |
 | `nori.shared.try_stage_json(...)` | System/user convenience wrapper over `try_stage_messages_json(...)` for optional-stage JSON stages. |
 | `nori.shared.attach_llm_error(...)` | Shared formatter for optional fallback `llm_error` fields, used by Intake, AccountPlanner, ops planners, and analyzer fallbacks to avoid local shape drift. |
 | `nori.agents.user_profiling.intaker.normalizer.*` | Intake text boundary. It owns deterministic text fallback, optional text-LLM output normalization, allowed vocabulary/alias mapping, image context construction, and missing/question repair; `IntakeAgent` only decides whether to call text LLM and vision tagging. |
@@ -119,15 +116,11 @@ This keeps skill strategy decoupled from concrete execution: future HTML/card re
 | `nori.agents.content_generation.cover_director.output.*` | CoverDirector output boundary. It owns data-uri decoding, remote image download, filename sanitization, and persistence errors; `CoverDirectorAgent` only passes the first image payload and records the resulting path. |
 | `nori.agents.content_generation.spec_designer.ContentSpecAgent` | Spec boundary. Skills, platform rules, task intent, assets, and acceptance checks are resolved into `ContentDesignSpec` before execution. This keeps reusable skills decoupled from concrete generators. |
 | `nori.agents.content_generation.artifact_generator.ArtifactGenerationAgent` | Execution boundary. It consumes `ContentDesignSpec`, filters skill inputs to `selected_skill_refs`, injects the spec into intent/context, and delegates to concrete generators. |
-| `llms.request_params.merge_chat_kwargs(...)` | Canonical chat gateway merge for model constraints. It copies caller `extra_body` before applying model-level defaults and always normalizes token-limit kwargs so each model sends only its expected parameter, even when no `max_output` default is configured. |
-| `llms.request_params.merge_image_kwargs(...)` | Canonical image request merge for model-level `extra_body` without inheriting chat-only token/temperature fields. |
-| `llms.image(..., reference_images=...)` | Checks active model type and reference-image capability through `llms.capabilities.ensure_image_capability`; invalid image usage raises `ImageCapabilityError`. OpenAI-compatible image requests also merge model-level `extra_body` without mutating caller kwargs, but do not inherit chat-only token/temperature fields. Provider response normalization lives in `llms.results.collect_image_results`; responses with no usable URL/base64 image raise `ImageResultError` instead of returning an empty success. |
-| `llms.image_inputs.*` | Canonical reference-image input helpers. `load_image_bytes(...)` normalizes bytes, data-uri, local path, and base64 string inputs while returning empty bytes for invalid/remote values; `sniff_mime(...)` and `bytes_to_data_uri(...)` build provider payloads. |
-| `llms.image_providers.*` | Canonical provider-specific image helpers. OpenAI-compatible edit, relay reference-payload retry, and Google native image generation live here. |
-| `llms.structured_outputs.*` | Canonical cleanup and parse-error classification for optional structured LLM helpers. |
-| `llms.set_telemetry_sink(...)` | Emits redacted metadata for `chat` / `achat` / `image`; prompt, messages, keys, image bytes, and response text are excluded. Implementation lives in `llms.telemetry`, while package and `llms.call` imports keep the same function identity. |
-| `llms.extract_intent(...)` | Returns `IntentLLMResult` with filtered fields/candidates and structured `error`; no live failure should escape to callers. |
-| `llms.select_edit_target(...)` | Returns `TargetSelectionResult`, validates selector whitelist, and filters alternatives to known selectors. |
+| `nori.core.llms.chat(...)` request kwargs | `LanguageModelClient` owns model-constraint merging. It copies caller `extra_body` before applying model-level defaults and always normalizes token-limit kwargs so each model sends only its expected parameter, even when no `max_output` default is configured. |
+| `nori.core.llms.image(..., reference_images=...)` | `ImageClient` checks active model type and reference-image capability through `nori.core.llms.capabilities.ensure_image_capability`; invalid image usage raises `ImageCapabilityError`. OpenAI-compatible image requests also merge model-level `extra_body` without mutating caller kwargs, but do not inherit chat-only token/temperature fields. Image response normalization lives with `ImageProviders`; responses with no usable URL/base64 image raise `ImageResultError` instead of returning an empty success. |
+| `nori.core.llms.image_inputs.*` | Canonical reference-image input helpers. `load_image_bytes(...)` normalizes bytes, data-uri, local path, and base64 string inputs while returning empty bytes for invalid/remote values; `sniff_mime(...)` and `bytes_to_data_uri(...)` build provider payloads. |
+| `nori.core.llms.image_providers.ImageProviders` | Canonical provider-specific image adapter. OpenAI-compatible edit, relay reference-payload retry, and Google native image generation live here. |
+| `nori.core.llms.set_telemetry_sink(...)` | Emits redacted metadata for `chat` / `achat` / `image`; prompt, messages, keys, image bytes, and response text are excluded. Implementation lives in `nori.core.llms.telemetry`. |
 
 Fallback metadata:
 
@@ -158,7 +151,7 @@ Fallback metadata:
 | `tests/test_content_generation_cover_director_output.py` | Cover output persistence for data-uri/http payloads, safe filename construction, user-agent download requests, and output domain errors. |
 | `tests/test_content_generation_cover_director.py` | Reference selection, shared JSON prompt routing, prompt generation, image output path handling. |
 | `tests/test_domain_model_contracts.py` | Front-pipeline and generation artifact serialization plus `from_dict()` restoration for intake/account-plan/note/cover snapshots. |
-| `tests/test_llms_call_json.py` | JSON parser and request-param helper import identity, embedded first-object extraction, raw capture, usage/kwargs propagation, JSON-mode retry behavior and retry classification, side-effect-free model kwargs merging, and token-limit parameter normalization. |
+| `tests/test_llms_call_json.py` | LangChain structured-output JSON routing, schema/method passthrough, parse-error wrapping, non-object rejection, and proof that legacy raw-chat injection no longer drives `chat_json`. |
 | `tests/test_llms_mode.py` | Runtime mode normalization, config validation reuse, and offline `ghc` readiness probing. |
 | `tests/test_llms_intent_target_helpers.py` | Intent extraction, edit-target selector, and shared structured-output helper contracts without live LLM. |
 | `tests/test_llms_image_capabilities.py` | Image reference capability guard, image result normalization, image input/provider helper aliases, provider helper behavior, and image request kwargs merging without live image calls. |
@@ -169,6 +162,5 @@ Fallback metadata:
 
 | Decision | Current default |
 | --- | --- |
-| Whether `IntentLLMResult` should replace parts of `IntakeAgent` | Not yet; helper exists but current Intake is stable. |
 | Where generated artifacts should persist | Local paths for now; future `ContentPackage` bridge should own final artifact index. |
 | Whether NoteMaker should have rule fallback | No; current design treats it as LLM-required. |

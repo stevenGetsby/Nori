@@ -9,15 +9,15 @@ architecture in [System Architecture](../20-system-architecture.md).
 
 | Contract group | Owner module | Public facade |
 | --- | --- | --- |
-| User/account profile | `nori/core/profile_models.py` | `nori.core`, `nori.core.models` |
-| User/source/generated assets | `nori/core/asset_models.py` | `nori.core`, `nori.core.models` |
-| Planning and task contracts | `nori/core/planning_models.py` | `nori.core`, `nori.core.models` |
-| Capability evidence, context, candidates, learning | `nori/core/capability_models.py` | `nori.core`, `nori.core.models` |
+| User/account profile | `nori/core/profile_models.py` | `nori.core` |
+| User/source/generated assets | `nori/core/asset_models.py` | `nori.core` |
+| Planning and task contracts | `nori/core/planning_models.py` | `nori.core` |
+| Capability evidence, context, candidates, learning | `nori/core/capability_models.py` | `nori.core` |
 | Cross-module project aggregate | `nori/core/project.py` | `nori.core` |
 | Config/runtime/LLM helper contracts | `nori/core/contracts.py` | `nori.core` |
 
-`nori.core.models` is a compatibility facade only. New code should import from
-`nori.core` or the narrower owner module when owner clarity matters.
+The historical `nori.core.models` facade has been removed. New code should
+import from `nori.core` or the narrower owner module when owner clarity matters.
 
 ## Workflow Stage Packages
 
@@ -37,6 +37,10 @@ architecture in [System Architecture](../20-system-architecture.md).
 | `nori/agents/learning_loop/review/` | `review_gate.py`, `package.py`, `policy.py`, `scoring.py`, `state.py` |
 | `nori/agents/learning_loop/strategy/` | `strategy_iteration.py`, `package.py`, `policy.py`, `state.py` |
 
+`nori/agents/supervisor/` is not a workflow stage package. It owns the
+user-facing main-chat routing agent and exposes subagents/subworkflows through
+injected `SupervisorTool` handlers.
+
 Flat helper module paths such as `nori.agents.content_generation.skill_picker`
 and `nori.agents.planning.operation_planner_inputs` should not exist.
 Stage-local `schema.py` re-export files should not exist either.
@@ -45,24 +49,43 @@ Stage-local `schema.py` re-export files should not exist either.
 
 | Module | Role |
 | --- | --- |
-| `nori/core/llm.py` | Injectable project LLM gateway used by agents instead of reaching directly into `llms` in constructors or orchestration code. |
+| `backend/` | FastAPI product-service boundary for request/response shaping, session routes, local session image uploads/downloads, workflow catalog/resolve routes, content-generation option/action catalogs, backend content-production experiment runs, experiment readiness/run-summary APIs, whitelisted run artifact serving, Swagger/OpenAPI docs, and local uvicorn serving. It calls stable Nori contracts and must not own prompt or agent policy logic. |
+| `nori/core/llm.py` | Injectable project LLM gateway used by agents instead of reaching directly into provider globals. |
 | `nori/core/agent.py` | Shared agent base and input/prompt builder patterns. |
 | `nori/core/workflow.py` | Backend-free workflow abstraction for agents and capability facades. |
 | `nori/workflows/adapters.py` | Bridges `WorkflowBase` into runtime `WorkflowSpec` for LangGraph-backed execution and run recording. |
+| `nori/workflows/content_production/` | Product-level content production workflow. It owns the ordered agent stages, content production state, artifact refs, and Human Gate before final package generation. |
 | `nori/context/compiler.py` | Compiles profile, task, market, skill, strategy, asset, and constraint slices into `ContextPack`. |
 | `nori/context/resolver.py` | Builds runtime `ContextBundle` rows and projects task `ContextPack` into agent-specific `ContextView`. |
 | `nori/context/adapters.py` | Bridges business `ContextPack` into the runtime `ContextBundle` used for one agent call. |
 | `nori/core/artifacts.py` | Stable artifact IDs, stage JSON checkpoints, manifests, and resumable artifact lookup. |
 | `nori/shared/llm_json.py` | Required/optional JSON LLM helpers and redacted fallback error formatting. |
 
+## Frontend And Visualization Boundaries
+
+| Path | Role |
+| --- | --- |
+| `backend/` | Product backend/API adapter boundary. Web clients should call this layer instead of importing Python agent internals. |
+| `web/` | Product frontend boundary. Future workbench code and backend-integrated UI should live here. |
+| `web/prototypes/` | Static frontend prototypes and product UI experiments. These may use fake/static data. |
+| `wiki/visuals/` | Architecture diagrams and documentation visualization only. |
+| `hyperframes/` | Promotional video compositions and renders. |
+
 ## Account-Ops Modules
 
 | Module | Role |
 | --- | --- |
-| `nori/agents/user_profiling/models.py` | User/account profile models: `AccountPositioning`, `UserInput`, `IntakeResult`, `AccountPlannerInput`, `AccountPlanResult`. |
-| `nori/agents/market_analysis/models.py` | Market evidence and learned-skill models. |
-| `nori/agents/content_generation/models.py` | Generated artifact/spec models: `ContentDesignSpec`, `ContentPackage`, `NoteDraft`, `CoverResult`, and helper models. |
-| `nori/agents/learning_loop/models.py` | Review, monitoring, and evolution models. |
+| `nori/agents/user_profiling/schemas/profile.py` | User/account profile schemas: `AccountPositioning`, `UserInput`, `IntakeResult`, `AccountPlannerInput`, `AccountPlanResult`. |
+| `nori/agents/market_analysis/schemas/market.py` | Market evidence and learned-skill schemas. |
+| `nori/agents/content_generation/schemas/generation.py` | Generated artifact/spec schemas: `ContentDesignSpec`, `ContentPackage`, `NoteDraft`, `CoverResult`, and helper schemas. |
+| `nori/agents/learning_loop/schemas/learning.py` | Review, monitoring, and evolution schemas. |
+| `nori/agents/supervisor/schemas/supervisor.py` | Main-chat routing contracts: `SupervisorIntent`, `SupervisorTool`, `SupervisorToolRequest`, `SupervisorToolResult`, and `SupervisorTurnResult`. |
+
+Each owner-local `schemas/__init__.py` is a public export surface only; schema implementations live in named modules such as `profile.py`, `market.py`, `generation.py`, and `workflow.py`.
+
+| Module | Role |
+| --- | --- |
+| `nori/agents/supervisor/supervisor.py` | `NoriSupervisorAgent` plus default tool catalog. It plans or invokes injected handlers and stays independent from `nori.workflows`. |
 | `nori/agents/planning/operation_planner/operation_planner.py` | `ClientBrief + AccountPlanResult -> AccountOperationProject`; owns orchestration, LLM request, fallback selection, and critic attachment. |
 | `nori/agents/planning/operation_planner/package.py` | Restores operation-planner inputs, normalizes start dates/horizons, and builds JSON-only SOP prompts. |
 | `nori/agents/planning/operation_planner/project_builder.py` | Builds deterministic operation projects, tasks, calendars, and derived KPI snapshots. |

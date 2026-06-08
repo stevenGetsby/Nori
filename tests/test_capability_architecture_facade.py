@@ -5,10 +5,10 @@ from nori.agents.content_generation import ContentGenerationFacade
 from nori.context import ContextPackBuilder
 from nori.agents.learning_loop import LearningLoopFacade
 from nori.agents.market_analysis import MarketAnalysisFacade
-from nori.agents.content_generation.models import ContentPackage
-from nori.agents.learning_loop.models import MetricsSnapshot, StrategyIteration
-from nori.agents.market_analysis.models import CompetitorResearch, CompetitorSample
-from nori.agents.user_profiling.models import AccountPositioning
+from nori.agents.content_generation.schemas import ContentPackage
+from nori.agents.learning_loop.schemas import MetricsSnapshot, StrategyIteration
+from nori.agents.market_analysis.schemas import CompetitorResearch, CompetitorSample
+from nori.agents.user_profiling.schemas import AccountPositioning
 from nori.agents.user_profiling import UserProfilingFacade
 from nori.core import (
     CandidateSet,
@@ -409,7 +409,7 @@ def test_capability_snapshot_validation_reports_structural_issues():
 
 def test_public_capability_entrypoint_builds_and_validates_snapshot():
     from nori import __all__ as nori_exports
-    from nori.capabilities import build_capability_snapshot, validate_capability_snapshot
+    from nori.agents.learning_loop import build_capability_snapshot, validate_capability_snapshot
 
     project = AccountOperationProject(
         project_id="project_001",
@@ -425,7 +425,8 @@ def test_public_capability_entrypoint_builds_and_validates_snapshot():
         selected_candidate_ids={"task_001": "pkg_001"},
     )
 
-    assert "capabilities" in nori_exports
+    assert "capabilities" not in nori_exports
+    assert "core" in nori_exports
     assert snapshot.snapshot_id == "capability_project_001"
     assert snapshot.is_valid()
     assert validate_capability_snapshot(snapshot) == []

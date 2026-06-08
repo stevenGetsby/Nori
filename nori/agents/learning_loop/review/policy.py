@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from nori.agents.content_generation.models import ContentPackage
+from nori.agents.content_generation.schemas import ContentPackage
 from nori.core import ClientBrief, ContentTask
 from nori.shared.normalization import string_list as _shared_string_list
 
@@ -15,7 +15,7 @@ from .scoring import (
     status_for_issues,
     suggestions,
 )
-from ..models import ComplianceReview
+from ..schemas import ComplianceReview
 
 ABSOLUTE_CLAIM_PATTERNS = (
     "保证",

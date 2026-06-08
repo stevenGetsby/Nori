@@ -7,7 +7,6 @@ from nori.core.lazy_exports import lazy_export
 
 
 _LAZY_EXPORTS = {
-    "ContextPackBuilder": "facade",
     "OperationPlannerAgent": "operation_planner",
     "plan_operation": "operation_planner",
     "KPIPlannerAgent": "kpi_planner",
@@ -23,7 +22,6 @@ __all__ = [
     "CalendarPlannerAgent",
     "ContentCalendar",
     "ContentTask",
-    "ContextPackBuilder",
     "KPIPlan",
     "KPIPlannerAgent",
     "OperationPlan",

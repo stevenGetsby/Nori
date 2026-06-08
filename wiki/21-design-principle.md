@@ -4,7 +4,7 @@
 
 ## Scope
 
-Nori currently has no active product UI. This file defines product/visual rules for generated XHS artifacts and future workbench UI, not a shipped frontend.
+Nori currently has no active product UI. `web/` is reserved for future product UI/prototypes; this file defines product/visual rules for generated XHS artifacts and future workbench UI, not a shipped frontend.
 
 ## Product UX Principles
 
@@ -49,4 +49,3 @@ cover_result
 review_report
 version / created_at
 ```
-

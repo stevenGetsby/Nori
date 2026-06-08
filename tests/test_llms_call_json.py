@@ -2,344 +2,261 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import inspect
+
 import pytest
 
-import llms
-import llms.call as call_module
-import llms.json_calls as json_calls
-import llms.json_parser as json_parser
-import llms.request_params as request_params
-from llms import ChatJSONError, parse_json_object
+import nori.core.llms.lm as lm_module
+from nori.core.llms import ChatJSONError, set_telemetry_sink
 
 
-def test_chat_json_routes_usage_and_kwargs(monkeypatch):
-    captured: dict = {}
+class FakeStructuredRunnable:
+    def __init__(self, response):
+        self.response = response
+        self.invoke_calls = []
 
-    def fake_chat(messages, *, usage="llm", **kwargs):
-        captured["messages"] = messages
-        captured["usage"] = usage
-        captured["kwargs"] = kwargs
-        return '{"ok": true, "count": 2}'
+    def invoke(self, messages):
+        self.invoke_calls.append(messages)
+        if isinstance(self.response, Exception):
+            raise self.response
+        return self.response
 
-    monkeypatch.setattr(call_module, "chat", fake_chat)
 
-    data = call_module.chat_json(
+class FakeLangChainChatModel:
+    def __init__(self, response=None, structured_output_error=None):
+        self.response = response if response is not None else {"raw": None, "parsed": {"ok": True}, "parsing_error": None}
+        self.structured_output_error = structured_output_error
+        self.with_structured_output_calls = []
+        self.invoke_calls = []
+        self.structured = FakeStructuredRunnable(self.response)
+
+    def with_structured_output(self, schema=None, **kwargs):
+        self.with_structured_output_calls.append({"schema": schema, "kwargs": kwargs})
+        if self.structured_output_error is not None:
+            raise self.structured_output_error
+        return self.structured
+
+    def invoke(self, messages, **kwargs):
+        self.invoke_calls.append({"messages": messages, "kwargs": kwargs})
+        return SimpleNamespace(content='{"ok": true, "source": "plain"}')
+
+
+class FakeDirectChatCompletions:
+    def __init__(self):
+        self.create_calls = []
+
+    def create(self, **kwargs):
+        self.create_calls.append(kwargs)
+        return SimpleNamespace(
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content='{"ok": true, "source": "direct"}')
+                )
+            ]
+        )
+
+
+class FakeDirectOpenAIClient:
+    def __init__(self):
+        self.completions = FakeDirectChatCompletions()
+        self.chat = SimpleNamespace(completions=self.completions)
+
+
+def _model(*, max_output: int = 256, temperature_fixed: float | None = 0.2):
+    return SimpleNamespace(
+        key="openai::gpt-5-mini",
+        provider_id="openai",
+        model_id="gpt-5-mini",
+        type="llm",
+        max_output=max_output,
+        temperature_fixed=temperature_fixed,
+        extra_body={"trace": "model"},
+        supports_vision=False,
+    )
+
+
+def _chat_model_bundle(model, chat_model):
+    return SimpleNamespace(
+        model=model,
+        model_id=model.model_id,
+        client=chat_model,
+    )
+
+
+@pytest.fixture(autouse=True)
+def _clear_telemetry_sink():
+    set_telemetry_sink(None)
+    yield
+    set_telemetry_sink(None)
+
+
+def test_chat_json_uses_langchain_structured_output_and_returns_parsed_dict():
+    model = _model()
+    chat_model = FakeLangChainChatModel(
+        {"raw": "raw-message", "parsed": {"ok": True, "count": 2}, "parsing_error": None}
+    )
+    client = lm_module.LanguageModelClient(
+        chat_model_factory=lambda usage: _chat_model_bundle(model, chat_model),
+    )
+
+    data = client.chat_json(
         [{"role": "user", "content": "json only"}],
-        usage="vision",
+        usage="llm",
         timeout=12,
+        response_format={"type": "json_object"},
+        extra_body={"trace": "caller"},
     )
 
     assert data == {"ok": True, "count": 2}
-    assert captured["usage"] == "vision"
-    assert captured["kwargs"] == {"timeout": 12}
-    assert "response_format" not in captured["kwargs"]
+    assert chat_model.with_structured_output_calls == [
+        {
+            "schema": None,
+            "kwargs": {
+                "method": "json_mode",
+                "include_raw": True,
+                "temperature": 0.2,
+                "max_completion_tokens": 256,
+                "timeout": 12,
+                "extra_body": {"trace": "model"},
+            },
+        }
+    ]
+    assert chat_model.structured.invoke_calls == [[{"role": "user", "content": "json only"}]]
 
 
-def test_merge_kwargs_does_not_mutate_caller_extra_body():
-    model = SimpleNamespace(
-        provider_id="openai",
-        model_id="gpt-5-mini",
-        max_output=0,
-        temperature_fixed=None,
-        extra_body={"reasoning": {"effort": "low"}, "trace": "model"},
+def test_chat_json_exposes_only_structured_output_parameters():
+    signature = inspect.signature(lm_module.LanguageModelClient.chat_json)
+
+    assert "_chat" not in signature.parameters
+    assert "chat_func" not in signature.parameters
+    assert "retry_without_response_format" not in signature.parameters
+
+
+@pytest.mark.parametrize("legacy_kwarg", ["_chat", "chat_func", "retry_without_response_format"])
+def test_chat_json_rejects_removed_legacy_kwargs(legacy_kwarg):
+    client = lm_module.LanguageModelClient(
+        chat_model_factory=lambda usage: _chat_model_bundle(_model(), FakeLangChainChatModel()),
     )
-    caller_extra_body = {"trace": "caller", "metadata": {"request_id": "local"}}
 
-    merged = request_params.merge_chat_kwargs(model, {"extra_body": caller_extra_body})
+    with pytest.raises(TypeError, match=legacy_kwarg):
+        client.chat_json(
+            [{"role": "user", "content": "json only"}],
+            **{legacy_kwarg: object()},
+        )
 
-    assert caller_extra_body == {"trace": "caller", "metadata": {"request_id": "local"}}
-    assert merged["extra_body"] == {
-        "trace": "model",
-        "metadata": {"request_id": "local"},
-        "reasoning": {"effort": "low"},
+
+def test_chat_json_accepts_explicit_schema_and_method():
+    schema = {
+        "name": "Answer",
+        "description": "Answer payload",
+        "parameters": {
+            "type": "object",
+            "properties": {"answer": {"type": "string"}},
+            "required": ["answer"],
+        },
     }
-    assert merged["extra_body"] is not caller_extra_body
-
-
-def test_merge_kwargs_prefers_max_completion_tokens_for_gpt5():
-    model = SimpleNamespace(
-        provider_id="openai",
-        model_id="gpt-5-mini",
-        max_output=4096,
-        temperature_fixed=None,
-        extra_body={},
+    chat_model = FakeLangChainChatModel(
+        {"raw": "raw-message", "parsed": {"answer": "yes"}, "parsing_error": None}
+    )
+    client = lm_module.LanguageModelClient(
+        chat_model_factory=lambda usage: _chat_model_bundle(_model(), chat_model),
     )
 
-    converted = request_params.merge_chat_kwargs(model, {"max_tokens": 123})
-    explicit = request_params.merge_chat_kwargs(
-        model,
-        {"max_tokens": 123, "max_completion_tokens": 456},
-    )
-    defaulted = request_params.merge_chat_kwargs(model, {})
-
-    assert converted == {"max_completion_tokens": 123}
-    assert explicit == {"max_completion_tokens": 456}
-    assert defaulted == {"max_completion_tokens": 4096}
-
-
-def test_merge_kwargs_prefers_max_completion_tokens_for_openai_compatible_gpt5_providers():
-    model = SimpleNamespace(
-        provider_id="lumina",
-        model_id="gpt-5.5",
-        max_output=128,
-        temperature_fixed=None,
-        extra_body={},
-    )
-
-    assert request_params.merge_chat_kwargs(model, {"max_tokens": 32}) == {"max_completion_tokens": 32}
-    assert request_params.merge_chat_kwargs(model, {}) == {"max_completion_tokens": 128}
-
-
-def test_merge_kwargs_prefers_max_tokens_for_non_gpt5():
-    model = SimpleNamespace(
-        provider_id="openai",
-        model_id="gpt-4.1-mini",
-        max_output=2048,
-        temperature_fixed=None,
-        extra_body={},
-    )
-
-    converted = request_params.merge_chat_kwargs(model, {"max_completion_tokens": 123})
-    explicit = request_params.merge_chat_kwargs(
-        model,
-        {"max_tokens": 456, "max_completion_tokens": 123},
-    )
-    defaulted = request_params.merge_chat_kwargs(model, {})
-
-    assert converted == {"max_tokens": 123}
-    assert explicit == {"max_tokens": 456}
-    assert defaulted == {"max_tokens": 2048}
-
-
-def test_merge_kwargs_normalizes_token_kwargs_without_model_default():
-    gpt5 = SimpleNamespace(
-        provider_id="openai",
-        model_id="gpt-5-mini",
-        max_output=0,
-        temperature_fixed=None,
-        extra_body={},
-    )
-    non_gpt5 = SimpleNamespace(
-        provider_id="openai",
-        model_id="gpt-4.1-mini",
-        max_output=0,
-        temperature_fixed=None,
-        extra_body={},
-    )
-
-    assert request_params.merge_chat_kwargs(
-        gpt5,
-        {"max_tokens": 123, "max_completion_tokens": 456},
-    ) == {"max_completion_tokens": 456}
-    assert request_params.merge_chat_kwargs(
-        non_gpt5,
-        {"max_tokens": 456, "max_completion_tokens": 123},
-    ) == {"max_tokens": 456}
-    assert request_params.merge_chat_kwargs(gpt5, {}) == {}
-    assert request_params.merge_chat_kwargs(non_gpt5, {}) == {}
-
-
-def test_chat_json_accepts_injected_chat_function():
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        return '{"source": "injected"}'
-
-    data = call_module.chat_json(
+    data = client.chat_json(
         [{"role": "user", "content": "json only"}],
-        _chat=fake_chat,
+        schema=schema,
+        structured_method="function_calling",
     )
 
-    assert data == {"source": "injected"}
+    assert data == {"answer": "yes"}
+    assert chat_model.with_structured_output_calls[0]["schema"] == schema
+    assert chat_model.with_structured_output_calls[0]["kwargs"]["method"] == "function_calling"
 
 
-def test_parse_json_object_identity_is_stable_across_import_paths():
-    assert llms.parse_json_object is json_parser.parse_json_object
-    assert call_module.parse_json_object is json_parser.parse_json_object
-
-
-def test_chat_json_with_raw_returns_parsed_data_and_raw_text():
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        return '```json\n{"source": "raw-helper"}\n```'
-
-    data, raw = call_module.chat_json_with_raw(
-        [{"role": "user", "content": "json only"}],
-        _chat=fake_chat,
+def test_chat_json_wraps_langchain_parsing_error_as_chat_json_error():
+    parsing_error = ValueError("bad structured output")
+    chat_model = FakeLangChainChatModel(
+        {"raw": SimpleNamespace(content="not json"), "parsed": None, "parsing_error": parsing_error}
     )
-
-    assert data == {"source": "raw-helper"}
-    assert raw == '```json\n{"source": "raw-helper"}\n```'
-
-
-def test_json_call_raw_retries_without_mutating_params():
-    calls: list[dict] = []
-    params = {"timeout": 6, "extra_body": {"trace": "caller"}}
-
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        calls.append({"usage": usage, "kwargs": kwargs})
-        if len(calls) == 1:
-            raise RuntimeError("provider says response_format json_object unsupported")
-        return '{"ok": true}'
-
-    raw = json_calls.chat_json_raw(
-        [{"role": "user", "content": "json only"}],
-        usage="vision",
-        json_mode=True,
-        retry_without_response_format=True,
-        chat_func=fake_chat,
-        params=params,
+    client = lm_module.LanguageModelClient(
+        chat_model_factory=lambda usage: _chat_model_bundle(_model(), chat_model),
     )
-
-    assert raw == '{"ok": true}'
-    assert params == {"timeout": 6, "extra_body": {"trace": "caller"}}
-    assert calls[0]["usage"] == "vision"
-    assert calls[0]["kwargs"]["response_format"] == {"type": "json_object"}
-    assert calls[0]["kwargs"]["timeout"] == 6
-    assert "response_format" not in calls[1]["kwargs"]
-    assert calls[1]["kwargs"]["extra_body"] == {"trace": "caller"}
-
-
-def test_chat_json_json_mode_retries_without_response_format():
-    calls: list[dict] = []
-
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        calls.append({"usage": usage, "kwargs": kwargs})
-        if len(calls) == 1:
-            raise RuntimeError("provider says response_format json_object unsupported")
-        return '{"ok": true}'
-
-    data = call_module.chat_json(
-        [{"role": "user", "content": "json only"}],
-        usage="llm",
-        json_mode=True,
-        timeout=6,
-        _chat=fake_chat,
-    )
-
-    assert data == {"ok": True}
-    assert calls[0]["kwargs"]["response_format"] == {"type": "json_object"}
-    assert "response_format" not in calls[1]["kwargs"]
-    assert calls[1]["kwargs"]["timeout"] == 6
-
-
-def test_chat_json_json_mode_retries_type_error_from_response_format_kwarg():
-    calls: list[dict] = []
-
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        calls.append(dict(kwargs))
-        if len(calls) == 1:
-            raise TypeError(
-                "Completions.create() got an unexpected keyword argument 'response_format'"
-            )
-        return '{"ok": true}'
-
-    data = call_module.chat_json(
-        [{"role": "user", "content": "json only"}],
-        json_mode=True,
-        _chat=fake_chat,
-    )
-
-    assert data == {"ok": True}
-    assert "response_format" in calls[0]
-    assert "response_format" not in calls[1]
-
-
-def test_chat_json_json_mode_does_not_retry_unrelated_type_error():
-    calls = 0
-
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        nonlocal calls
-        calls += 1
-        raise TypeError("object of type int has no len()")
-
-    with pytest.raises(TypeError, match="object of type int"):
-        call_module.chat_json(
-            [{"role": "user", "content": "json only"}],
-            json_mode=True,
-            _chat=fake_chat,
-        )
-
-    assert calls == 1
-
-
-def test_chat_json_with_raw_preserves_raw_from_retry_success():
-    calls: list[dict] = []
-
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        calls.append(dict(kwargs))
-        if len(calls) == 1:
-            raise RuntimeError("provider says response_format unsupported")
-        return '{"retry": true}'
-
-    data, raw = call_module.chat_json_with_raw(
-        [{"role": "user", "content": "json only"}],
-        json_mode=True,
-        _chat=fake_chat,
-    )
-
-    assert data == {"retry": True}
-    assert raw == '{"retry": true}'
-    assert "response_format" in calls[0]
-    assert "response_format" not in calls[1]
-
-
-def test_chat_json_json_mode_can_disable_retry():
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        raise RuntimeError("response_format unsupported")
-
-    with pytest.raises(RuntimeError, match="response_format"):
-        call_module.chat_json(
-            [{"role": "user", "content": "json only"}],
-            json_mode=True,
-            retry_without_response_format=False,
-            _chat=fake_chat,
-        )
-
-
-def test_chat_json_json_mode_does_not_retry_unrelated_unsupported_errors():
-    calls = 0
-
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        nonlocal calls
-        calls += 1
-        raise RuntimeError("model family unsupported for this account")
-
-    with pytest.raises(RuntimeError, match="model family unsupported"):
-        call_module.chat_json(
-            [{"role": "user", "content": "json only"}],
-            json_mode=True,
-            _chat=fake_chat,
-        )
-
-    assert calls == 1
-
-
-def test_parse_json_object_accepts_fenced_and_embedded_json():
-    assert parse_json_object('```json\n{"a": 1}\n```') == {"a": 1}
-    assert parse_json_object('Here is the JSON:\n{"b": {"nested": true}}\nDone.') == {
-        "b": {"nested": True}
-    }
-
-
-def test_parse_json_object_uses_first_valid_embedded_object():
-    assert parse_json_object('Draft {placeholder}\n{"ok": true}\nDone.') == {"ok": True}
-    assert parse_json_object('First: {"a": 1}\nSecond: {"b": 2}') == {"a": 1}
-
-
-def test_parse_json_object_rejects_invalid_or_non_object_json():
-    with pytest.raises(ChatJSONError, match="无法解析"):
-        parse_json_object("not json")
-
-    with pytest.raises(ChatJSONError, match="不是 object"):
-        parse_json_object('["not", "an", "object"]')
-
-
-def test_chat_json_with_raw_attaches_raw_to_parse_error():
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        return "not json"
 
     with pytest.raises(ChatJSONError) as exc:
-        call_module.chat_json_with_raw(
-            [{"role": "user", "content": "json only"}],
-            _chat=fake_chat,
-        )
+        client.chat_json([{"role": "user", "content": "json only"}])
 
+    assert "无法解析为 JSON object" in str(exc.value)
     assert exc.value.raw == "not json"
+
+
+def test_chat_json_rejects_non_object_structured_output():
+    chat_model = FakeLangChainChatModel(
+        {"raw": SimpleNamespace(content='["not", "object"]'), "parsed": ["not", "object"], "parsing_error": None}
+    )
+    client = lm_module.LanguageModelClient(
+        chat_model_factory=lambda usage: _chat_model_bundle(_model(), chat_model),
+    )
+
+    with pytest.raises(ChatJSONError) as exc:
+        client.chat_json([{"role": "user", "content": "json only"}])
+
+    assert "不是 object" in str(exc.value)
+    assert exc.value.raw == '["not", "object"]'
+
+
+def test_chat_json_does_not_fall_back_to_plain_chat_when_structured_output_raises():
+    chat_model = FakeLangChainChatModel(RuntimeError("structured down"))
+    client = lm_module.LanguageModelClient(
+        chat_model_factory=lambda usage: _chat_model_bundle(_model(), chat_model),
+    )
+
+    with pytest.raises(RuntimeError, match="structured down"):
+        client.chat_json([{"role": "user", "content": "json only"}])
+
+    assert chat_model.invoke_calls == []
+
+
+def test_chat_json_falls_back_for_openai_raw_response_parse_adapter_error():
+    chat_model = FakeLangChainChatModel(
+        AttributeError("'CompletionsWithRawResponse' object has no attribute 'parse'")
+    )
+    direct_client = FakeDirectOpenAIClient()
+    client = lm_module.LanguageModelClient(
+        chat_model_factory=lambda usage: _chat_model_bundle(_model(), chat_model),
+        chat_completion_client_factory=lambda model, usage: _chat_model_bundle(model, direct_client),
+    )
+
+    data = client.chat_json([{"role": "user", "content": "json only"}])
+
+    assert data == {"ok": True, "source": "direct"}
+    assert chat_model.invoke_calls == []
+    assert direct_client.completions.create_calls == [
+        {
+            "messages": [{"role": "user", "content": "json only"}],
+            "model": "gpt-5-mini",
+            "temperature": 0.2,
+            "max_completion_tokens": 256,
+            "extra_body": {"trace": "model"},
+            "response_format": {"type": "json_object"},
+        }
+    ]
+
+
+def test_chat_json_falls_back_when_structured_output_creation_hits_openai_parse_adapter_error():
+    chat_model = FakeLangChainChatModel(
+        structured_output_error=AttributeError(
+            "'CompletionsWithRawResponse' object has no attribute 'parse'"
+        )
+    )
+    direct_client = FakeDirectOpenAIClient()
+    client = lm_module.LanguageModelClient(
+        chat_model_factory=lambda usage: _chat_model_bundle(_model(), chat_model),
+        chat_completion_client_factory=lambda model, usage: _chat_model_bundle(model, direct_client),
+    )
+
+    data = client.chat_json([{"role": "user", "content": "json only"}])
+
+    assert data == {"ok": True, "source": "direct"}
+    assert len(chat_model.with_structured_output_calls) == 1
+    assert chat_model.invoke_calls == []
+    assert len(direct_client.completions.create_calls) == 1

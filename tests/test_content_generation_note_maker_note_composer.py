@@ -1,6 +1,6 @@
 import pytest
 
-from nori.agents.content_generation.models import AssetBundle, CandidateTitle
+from nori.agents.content_generation.schemas import AssetBundle, CandidateTitle
 from nori.agents.content_generation.note_maker.package import NoteComposer
 
 

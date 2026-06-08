@@ -73,7 +73,6 @@ def _llm_kpi_plan(
     data, error = try_stage_json(
         system=prompts.system_prompt,
         user=prompts.build_user_prompt(plan, context),
-        chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )
     if data is None:

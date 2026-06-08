@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from nori.agents.content_generation.models import AssetBundle, CandidateTitle
+from nori.agents.content_generation.schemas import AssetBundle, CandidateTitle
 from nori.core import UserAsset
 from nori.shared.prompting import json_block, json_prompt
 

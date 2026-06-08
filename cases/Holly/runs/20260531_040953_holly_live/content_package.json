@@ -1,0 +1,286 @@
+{
+  "package_id": "pkg_task_d01_01",
+  "task_id": "task_d01_01",
+  "platform": "xhs",
+  "title": "线上卖不动，也没关系",
+  "body": "最近我才发现，创业最难的不是开始，是接受冷场。\n\n我是同济设计创意学院的学生。因为一次很偶然的机会，我用一周赶出了几个文创小产品，带去市集，没想到大家真的很喜欢。\n\n那一刻我以为：啊，原来我可以继续做下去。\n\n但后来我发现，市集卖得好，不代表线上也会被看见。数据安静的时候，人很容易怀疑自己。\n\n所以我开始重新想 Holly Shit开心拉屎 到底是什么。\n\n它不是单纯搞怪，也不是为了说脏话而说脏话。它更像是：用最不体面的语言，说出我们最体面的诉求。\n\n别总逼自己鸡血奋斗。也许我们都需要一个地方，允许自己暂时放空，允许身体先松一口气。\n\nShit人生，也要拉得开心。\n\n你会喜欢这种“有点怪但很快乐”的文创吗？",
+  "tags": [
+    "创业日记",
+    "文创品牌",
+    "反焦虑",
+    "同济设计",
+    "主理人"
+  ],
+  "cover_path": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/covers/cover_综合通用_情感治愈笔记制作指南_20260531_042119.png",
+  "image_paths": [
+    "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 49@2x.png",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png"
+  ],
+  "prompts": {
+    "note_draft": {
+      "skill_id": "综合通用·情感治愈笔记制作指南",
+      "title": "线上卖不动，也没关系",
+      "body": "最近我才发现，创业最难的不是开始，是接受冷场。\n\n我是同济设计创意学院的学生。因为一次很偶然的机会，我用一周赶出了几个文创小产品，带去市集，没想到大家真的很喜欢。\n\n那一刻我以为：啊，原来我可以继续做下去。\n\n但后来我发现，市集卖得好，不代表线上也会被看见。数据安静的时候，人很容易怀疑自己。\n\n所以我开始重新想 Holly Shit开心拉屎 到底是什么。\n\n它不是单纯搞怪，也不是为了说脏话而说脏话。它更像是：用最不体面的语言，说出我们最体面的诉求。\n\n别总逼自己鸡血奋斗。也许我们都需要一个地方，允许自己暂时放空，允许身体先松一口气。\n\nShit人生，也要拉得开心。\n\n你会喜欢这种“有点怪但很快乐”的文创吗？",
+      "tags": [
+        "创业日记",
+        "文创品牌",
+        "反焦虑",
+        "同济设计",
+        "主理人"
+      ],
+      "comment_hook": "你会因为一个品牌理念很戳你，而买下它的产品吗？",
+      "cover_path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png",
+      "image_paths": [
+        "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+        "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+        "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 49@2x.png"
+      ],
+      "candidate_titles": [
+        {
+          "text": "线上卖不动，也没关系",
+          "rule_name": "短标题",
+          "rationale": "先抛出创业里的真实卡点，再用轻柔语气降低焦虑感。"
+        },
+        {
+          "text": "我把焦虑做成了便便",
+          "rule_name": "短标题",
+          "rationale": "用怪趣表达制造悬念，同时贴合品牌反焦虑哲学。"
+        },
+        {
+          "text": "从市集爆单到线上冷场",
+          "rule_name": "短标题",
+          "rationale": "用反差感引出主理人成长日记，让人想看后续。"
+        },
+        {
+          "text": "允许自己合法躺平",
+          "rule_name": "短标题",
+          "rationale": "直接给情绪出口，呼应品牌的身体权利与精神庇护。"
+        }
+      ],
+      "metrics_target": {
+        "liked_target": 1716,
+        "collected_target": 71,
+        "sample": 1
+      },
+      "asset_bundle": {
+        "main_images": [
+          {
+            "kind": "image",
+            "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png",
+            "text": "",
+            "vision_roles": [
+              "reference_style",
+              "raw_material",
+              "brand_logo"
+            ],
+            "subject": "黑白粗粝海报传达反焦虑行动口号，契合品牌不羁搞怪调性",
+            "brand_signals": [
+              "Done is the New Daring",
+              "GET SHIT DOWN",
+              "完成比完美更性感",
+              "Holly Shit!"
+            ],
+            "usable_for": [
+              "cover",
+              "body"
+            ],
+            "quality": "medium"
+          },
+          {
+            "kind": "image",
+            "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+            "text": "",
+            "vision_roles": [
+              "product_shot",
+              "ip_character"
+            ],
+            "subject": "HollyShit便签纸产品，含屎尿屁文案和打工人IP插画",
+            "brand_signals": [
+              "HollyShit",
+              "MEMO PAPER",
+              "To Do List",
+              "HOLY SHIT!",
+              "Just Doo It.",
+              "Shit happens but keep going"
+            ],
+            "usable_for": [
+              "cover",
+              "body"
+            ],
+            "quality": "medium"
+          }
+        ],
+        "aux_images": [
+          {
+            "kind": "image",
+            "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+            "text": "",
+            "vision_roles": [
+              "product_shot",
+              "ip_character",
+              "lifestyle"
+            ],
+            "subject": "印有搞怪人物与便便元素的帆布包，契合屎尿屁文创产品展示",
+            "brand_signals": [],
+            "usable_for": [
+              "cover",
+              "body"
+            ],
+            "quality": "medium"
+          },
+          {
+            "kind": "image",
+            "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 49@2x.png",
+            "text": "",
+            "vision_roles": [
+              "product_shot",
+              "ip_character"
+            ],
+            "subject": "金属篮中的白色印花布品，展示搞怪屎尿屁IP与周边风格",
+            "brand_signals": [
+              "HOLLY SIT"
+            ],
+            "usable_for": [
+              "cover",
+              "body"
+            ],
+            "quality": "medium"
+          }
+        ],
+        "text_points": [
+          "用一个明确角度组织内容，让用户愿意读完。",
+          "Holly Shit开心拉屎主理人创业日记：记录同济设计学生从市集作品到原创文创品牌的真实成长。",
+          "给大家分享我的文创的品牌理念和做产品的小故事。",
+          "市集可以卖的很好，但是线上卖不动",
+          "用最不体面的语言，说出人们最体面的诉求。",
+          "不要永远鸡血奋斗，请允许自己在厕所里合法躺平。"
+        ],
+        "brand_facts": [
+          "Holly Shit开心拉屎 = 用怪趣文创表达反焦虑快乐哲学。",
+          "关键词：\n反焦虑的快乐哲学",
+          "Slogan：\nShit人生也要拉的开心",
+          "品牌风格：\n不羁 自信 有趣 搞怪",
+          "“Holly Shit开心拉屎”设计品牌致力于把排泄从羞耻行为回归到身体权利与精神庇护。",
+          "品牌IP形象：\n小女孩——每天Shitting的打工人\n小狗——草丛里拉屎尿尿\n小猫——"
+        ],
+        "data_points": [
+          "在 7 天内建立小红书账号的基础认知",
+          "我是一个同济大学设计创意学院的学生",
+          "因为一个很偶然的机会，我用一周的时间仓促的做了几个文创产品做的很好，大家都很喜欢，于是我打算继续做下去。",
+          "现在市集可以卖的很好，但是线上卖不动"
+        ]
+      },
+      "validation": {
+        "status": "pass",
+        "issues": []
+      },
+      "llm_enhanced": true
+    },
+    "cover_result": {
+      "cover_path": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/covers/cover_综合通用_情感治愈笔记制作指南_20260531_042119.png",
+      "prompt": "Create a 3:4 vertical Xiaohongshu cover image with a warm emotional-healing mood for a founder diary of the quirky cultural creative brand Holly Shit开心拉屎. Use the provided reference images as the visual anchor: preserve the main product/IP/brand elements, handmade design details, and the playful weird-cute attitude from the references, but do not invent any fake logo, certification, UI screenshot, or price tag. Composition: one strong central subject occupying about 60–75% of the frame, showing a young design-student founder sitting beside or behind her handmade cultural creative products, sketches, stickers, and small IP characters, like a quiet after-market or studio moment; leave clean safe margins around the subject. Style: soft editorial illustration mixed with realistic product display, slightly whimsical, cozy, not overly commercial. Color palette: creamy off-white background, warm beige, cocoa brown, soft pink, muted green, with gentle highlights. Lighting: soft diffused morning light, calm shadows, comforting and sincere. Add one small emotional symbol such as a tiny smiling doodle, sparkle, or soft cloud to reinforce the “it’s okay” feeling. Text layout: place the main Chinese title exactly as “线上卖不动，也没关系” in large bold rounded Chinese typography, positioned in the upper-left or upper-center without covering key product details; add one smaller auxiliary line below it: “主理人创业日记”. Keep only these two text blocks, high contrast but gentle, clean spacing, Xiaohongshu cover readability.",
+      "size": "1072x1440",
+      "reference_paths": [
+        "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+        "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png"
+      ],
+      "source": "https://sd2oss-american.oss-us-west-1.aliyuncs.com/temp_images/2026/05/30/img-8f",
+      "extra": {
+        "reference_images_sent": false,
+        "reference_image_fallback": "local_refs_not_supported"
+      }
+    }
+  },
+  "material_usage": [
+    {
+      "source": "input_asset",
+      "index": 0,
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+      "text_preview": "",
+      "usable_for": [
+        "cover",
+        "body"
+      ]
+    },
+    {
+      "source": "input_asset",
+      "index": 1,
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 49@2x.png",
+      "text_preview": "",
+      "usable_for": [
+        "cover",
+        "body"
+      ]
+    },
+    {
+      "source": "input_asset",
+      "index": 2,
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+      "text_preview": "",
+      "usable_for": [
+        "cover",
+        "body"
+      ]
+    },
+    {
+      "source": "input_asset",
+      "index": 3,
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png",
+      "text_preview": "",
+      "usable_for": [
+        "cover",
+        "body"
+      ]
+    },
+    {
+      "source": "input_asset",
+      "index": 4,
+      "kind": "text",
+      "path": "",
+      "text_preview": "我是一个同济大学设计创意学院的学生，因为一个很偶然的机会，我用一周的时间仓促的做了几个文创产品做的很好，大家都很喜欢，于是我打算继续做下去。现在市集可以卖的很好，但是线上卖不动，于是我想做个小红书账号，给大家分享我的文创的品牌理念和做产品的",
+      "usable_for": []
+    },
+    {
+      "source": "task_required_asset",
+      "kind": "xhs_note"
+    }
+  ],
+  "source_refs": [
+    {
+      "source": "note_skill",
+      "skill_id": "种草推荐·朋友安利笔记制作指南",
+      "label": "种草推荐·朋友安利"
+    },
+    {
+      "source": "note_skill",
+      "skill_id": "综合通用·情感治愈笔记制作指南",
+      "label": "综合通用·情感治愈"
+    },
+    {
+      "source": "client_brief",
+      "client_name": "Holly",
+      "brand_name": "Holly Shit开心拉屎"
+    },
+    {
+      "source": "account_operation_project",
+      "project_id": "holly_live_20260531_040953_holly_live"
+    }
+  ],
+  "status": "draft",
+  "metadata": {
+    "production": {
+      "producer": "ContentProducerAgent",
+      "version": "p3-content-task-production-bridge",
+      "task_status_before": "planned",
+      "cover_enabled": true,
+      "cover_generated": true
+    },
+    "intent_contract": {}
+  }
+}

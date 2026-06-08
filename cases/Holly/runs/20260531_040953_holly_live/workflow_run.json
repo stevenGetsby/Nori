@@ -1,0 +1,146 @@
+{
+  "workflow_name": "holly_live_content_generation",
+  "run_id": "workflow_535a9efa2f0e",
+  "session_id": "session_ee94bef2962f",
+  "task_id": "task_d269703f021f",
+  "status": "succeeded",
+  "stages": [
+    {
+      "stage_name": "xhs_top_notes",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/xhs_top_notes_result.json",
+      "error": "",
+      "started_at": "2026-05-30T20:14:32.025818+00:00",
+      "finished_at": "2026-05-30T20:14:32.025899+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "market_skill_report",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/market_session_skill_report.json",
+      "error": "",
+      "started_at": "2026-05-30T20:14:38.934042+00:00",
+      "finished_at": "2026-05-30T20:14:38.934076+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "intake",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/intake_result.json",
+      "error": "",
+      "started_at": "2026-05-30T20:15:37.648167+00:00",
+      "finished_at": "2026-05-30T20:15:37.648408+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "account_plan",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/account_plan.json",
+      "error": "",
+      "started_at": "2026-05-30T20:16:20.407565+00:00",
+      "finished_at": "2026-05-30T20:16:20.407652+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "client_brief",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/client_brief.json",
+      "error": "",
+      "started_at": "2026-05-30T20:16:20.408170+00:00",
+      "finished_at": "2026-05-30T20:16:20.408188+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "operation_project",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/operation_project.json",
+      "error": "",
+      "started_at": "2026-05-30T20:17:19.637812+00:00",
+      "finished_at": "2026-05-30T20:17:19.637907+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "kpi_plan",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/kpi_plan.json",
+      "error": "",
+      "started_at": "2026-05-30T20:17:40.095663+00:00",
+      "finished_at": "2026-05-30T20:17:40.095796+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "content_calendar",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/content_calendar.json",
+      "error": "",
+      "started_at": "2026-05-30T20:18:47.551786+00:00",
+      "finished_at": "2026-05-30T20:18:47.551865+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "selected_task",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/selected_task.json",
+      "error": "",
+      "started_at": "2026-05-30T20:18:47.552119+00:00",
+      "finished_at": "2026-05-30T20:18:47.552126+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "content_package",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/content_package.json",
+      "error": "",
+      "started_at": "2026-05-30T20:21:22.354521+00:00",
+      "finished_at": "2026-05-30T20:21:22.354570+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "reviews",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/reviews.json",
+      "error": "",
+      "started_at": "2026-05-30T20:21:22.356085+00:00",
+      "finished_at": "2026-05-30T20:21:22.356099+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "summary",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/summary.md",
+      "error": "",
+      "started_at": "2026-05-30T20:21:22.356362+00:00",
+      "finished_at": "2026-05-30T20:21:22.356372+00:00",
+      "metadata": {}
+    }
+  ],
+  "artifact_refs": [
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/xhs_top_notes_result.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/market_session_skill_report.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/intake_result.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/account_plan.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/client_brief.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/operation_project.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/kpi_plan.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/content_calendar.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/selected_task.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/content_package.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/reviews.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/summary.md"
+  ],
+  "metadata": {},
+  "started_at": "2026-05-30T20:09:53.815299+00:00",
+  "finished_at": "2026-05-30T20:21:22.356381+00:00"
+}

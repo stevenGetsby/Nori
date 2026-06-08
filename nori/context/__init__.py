@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from .adapters import attach_context_pack
 from .compiler import ContextCompiler, ContextPackBuilder
-from .models import ContextBundle, ContextSlice, ContextSource, ContextTrace, ContextView
+from .schemas import ContextBundle, ContextSlice, ContextSource, ContextTrace, ContextView
 from .resolver import ContextResolver
 
 __all__ = [

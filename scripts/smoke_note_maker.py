@@ -1,6 +1,6 @@
 """Smoke test for IntakeAgent + NoteMakerAgent + CoverDirectorAgent (纯 LLM 路径).
 
-加载 Holly skill_guides JSON + Holly 品牌素材目录：
+加载 Holly skill_guides JSON + Holly case 素材目录：
   1. IntakeAgent       — 用 vision LLM 给每张品牌素材图打语义标签
   2. NoteMakerAgent    — 用 tagged assets 写 note 草稿
   3. CoverDirectorAgent— 让 LLM 从 tagged assets 里自己挑封面参考图并生成封面
@@ -27,8 +27,8 @@ from nori.agents.user_profiling import IntakeAgent, UserInput
 from nori.core import UserAsset
 
 
-DEFAULT_SKILLS = "nori/skill_base/data/xhs_note_analyzer/holly/20260515_174142_note_skill_guides.json"
-DEFAULT_ASSETS_DIR = "SHOWCASE/Holly"
+DEFAULT_SKILLS = "cases/Holly/runs/20260531_121214_holly_live/note_skill_guides.json"
+DEFAULT_ASSETS_DIR = "cases/Holly/assets/raw/brand_materials"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 
 

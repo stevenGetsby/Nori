@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from nori.agents.market_analysis.models import NoteSkill, SessionSkillReport
+from nori.agents.market_analysis.schemas import NoteSkill, SessionSkillReport
 
 
 def note_skill_fixture(value: Any) -> dict[str, Any]:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from nori.agents.user_profiling.models import AccountPlannerInput
+from nori.agents.user_profiling.schemas import AccountPlannerInput
 from nori.agents.user_profiling.account_planner import fallback as account_plan_fallback
 
 

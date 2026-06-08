@@ -11,21 +11,26 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-import llms
+import nori.core.llms as llms
 from data_collect.adapter import HotNote, TopNotesResult
 from nori.agents.content_generation import ContentSpecAgent, ArtifactGenerationAgent
 from nori.agents.planning.calendar_planner import CalendarPlannerAgent
 from nori.context import ContextPackBuilder, ContextResolver
-from nori.core import AccountOperationProject, AssetLibrary, AssetRecord, ClientBrief, KPIPlan, LLMFactory
+from nori.core import AccountOperationProject, AssetLibrary, AssetRecord, CaseWorkspace, ClientBrief, KPIPlan, LLMFactory
 from nori.agents.learning_loop.review import ReviewGateAgent
-from nori.agents.market_analysis.models import SessionSkillReport
-from nori.agents.user_profiling.models import AccountPlanResult, IntakeResult
+from nori.agents.market_analysis.schemas import SessionSkillReport
+from nori.agents.user_profiling.schemas import AccountPlanResult, IntakeResult
+from nori.workflows.content_production import record_content_production_artifacts
+
+
+CASE = CaseWorkspace(ROOT, case_id="Holly", title="Holly Shit开心拉屎").ensure()
+WORKFLOW_NAME = "holly_live_content_generation"
 
 
 def main(argv: list[str]) -> int:
     if len(argv) != 2:
         raise SystemExit("Usage: python scripts/continue_holly_live_case.py <run_dir>")
-    run_dir = Path(argv[1]).expanduser().resolve()
+    run_dir = _resolve_run_dir(argv[1])
     covers_dir = run_dir / "covers"
     covers_dir.mkdir(parents=True, exist_ok=True)
 
@@ -93,8 +98,20 @@ def main(argv: list[str]) -> int:
         ),
         encoding="utf-8",
     )
+    CASE.record_run(run_dir, workflow=WORKFLOW_NAME, status="continued")
+    record_content_production_artifacts(CASE, run_dir)
     print(json.dumps({"run_dir": str(run_dir), "summary": str(run_dir / "summary.md")}, ensure_ascii=False))
     return 0
+
+
+def _resolve_run_dir(value: str) -> Path:
+    candidate = Path(value).expanduser()
+    if candidate.exists():
+        return candidate.resolve()
+    case_candidate = CASE.runs_dir / value
+    if case_candidate.exists():
+        return case_candidate.resolve()
+    return candidate.resolve()
 
 
 def _assert_active_models() -> None:

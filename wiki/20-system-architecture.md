@@ -6,27 +6,29 @@
 
 | Path | Role |
 | --- | --- |
+| `backend/` | FastAPI product-service boundary for web/CLI/local-server adapters. It owns request/response shapes, session routes, session image uploads, workflow catalog/resolve routes, content-generation option/action catalogs, backend experiment run APIs, and experiment readiness/run-summary observability without owning agent logic. |
 | `nori/` | Product workflow modules, shared contracts, runtime helpers, and config loader. |
-| `nori/capabilities/` | Public aggregate entrypoint for the current capability architecture: `build_capability_snapshot()` and `validate_capability_snapshot()`. |
 | `nori/core/` | Shared capability contracts, runtime base classes, public LLM/config contracts, architecture registry, and package-root lazy-export helper for public module APIs. |
-| `nori/agents/` | Business capability boundary for public agent groups: user profiling, planning, market analysis, content generation, and learning loop. |
+| `nori/agents/` | Agent boundary for the user-facing supervisor plus public business capability groups: user profiling, planning, market analysis, content generation, and learning loop. |
 | `nori/context/` | Context orchestration layer: compiles business `ContextPack` / `ContextView`, resolves runtime `ContextBundle`, and bridges business context into one agent call. |
-| `nori/memory/` | Stable/session/task memory contracts, retrieval, store, and promotion policy. |
+| `nori/memory/` | Stable/session/task memory contracts, retrieval, LangGraph store subclass, and promotion policy. |
 | `nori/sessions/` | Session, turn, task-goal, and session-manager contracts. |
 | `nori/workflows/` | Workflow run/stage contracts, LangGraph-backed runner, and `RuntimeRunRecorder` for session/context/workflow snapshots. |
 | `nori/agents/user_profiling/` | `facade.py` for long-lived user/account/brand/preference profile construction; package `__init__` keeps lightweight model exports eager and routes stage/facade exports through `nori.core.lazy_exports`. |
 | `nori/agents/market_analysis/` | `facade.py` for competitor/hot-example/trend evidence as market analysis; package `__init__` keeps lightweight model exports eager and routes analyzer/facade exports through `nori.core.lazy_exports`. |
-| `nori/agents/planning/` | Operation/KPI/calendar planning, planner critics, and content task construction. `ContextPackBuilder` is re-exported for compatibility, but canonical context compilation lives in `nori.context`. |
+| `nori/agents/planning/` | Operation/KPI/calendar planning, planner critics, and content task construction. Context compilation lives only in `nori.context`. |
 | `nori/agents/content_generation/` | Canonical content-generation module: content production bridge, package input/builder/provenance/state helpers, candidate sets, and lazy public stage exports. |
 | `nori/agents/learning_loop/` | Canonical learning-loop module: review gates, review policy/scoring/state, metrics snapshots, strategy iteration, capability snapshots, and lazy public stage exports. |
-| `llms/` | Project-level LLM gateway and utilities. |
+| `nori/agents/supervisor/` | User-facing main-chat supervisor. It routes a chat turn into injected subagent/subworkflow tools and does not import workflow runtime modules directly. |
+| `nori/core/llms/` | Core infra gateway for language, vision, and image-model calls. This is the only LLM gateway import root; the old top-level `llms/` compatibility package has been removed. |
 | `nori/_compat.py` | Small runtime compatibility layer for dataclass features used by shared models and LLM result objects. |
 | `nori/config_normalization.py` | Pure runtime-config normalization helpers for provider/model keys, env names, mode names, core section shapes, and active model maps. |
 | `data_collect/` | Unified crawler/sign/downloader integration layer. |
 | `tests/` | Unit and mocked integration tests. Live tests should be opt-in. |
-| `scripts/` | Smoke scripts for live/session-level workflows. |
-| `文档/` | Historical design notes and project-specific skill source. Wiki is now the canonical project map. |
-| `view/` | Static demo artifact; not current product architecture. |
+| `scripts/` | Thin adapters for live/session-level workflows. Product workflow definitions belong in `nori/workflows/*`, not in scripts. |
+| `web/` | Product frontend boundary and frontend prototypes. Backend-integrated production workbench is not implemented yet. |
+| `wiki/archive/legacy-docs/` | Historical design notes and project-specific skill source. Wiki root remains the canonical project map. |
+| `wiki/visuals/` | Static architecture visualization and documentation artifacts only; product UI belongs in `web/`. |
 
 ## Frameworks
 
@@ -34,16 +36,30 @@ Nori uses LangGraph and LangChain Core at the runtime orchestration boundary:
 
 | Framework | Where | Role |
 | --- | --- | --- |
-| LangGraph | `nori.workflows.LangGraphWorkflowRunner` | Compiles `WorkflowSpec` into a `StateGraph`, executes coarse workflow nodes through `START -> ... -> END`, and records `WorkflowRun` / `StageRun` status. |
-| LangChain Core | `nori.workflows.LangGraphWorkflowRunner` | Wraps each stage handler as a `RunnableLambda`, keeping workflow stages compatible with LangChain runnable semantics. |
+| LangGraph | `nori.workflows.WorkflowRunner` | Compiles `WorkflowSpec` into a `StateGraph`, executes coarse workflow nodes through `START -> ... -> END`, and records `WorkflowRun` / `StageRun` status. |
+| LangChain Core | `nori.workflows.WorkflowRunner` | Wraps each stage handler as a `RunnableLambda`, keeping workflow stages compatible with LangChain runnable semantics. |
+| LangGraph checkpoint memory | `nori.workflows.WorkflowRunner` | Does not enable LangGraph checkpointing by default because workflow state carries runtime-only objects such as `LLMFactory`; callers can inject a checkpointer only for serializable state. |
+| LangGraph memory store | `nori.memory.InMemoryMemoryStore` | Subclasses `langgraph.store.memory.InMemoryStore` and adds Nori typed profile/session/task helpers instead of keeping a bespoke dict store. |
 | Nori Human Gate | `nori.workflows.HumanGateSpec` | Declares human review control points before selected stages. Default `human_gate_mode="skip"` keeps tests automated; `pause` records `waiting_for_human` for product surfaces. |
 
+`nori/workflows/content_production` is the first product-level workflow package. It depends on public agent boundaries and owns the ordered content-production stages; `scripts/run_holly_live_case.py` only adapts Holly-specific inputs, model config, and XHS collection into that workflow.
+
 Business agents still own Nori-specific behavior under `nori.agents.*`; LangGraph owns cross-stage execution, not domain logic.
+
+`NoriSupervisorAgent` is the main-chat orchestration agent above the business
+capability layer. It can plan or execute injected `SupervisorTool` handlers such
+as `content_production`, `content_design_spec`, `artifact_generation`,
+`market_analysis`, `review_content_package`, and `session_memory`. The default
+catalog describes these tools without handlers; backend/workflow adapters bind
+real subworkflow handlers at the product boundary.
 
 ## Runtime Layers
 
 ```text
 Input / assets
+  -> backend upload/run routes / scripts
+  -> nori.agents.supervisor.NoriSupervisorAgent
+  -> nori.sessions.SessionManager
   -> nori.agents.user_profiling.IntakeAgent
   -> nori.agents.user_profiling.AccountPlannerAgent
   -> nori.agents.planning.{OperationPlanner,KPIPlanner,CalendarPlanner}
@@ -54,20 +70,21 @@ Input / assets
   -> nori.agents.content_generation.ContentProducerAgent
   -> nori.agents.content_generation.NoteMakerAgent
   -> nori.agents.content_generation.CoverDirectorAgent
-  -> nori.agents.content_generation.models.ContentPackage
+  -> nori.agents.content_generation.schemas.generation.ContentPackage
   -> nori.agents.learning_loop.ReviewGateAgent
   -> nori.agents.learning_loop.QualityReviewerAgent
   -> nori.agents.learning_loop.{MetricsSnapshotAgent,StrategyIterationAgent}
-  -> nori.agents.learning_loop.models.ComplianceReview / MetricsSnapshot / StrategyIteration
+  -> nori.agents.learning_loop.schemas.learning.ComplianceReview / MetricsSnapshot / StrategyIteration
 ```
 
 ## Capability Architecture
 
-Nori's high-level product architecture is organized as one shared runtime layer plus five agent-owned capability groups. The canonical public surface is now `nori.capabilities` and `nori.agents.*`; the old top-level business roots and `nori.domain` compatibility layer have been removed.
+Nori's high-level product architecture is organized as one shared runtime layer, one user-facing supervisor, and five agent-owned business capability groups. The canonical public surface is now the owning modules: `nori.core` for capability registry metadata, `nori.agents.supervisor` for main-chat tool routing, `nori.agents.learning_loop` for aggregate capability snapshots, and `nori.agents.*` for business behavior. The old top-level business roots, `nori.domain`, and `nori.capabilities` compatibility layers have been removed.
 
 ```text
 nori.core
   -> nori.sessions / nori.context / nori.memory / nori.workflows
+  -> nori.agents.supervisor
   -> nori.agents.user_profiling
   -> nori.agents.market_analysis
   -> nori.agents.planning
@@ -78,15 +95,16 @@ nori.core
 | Capability | Public contract | Current public agent surface | Backing implementation |
 | --- | --- | --- | --- |
 | Shared core/runtime | `UserProfile`, `UserAsset`, `ClientBrief`, `AccountOperationProject`, `ContextPack`, `ContextSlice`, `ContextView`, `CandidateSet`, `CapabilitySnapshot`, `Session`, `ContextBundle`, `WorkflowRun`, `HumanGateSpec` | `nori.core`, `nori.sessions`, `nori.context`, `nori.memory`, `nori.workflows` | Provider-free dataclasses with `to_dict/from_dict`; `CapabilitySnapshot` is the current aggregate quality gate; `ContextCompiler` compiles platform, market, skill, strategy, asset, and constraint slices into `ContextPack`; `ContextResolver.for_agent(...)` projects a `ContextView`; `ContextBundle` remains the runtime envelope for one agent call. |
+| Main-chat supervisor | `SupervisorIntent`, `SupervisorTool`, `SupervisorToolRequest`, `SupervisorToolResult`, `SupervisorTurnResult` | `nori.agents.supervisor` | `NoriSupervisorAgent` routes a user chat turn to a tool. It supports LLM structured routing, deterministic keyword fallback, plan-only mode, injected tool handlers, and clarification when no tool matches. It is intentionally not part of `CAPABILITY_MODULES`. |
 | User profiling | Long-lived user/account/brand/preference profile | `nori.agents.user_profiling` | Backed by `nori.agents.user_profiling` models and intaker/account planner stage packages. |
 | Market analysis | Competitor samples, hot examples, trend/audience insights | `nori.agents.market_analysis` | Backed by `nori.agents.market_analysis` models and `XHSNoteAnalyzer`; evidence can come from `DataCollector`. |
 | Planning | Operation project assembly, KPI/calendar planning, and content task construction | `nori.agents.planning` | Backed by existing `nori.agents.planning` planner packages; context-pack compilation and agent-specific context views live in `nori.context`. |
 | Content generation | Spec-driven package generation and candidate set before final human selection | `nori.agents.content_generation` | `ContentSpecAgent` turns task/skills/assets into an inspectable `ContentDesignSpec`; `ArtifactGenerationAgent` executes the spec through specialized generators. `NoteMakerAgent`, `CoverDirectorAgent`, and `ContentProducerAgent` remain specialized implementation details behind the executor. |
 | Learning loop | Review gates, product-quality checks, monitoring snapshots, and preference/strategy update signals | `nori.agents.learning_loop` | Backed by `nori.agents.learning_loop` review/strategy packages; `LearningLoopFacade.capability_snapshot_from_project()` builds the current aggregate view. |
 
-Design rule: new cross-stage behavior should add a shared runtime contract or one of the five capability groups before adding another standalone agent.
+Design rule: new business behavior should add a shared runtime contract or one of the five capability groups before adding another standalone agent. The supervisor is the exception reserved for user-facing orchestration; it should call injected tools rather than import concrete workflow runtimes.
 
-Upper-layer rule: CLI/API/UI code should use `nori.capabilities.build_capability_snapshot()` and `nori.capabilities.validate_capability_snapshot()` when it needs the complete capability view.
+Upper-layer rule: CLI/API/UI code should use `nori.core.capability_registry_snapshot()` for architecture metadata and `nori.agents.learning_loop.build_capability_snapshot()` / `validate_capability_snapshot()` when it needs the complete capability view.
 
 Projection bridge: the five domain facades can project an existing `AccountOperationProject` into the current architecture. `AccountOperationProject` lives in `nori.core.project`; `UserProfilingFacade` and `MarketAnalysisFacade` consume project-like dict/object shapes without importing planning internals, keeping upstream modules independent from the planning implementation.
 
@@ -94,7 +112,7 @@ Projection bridge: the five domain facades can project an existing `AccountOpera
 | --- | --- |
 | `UserProfilingFacade.build_from_project(project)` | Converts client brief and account positioning into `UserProfile`. |
 | `MarketAnalysisFacade.build_from_project(project)` | Converts competitor research into `MarketAnalysis`. |
-| `nori.context.ContextPackBuilder.build_from_project(project, task_id=...)` | Builds a task-level `ContextPack` from project profile, platform strategy, market, task, skills, content strategy, assets, and constraints. `nori.agents.planning.ContextPackBuilder` points to the same class for compatibility. |
+| `nori.context.ContextPackBuilder.build_from_project(project, task_id=...)` | Builds a task-level `ContextPack` from project profile, platform strategy, market, task, skills, content strategy, assets, and constraints. |
 | `ContentGenerationFacade.candidate_set_from_project(project, task_id=...)` | Converts task packages into a `CandidateSet` linked to context trace input refs. |
 | `LearningLoopFacade.performance_snapshots_from_project(project)` | Converts project metrics into `PerformanceSnapshot[]`. |
 | `LearningLoopFacade.learning_signals_from_project(project, ...)` | Converts strategy iterations into `LearningSignal[]`. |
@@ -106,28 +124,16 @@ Projection bridge: the five domain facades can project an existing `AccountOpera
 
 | Module | Responsibility |
 | --- | --- |
-| `nori/core/contracts.py` | Public runtime contract boundary shared by Nori core and the LLM gateway: provider/model config rows, resolved active models, gateway exception classes, structured-helper result dataclasses, and provider-free model coercion helpers. |
+| `nori/core/contracts.py` | Public runtime contract boundary shared by Nori core and the LLM gateway: provider/model config rows, resolved active models, gateway exception classes, and provider-free model coercion helpers. |
 | `nori/nori_config.py` | Locate `api_config.yaml`, parse providers/models/active usages, coerce model scalar fields, resolve `api_key_env`, apply `NORI_MODE`, and assemble config model contracts. |
-| `nori/config_normalization.py` | Pure config normalization boundary shared by `nori.nori_config` and `llms.mode`: canonical provider/model keys, env names, mode keys, section-shape validation, and nested/flat `active_models` selection. |
-| `llms/config.py` | Singleton bridge to `NoriConfig`. |
-| `llms/telemetry.py` | Process-local redacted telemetry sink and emit helper. Public imports from `llms` and `llms.call` re-export the same `set_telemetry_sink` function. |
-| `llms/chat_runner.py` | Sync/async chat execution boundary: resolves clients, merges chat kwargs, applies chat/vision capability guards, extracts provider text, and emits redacted telemetry for `chat` / `achat`. |
-| `llms/json_parser.py` | Shared parser for full, fenced, and embedded JSON object responses. Public imports from `llms` and `llms.call` re-export the same `parse_json_object` function. |
-| `llms/json_calls.py` | Shared JSON-mode raw chat-call helper, `response_format` fallback, and retry classification. |
-| `llms/request_params.py` | Shared request-parameter merger for chat/image calls, including token-limit normalization and side-effect-free `extra_body` merging. |
-| `llms/capabilities.py` | Shared capability guards for chat model type, vision usage, multimodal messages, image model type, and reference-image support. |
-| `llms/results.py` | Shared provider-response normalization for chat text and image URL/data-uri extraction, including stable empty-result errors. |
-| `llms/image_inputs.py` | Shared image input normalization for bytes, data-uri, local path, base64 strings, MIME sniffing, and data-uri construction. |
-| `llms/image_providers.py` | Provider-specific image request helpers for OpenAI-compatible edit, relay reference-payload retry, and Google native image generation. |
-| `llms/image_runner.py` | Image execution boundary: resolves active image model, normalizes reference inputs, applies image capability guards, dispatches Google/relay/OpenAI-compatible providers, validates result emptiness, and emits redacted telemetry for `image`. |
-| `llms/structured_outputs.py` | Shared string cleanup, parse-error classification, intent field-node normalization, selector-option cleanup, confidence normalization, and alternative-selector filtering for structured LLM utilities. |
-| `llms/structured_calls.py` | Shared non-throwing JSON call boundary for structured LLM utilities: returns `data/raw/error`, classifies parse failures, and wraps provider exceptions for intent/target helpers. |
-| `llms/structured_prompts.py` | Shared prompt-construction boundary for structured LLM utilities: owns intent field descriptions, enum/candidate instructions, target-selector catalogs, history formatting, and summary truncation. Legacy module-private prompt-builder wrappers stay stable. |
-| `llms/client.py` | Build sync/async OpenAI-compatible clients, including builders for already-resolved models, and provide shared `api_key` / `base_url` validation before provider SDK construction. |
-| `llms/call.py` | Public facade for `chat`, `achat`, `chat_json`, `chat_json_with_raw`, and `image`. It delegates chat execution, image execution, parsing, JSON-call retry plumbing, telemetry, errors, request-parameter merging, capability policy, result normalization, image input normalization, and image provider dispatch to dedicated gateway modules. |
-| `llms/mode.py` | Switch `direct`/`ghc`; reuse shared mode normalization and client config validation, then preflight local proxy `/models` in `ghc` mode. |
-| `llms/intent_extractor.py` | Optional P1 intent extraction helper; fails as structured result, not exception, and reuses shared structured prompt, output-normalization, and call-error boundaries. |
-| `llms/target_selector.py` | Optional edit-target selector; consumes candidate selectors, returns confidence, and reuses shared structured prompt, output-normalization, and call-error boundaries. |
+| `nori/config_normalization.py` | Pure config normalization boundary shared by `nori.nori_config` and `nori.core.llms.client`: canonical provider/model keys, env names, mode keys, section-shape validation, and nested/flat `active_models` selection. |
+| `nori/core/llms/telemetry.py` | Process-local redacted telemetry sink and emit helper. The public setter is exposed from `nori.core.llms`; gateway call sites import the telemetry boundary directly. |
+| `nori/core/llms/lm.py` | `LanguageModelClient` for sync/async LangChain chat execution, request-parameter merging, chat result normalization, LangChain structured-output JSON calls, and chat telemetry. |
+| `nori/core/llms/imager.py` | `ImageClient` for active image-model resolution, reference input filtering, capability guards, image provider dispatch, result validation, and image telemetry. |
+| `nori/core/llms/capabilities.py` | Shared capability guards for chat model type, vision usage, multimodal messages, image model type, and reference-image support. |
+| `nori/core/llms/image_inputs.py` | Shared image input normalization for bytes, data-uri, local path, base64 strings, MIME sniffing, and data-uri construction. |
+| `nori/core/llms/image_providers.py` | `ImageProviders` class for OpenAI-compatible edit, relay reference-payload retry, Google native image generation, and image response extraction. |
+| `nori/core/llms/client.py` | Own the LLM runtime config singleton, switch `direct`/`ghc`, preflight local proxy `/models`, build LangChain chat adapters through `init_chat_model` for text/vision chat, build OpenAI-compatible SDK clients for image providers, and expose `NoriAIClient` as the aggregate gateway. |
 
 Config lookup order:
 
@@ -186,8 +192,8 @@ ClientBrief + AccountPlanResult
 Cross-stage workflow contracts are now owned by focused core modules:
 `nori.core.asset_models`, `nori.core.planning_models`,
 `nori.core.profile_models`, and `nori.core.capability_models`.
-`nori.core.models` remains only the compatibility facade for the historical
-single-module API. The detailed module inventory is in
+The historical `nori.core.models` single-module facade has been removed; import
+from `nori.core` or the narrower owner module. The detailed module inventory is in
 [Module Map](./refs/module-map.md).
 
 Planning stages support deterministic fallback and LLM paths. Production/review
@@ -231,13 +237,13 @@ Market-analysis helpers:
 
 | Test group | Coverage |
 | --- | --- |
-| `tests/test_llms_call_json.py` | JSON parser and request-param helper import identity, parsing helper behavior, raw capture, JSON-mode retry, and usage/kwargs propagation. |
+| `tests/test_llms_call_json.py` | LangChain structured-output JSON routing, schema/method passthrough, structured parse-error wrapping, non-object rejection, and legacy raw-chat injection isolation. |
 | `tests/test_llms_client.py` | Client factory validation for OpenAI-compatible `api_key` / `base_url` before SDK construction. |
 | `tests/test_llms_errors.py` | Public gateway exception identity across `nori.core.contracts`, package exports, call, and client modules. |
 | `tests/test_llms_mode.py` | `ensure_ready` config validation reuse and offline `ghc` proxy probe behavior. |
 | `tests/test_llms_structured_models.py` | Structured helper result dataclass defaults and identity across core contracts, package exports, intent, target, and call modules. |
 | `tests/test_llms_intent_target_helpers.py` | Intent extraction, edit-target selector, and shared structured-output helper contracts without live LLM. |
-| `tests/test_llms_image_capabilities.py` | Image gateway capability checks, image result normalization, reference-image requests, image input normalization helper aliases, and provider-specific image helper behavior. |
+| `tests/test_llms_image_capabilities.py` | Image gateway capability checks, image result normalization, reference-image requests, image input normalization boundaries, and provider-specific image helper behavior. |
 | `tests/test_llms_telemetry.py` | Redacted model-call telemetry module exports, capability/result helper identity, sink isolation, success/error behavior, plus chat/vision capability checks. |
 | `tests/test_shared_utils.py` | Shared utility exports, case logging, strict JSON wrapper behavior, required/optional pre-built messages JSON routing, optional fallback JSON wrapper behavior, and fallback error field shape. |
 | `tests/test_config_models.py` | Runtime-config dataclass defaults and identity between `nori.core.contracts`, core package exports, and `nori.nori_config` imports. |
@@ -267,13 +273,14 @@ Market-analysis helpers:
 | Concern | Decision |
 | --- | --- |
 | Python dataclass slots | Shared model/result files import `dataclass` / `field` from `nori._compat`. Python 3.10+ keeps `slots=True`; Python 3.9 drops the unsupported keyword so imports and tests remain executable. |
-| Model input coercion | The five business-module `models.py` files use `nori.core.contracts` for mapping/list/string/int/bool normalization instead of carrying local copies. |
-| Dependency direction | `llms.intent_extractor` and `llms.target_selector` may use `nori._compat` because `llms` already depends on `nori.nori_config` for model resolution. |
+| Schema input coercion | Owner-local `schemas/` packages use `nori.core.contracts` for mapping/list/string/int/bool normalization instead of carrying local copies. |
+| Dependency direction | `nori.core.llms` is infrastructure. Product-specific intent extraction or edit-target routing should live in the owning agent/supervisor package, not in the core LLM gateway. |
 
 ## Non-Goals In Current Architecture
 
 | Non-goal | Constraint |
 | --- | --- |
-| Web server runtime | No in-process web server is implemented in this repo. `main.py` intentionally reports supported CLI/workflow entrypoints instead of importing a stale server module. |
+| Production web server runtime | `backend/` provides a lightweight FastAPI/uvicorn service for local/product integration with local experiment uploads and synchronous workflow runs, but no production deployment stack, auth, streaming, async job queue, or persistent DB is implemented yet. |
+| Production frontend workbench | `web/` is now the boundary for product UI and prototypes, but no backend-integrated workbench app is implemented yet. |
 | Persistent DB | Current ops contracts are dataclasses and local JSON/file artifacts first. |
 | Live platform publishing | Keep as reserved adapter until review/package loop is implemented. |

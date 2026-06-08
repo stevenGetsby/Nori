@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from nori.agents.content_generation.models import ContentPackage
+from nori.agents.content_generation.schemas import ContentPackage
 from nori.core import AccountOperationProject, AgentInputPreparer, ClientBrief, ContentTask
 
 

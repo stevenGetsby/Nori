@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from nori.agents.market_analysis.models import XHSNoteSample, XHSSeedSkillDraft
+from nori.agents.market_analysis.schemas import XHSNoteSample, XHSSeedSkillDraft
 
 
 def rule_analyze_note(note: XHSNoteSample) -> XHSSeedSkillDraft:

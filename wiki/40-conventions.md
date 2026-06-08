@@ -17,12 +17,12 @@
 | Workflow execution | Multi-stage runtime flows should use `nori.workflows.WorkflowSpec` and `WorkflowRunner`; the runner is LangGraph-backed and wraps each coarse stage handler as a LangChain Core `RunnableLambda`. |
 | Workflow base vs runtime | Keep `nori.core.WorkflowBase` backend-free. If a capability/facade workflow must run through the runtime engine, convert it with `nori.workflows.workflow_spec_from_base(...)` instead of importing LangGraph into `nori.core`. |
 | Human gates | Use `nori.workflows.HumanGateSpec` for approval points before risky or user-facing stages. Default `human_gate_mode="skip"` keeps tests and smoke runs automated; use `pause` only when the caller can resume after review. |
-| Context compiler ownership | Keep `ContextCompiler` / `ContextPackBuilder` in `nori.context`, not in planning. Planning may re-export the builder for compatibility, but context compilation and agent-specific `ContextView` projection are runtime context responsibilities. |
+| Context compiler ownership | Keep `ContextCompiler` / `ContextPackBuilder` in `nori.context`, not in planning. Planning should not re-export the builder; context compilation and agent-specific `ContextView` projection are runtime context responsibilities. |
 | ContextPack vs ContextBundle | Treat `nori.core.ContextPack` as business context compiled by `nori.context.ContextCompiler`, and `nori.context.ContextBundle` as the runtime envelope for one agent call. Business context should be sliced into `ContextSlice` rows and projected into an agent-specific `ContextView`; attach a pack with `nori.context.attach_context_pack(...)` only when it needs to travel with runtime session/memory/artifact data. |
-| LLM calls | Route through `llms.*`; do not instantiate OpenAI clients inside workflow stages. |
-| JSON LLM output | Prefer `llms.chat_json(...)` unless a helper intentionally returns structured error instead of exception. |
-| JSON LLM stages | Required workflow stages that should raise domain-specific errors should use `nori.shared.call_stage_json(...)` instead of local `try/except llms.ChatJSONError` wrappers. |
-| Pre-built JSON messages | Required JSON stages that need custom/multimodal messages should use `nori.shared.call_stage_messages_json(...)`, not direct `llms.chat_json(...)`. |
+| LLM calls | Route through `nori.core.llms.*`; do not instantiate OpenAI clients inside workflow stages. |
+| JSON LLM output | Prefer `nori.core.llms.chat_json(...)` unless a helper intentionally returns structured error instead of exception. |
+| JSON LLM stages | Required workflow stages that should raise domain-specific errors should use `nori.shared.call_stage_json(...)` instead of local `try/except nori.core.llms.ChatJSONError` wrappers. |
+| Pre-built JSON messages | Required JSON stages that need custom/multimodal messages should use `nori.shared.call_stage_messages_json(...)`, not direct `nori.core.llms.chat_json(...)`. |
 | Optional planner JSON stages | Planning stages that must preserve deterministic fallback should use `nori.shared.try_stage_json(...)`; optional stages that already build custom/multimodal messages should use `nori.shared.try_stage_messages_json(...)`. Store returned `error` metadata on the fallback artifact, preserving `reason=parse_error` vs `reason=empty_response`. |
 | LLM fallback errors | Use `nori.shared.attach_llm_error(target, stage, error)` instead of per-stage helper functions so `metadata.llm_error` and `validation.llm_error` stay consistent. |
 | Intake package contract | Keep text and vision prompt contracts in class-owned `nori.agents.user_profiling.intaker.package`; `IntakeAgent` and image tagging code should use builders instead of a shared `prompts.py` constants module. |
@@ -45,20 +45,18 @@
 | Runtime config | Commit only `api_config.example.yaml`; keep private `api_config.yaml` ignored and prefer `api_key_env`. Model scalar fields from config should be normalized through shared coercion before reaching `ResolvedModel`. |
 | Runtime config models | Keep `ProviderConfig`, `ModelConfig`, and `ResolvedModel` in `nori.core.contracts`; `nori.core` and `nori_config` may expose them, but should not own their definitions. |
 | Runtime config normalization | Keep provider/model key parsing, mode/env-name cleanup, section-shape validation, and flat/nested `active_models` selection in `nori.config_normalization`; `NoriConfig` should own file loading and dataclass assembly only. |
-| LLM chat execution | Keep sync/async chat client resolution, kwargs merging, capability guards, provider text extraction, and chat telemetry in `llms.chat_runner`; `llms.call` should expose thin public facades and JSON/image orchestration only. |
-| LLM image execution | Keep active image-model resolution, reference input filtering, capability guards, provider dispatch, result validation, and image telemetry in `llms.image_runner`; `llms.call.image` should stay a thin public facade while preserving old monkeypatch compatibility. |
+| LLM chat execution | Build chat adapters through LangChain `init_chat_model`; keep kwargs merging, capability guards, provider text extraction, and chat telemetry in `nori.core.llms.lm.LanguageModelClient`; do not reintroduce a separate chat runner module. |
+| LLM JSON execution | Keep JSON calls on LangChain `with_structured_output`; do not reintroduce handwritten fenced/embedded JSON parsing or raw-chat fallback in `nori.core.llms`. |
+| LLM image execution | Keep active image-model resolution, reference input filtering, capability guards, provider dispatch, result validation, and image telemetry in `nori.core.llms.imager.ImageClient`; provider-specific image API details belong in `ImageProviders`. |
 | LLM kwargs merging | Gateway helpers may inject model-level `temperature_fixed`, `max_output`, and `extra_body`, but must not mutate caller-provided kwargs or nested `extra_body` dicts. |
 | Token limit parameter | Gateway kwargs must emit only the token-limit parameter expected by the active model: GPT-5 uses `max_completion_tokens`; other chat models use `max_tokens`. |
-| Structured LLM helper results | Keep `StructuredCallResult`, `IntentLLMResult`, and `TargetSelectionResult` in `nori.core.contracts`; `llms`, intent, target, and call modules may expose them, but should not own their definitions. |
-| Structured LLM helper prompts | Keep intent field descriptions, enum/candidate prompt text, target selector catalogs, history formatting, and summary truncation in `llms.structured_prompts`; `intent_extractor.py` and `target_selector.py` should own orchestration only. |
-| Structured LLM helper normalization | Keep intent field-node cleanup, enum/candidate filtering, selector option cleanup, confidence fallback, and alternative selector filtering in `llms.structured_outputs`; intent/target helpers should not duplicate normalization mechanics. |
-| Structured LLM helper calls | Keep non-throwing JSON-mode call handling, parse-error classification, raw capture, and provider-exception wrapping in `llms.structured_calls`; intent/target helpers should not duplicate try/except plumbing. |
+| Product structured LLM helpers | Do not put product-specific intent extraction, edit-target routing, or their prompt/normalization helpers in `nori.core.llms`; keep them in the owning agent/supervisor package. |
 | Stage boundaries | Intake sees images semantically; CoverDirector reads image bytes; NoteMaker consumes tags and text only. |
 | Fallbacks | Planning stages may keep deterministic fallback; generation stages may fail loudly when LLM stages are required. |
 | Market-analysis note loading | Keep local XHS `meta.json` reading, author fallback, tag extraction, and platform metric count parsing in `nori.agents.market_analysis.xhs_note_analyzer.loader`; `XHSNoteAnalyzer` should orchestrate analysis and collection, not own file-IO parsing details. |
 | Market-analysis note rules | Keep single-note seed draft construction, scene/goal classification, title/opening/body/interaction/visual rules, CTA evidence, and confidence scoring in `nori.agents.market_analysis.xhs_note_analyzer.rules`; `XHSNoteAnalyzer` should only orchestrate rule draft, optional LLM enhancement, and session collection. |
 | Market-analysis package contract | Keep XHS note enhancement, keyword generation, and label prompt contracts in class-owned `nori.agents.market_analysis.xhs_note_analyzer.package`; `note_llm` and `session_llm` should own call orchestration and output normalization only. |
-| Market-analysis single-note LLM enhancement | Keep optional JSON routing, LLM output normalization, fallback draft construction, and `llm_error` attachment in `nori.agents.market_analysis.xhs_note_analyzer.note_llm`; `XHSNoteAnalyzer` should only decide whether to call it and pass compatibility-injected chat functions. |
+| Market-analysis single-note LLM enhancement | Keep optional JSON routing, LLM output normalization, fallback draft construction, and `llm_error` attachment in `nori.agents.market_analysis.xhs_note_analyzer.note_llm`; `XHSNoteAnalyzer` should only decide whether to call it and pass injected chat functions. |
 | Market-analysis session clustering | Keep rule-goal fallback classification, required LLM-label coverage checks, top-four bucket selection, tone majority, and leftover note-id tracking in `nori.agents.market_analysis.xhs_note_analyzer.session_clustering`; `XHSNoteAnalyzer` should not own clustering mechanics. |
 | Market-analysis session LLM | Keep session keyword generation, hot-note prompt shaping, label normalization, and fail-fast JSON helper routing in `nori.agents.market_analysis.xhs_note_analyzer.session_llm`; `XHSNoteAnalyzer` should only decide when the required stages are called. |
 | Market-analysis session reporting | Keep session report stamping, full report JSON writing, and skills-only guide JSON writing in `nori.agents.market_analysis.xhs_note_analyzer.session_reporter`; `XHSNoteAnalyzer` should not own artifact naming or fixture shape. |
@@ -104,10 +102,10 @@
 | Artifact | Location |
 | --- | --- |
 | Active feature spec | `wiki/specs/spec-{feature}.md` |
-| External/system reference | `wiki/refs/{topic}.md` or existing `文档/codex-skills/.../references/` until migrated. |
+| External/system reference | `wiki/refs/{topic}.md` or archived `wiki/archive/legacy-docs/codex-skills/.../references/` until migrated. |
 | Review record | `wiki/reviews/review-YYYY-MM-DD-{subject}.md` |
 | Completed spec | `wiki/archive/specs/` |
-| Historical docs | Keep in `文档/` until migrated; do not add new canonical roadmap there. |
+| Historical docs | Keep in `wiki/archive/legacy-docs/`; do not add new canonical roadmap there. |
 
 ## Test Commands
 
@@ -117,9 +115,9 @@
 | Config contract | `python -m pytest tests/test_config_models.py tests/test_config_normalization.py tests/test_nori_config.py tests/test_llms_mode.py -q` |
 | Model coercion | `python -m pytest tests/test_model_coercion.py -q` |
 | LLM JSON helper | `python -m pytest tests/test_llms_call_json.py -q` |
-| LLM chat runner | `python -m pytest tests/test_llms_chat_runner.py tests/test_llms_telemetry.py -q` |
-| LLM image runner | `python -m pytest tests/test_llms_image_runner.py tests/test_llms_image_capabilities.py tests/test_llms_telemetry.py -q` |
-| LLM structured helpers | `python -m pytest tests/test_llms_structured_models.py tests/test_llms_structured_prompts.py tests/test_llms_intent_target_helpers.py -q` |
+| LLM chat execution | `python -m pytest tests/test_llms_lm_client.py tests/test_llms_telemetry.py -q` |
+| LLM image execution | `python -m pytest tests/test_llms_image_client.py tests/test_llms_image_capabilities.py tests/test_llms_telemetry.py -q` |
+| LLM removed-helper guards | `python -m pytest tests/test_llms_structured_models.py tests/test_core_llms_infra.py -q` |
 | Generation core | `python -m pytest tests/test_content_generation_note_maker_note_composer.py tests/test_content_generation_note_maker_skill_picker.py tests/test_content_generation_note_maker_asset_curator.py tests/test_user_profiling_intaker_taxonomy.py tests/test_user_profiling_intaker_normalizer.py tests/test_user_profiling_intaker_image_tagger.py tests/test_user_profiling_intaker.py tests/test_content_generation_note_maker.py tests/test_content_generation_cover_director_refs.py tests/test_content_generation_cover_director_prompt.py tests/test_content_generation_cover_director_output.py tests/test_content_generation_cover_director.py -q` |
 | Intent/checkpoint/quality routing | `python -m pytest tests/test_core_intent_contract.py tests/test_core_artifact_store.py tests/test_learning_loop_quality_review.py tests/test_content_generation_entrypoints.py tests/test_content_generation_spec_pipeline.py -q` |
 | Account planning | `python -m pytest tests/test_user_profiling_account_planner_inputs.py tests/test_user_profiling_account_planner_prompts.py tests/test_user_profiling_account_planner_fallback.py tests/test_user_profiling_account_planner_search.py tests/test_user_profiling_account_planner_keywords.py tests/test_user_profiling_account_planner_portrait.py tests/test_user_profiling_account_planner_normalizer.py tests/test_user_profiling_account_planner.py -q` |

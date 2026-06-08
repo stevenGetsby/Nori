@@ -10,12 +10,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 EXPECTED_RUNTIME_PACKAGES = {
     "agents",
-    "capabilities",
     "context",
     "core",
     "memory",
     "sessions",
     "shared",
+    "storage",
     "workflows",
 }
 
@@ -34,9 +34,11 @@ def test_nori_top_level_has_runtime_first_package_boundaries():
     forbidden_legacy_entries = {
         "content_generation",
         "context_building",
+        "capabilities",
         "domain.py",
         "learning_loop",
         "market_analysis",
+        "skill_base",
         "user_profiling",
     }
 
@@ -57,6 +59,7 @@ def test_agent_business_capabilities_are_importable_from_agents_boundary():
         ],
         "nori.agents.market_analysis": ["XHSNoteAnalyzer"],
         "nori.agents.learning_loop": ["ReviewGateAgent", "StrategyIterationAgent"],
+        "nori.agents.supervisor": ["NoriSupervisorAgent"],
     }
 
     for module_name, names in expected_exports.items():
@@ -75,12 +78,13 @@ def test_runtime_state_contracts_are_owned_by_first_class_packages():
         ContextView,
         attach_context_pack,
     )
-    from nori.memory import MemoryStore, StableProfile, TaskMemory
+    from langgraph.store.memory import InMemoryStore
+
+    from nori.memory import InMemoryMemoryStore, MemoryStore, StableProfile, TaskMemory
     from nori.sessions import Session, SessionManager, TaskGoal
     from nori.workflows import (
         HumanGateRequired,
         HumanGateSpec,
-        LangGraphWorkflowRunner,
         RuntimeRun,
         RuntimeRunRecorder,
         StageRun,
@@ -89,33 +93,35 @@ def test_runtime_state_contracts_are_owned_by_first_class_packages():
         workflow_spec_from_base,
     )
 
-    assert StableProfile.__module__ == "nori.memory.models"
-    assert TaskMemory.__module__ == "nori.memory.models"
+    assert StableProfile.__module__ == "nori.memory.schemas.memory"
+    assert TaskMemory.__module__ == "nori.memory.schemas.memory"
     assert MemoryStore.__module__ == "nori.memory.store"
-    assert ContextBundle.__module__ == "nori.context.models"
-    assert ContextSlice.__module__ == "nori.context.models"
-    assert ContextView.__module__ == "nori.context.models"
+    assert isinstance(InMemoryMemoryStore(), InMemoryStore)
+    assert ContextBundle.__module__ == "nori.context.schemas.context"
+    assert ContextSlice.__module__ == "nori.context.schemas.context"
+    assert ContextView.__module__ == "nori.context.schemas.context"
     assert ContextCompiler.__module__ == "nori.context.compiler"
     assert ContextPackBuilder.__module__ == "nori.context.compiler"
     assert ContextResolver.__module__ == "nori.context.resolver"
     assert attach_context_pack.__module__ == "nori.context.adapters"
-    assert Session.__module__ == "nori.sessions.models"
-    assert TaskGoal.__module__ == "nori.sessions.models"
+    assert Session.__module__ == "nori.sessions.schemas.session"
+    assert TaskGoal.__module__ == "nori.sessions.schemas.session"
     assert SessionManager.__module__ == "nori.sessions.manager"
-    assert WorkflowRun.__module__ == "nori.workflows.models"
-    assert StageRun.__module__ == "nori.workflows.models"
-    assert HumanGateSpec.__module__ == "nori.workflows.models"
-    assert HumanGateRequired.__module__ == "nori.workflows.models"
+    assert WorkflowRun.__module__ == "nori.workflows.schemas.workflow"
+    assert StageRun.__module__ == "nori.workflows.schemas.workflow"
+    assert HumanGateSpec.__module__ == "nori.workflows.schemas.workflow"
+    assert HumanGateRequired.__module__ == "nori.workflows.schemas.workflow"
     assert workflow_spec_from_base.__module__ == "nori.workflows.adapters"
-    assert LangGraphWorkflowRunner.__module__ == "nori.workflows.langgraph_runner"
     assert WorkflowRunner.__module__ == "nori.workflows.runner"
+    assert not hasattr(importlib.import_module("nori.workflows"), "LangGraphWorkflowRunner")
+    assert not (ROOT / "nori" / "workflows" / "langgraph_runner.py").exists()
     assert RuntimeRun.__module__ == "nori.workflows.runtime"
     assert RuntimeRunRecorder.__module__ == "nori.workflows.runtime"
 
 
 def test_capability_registry_replaces_domain_registry_for_new_architecture():
     from nori.core import CAPABILITY_MODULES, CapabilityModule, capability_module_names, get_capability_module
-    from nori.capabilities import capability_registry_snapshot
+    from nori.core import capability_registry_snapshot
 
     assert capability_module_names() == [
         "user_profiling",
@@ -135,11 +141,34 @@ def test_capability_registry_replaces_domain_registry_for_new_architecture():
     snapshot = capability_registry_snapshot()
     assert snapshot["module_names"] == capability_module_names()
     assert snapshot["modules"][2]["package"] == "nori.agents.planning"
+    assert get_capability_module("supervisor") is None
+
+
+def test_memory_store_adapts_langgraph_store_without_breaking_retrieval():
+    from nori.memory import InMemoryMemoryStore, MemoryQuery, MemoryRecord, MemoryRetriever, SessionMemory
+
+    store = InMemoryMemoryStore()
+    store.save_session_memory(
+        SessionMemory(
+            session_id="session_001",
+            user_id="user_001",
+            records=[
+                MemoryRecord(record_id="m1", text="Holly prefers visual tote bag references", tags=["preference"]),
+            ],
+        )
+    )
+
+    records = MemoryRetriever(store).retrieve(
+        MemoryQuery(text="tote", user_id="user_001", session_id="session_001", limit=3)
+    )
+
+    assert [record.record_id for record in records] == ["m1"]
+    assert store.get(("nori", "memory", "sessions"), "session_001") is not None
 
 
 def test_public_capability_entrypoint_builds_and_validates_project_snapshot():
-    from nori.agents.content_generation.models import ContentPackage
-    from nori.capabilities import build_capability_snapshot, validate_capability_snapshot
+    from nori.agents.content_generation.schemas import ContentPackage
+    from nori.agents.learning_loop import build_capability_snapshot, validate_capability_snapshot
     from nori.core import AccountOperationProject, CapabilitySnapshot, ClientBrief, ContentTask
 
     project = AccountOperationProject(
@@ -170,7 +199,7 @@ def test_public_capability_entrypoint_builds_and_validates_project_snapshot():
 
 
 def test_learning_loop_facade_owns_capability_snapshot_primary_method():
-    from nori.agents.content_generation.models import ContentPackage
+    from nori.agents.content_generation.schemas import ContentPackage
     from nori.agents.learning_loop import LearningLoopFacade
     from nori.core import AccountOperationProject, CapabilitySnapshot, ClientBrief, ContentTask
 
@@ -283,7 +312,7 @@ def test_holly_live_case_records_runtime_session_context_and_workflow(tmp_path):
     ).start(
         user_input={"brief_text": brief_text},
         run_dir=tmp_path,
-        source="设计理念.md",
+        source="brief/original.md",
         acceptance=[
             "生成 content_package.json",
             "生成 cover png",
@@ -307,12 +336,42 @@ def test_holly_live_case_records_runtime_session_context_and_workflow(tmp_path):
 def test_holly_live_case_delegates_runtime_bookkeeping_to_workflows_package():
     path = ROOT / "scripts" / "run_holly_live_case.py"
     source = path.read_text()
+    tree = ast.parse(source)
 
-    assert "from nori.workflows import HumanGateSpec, RuntimeRunRecorder, StageSpec, WorkflowRunner, WorkflowSpec" in source
-    assert "human_gate=HumanGateSpec(" in source
+    imported_modules = {
+        node.module
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    imported_names = {
+        alias.name
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        for alias in node.names
+    }
+
+    assert "nori.workflows" in imported_modules
+    assert "nori.workflows.content_production" in imported_modules
+    assert "RuntimeRunRecorder" in imported_names
+    assert "ContentProductionWorkflow" in imported_names
+    assert "ContentProductionConfig" in imported_names
     assert 'human_gate_mode=os.getenv("NORI_HUMAN_GATE_MODE", "skip")' in source
-    assert "WorkflowRunner().run(" in source
-    assert "WorkflowSpec(" in source
+    assert "workflow.run(" in source
+    assert "StageSpec(" not in source
+    assert "WorkflowSpec(" not in source
+    assert "HumanGateSpec(" not in source
+    assert "from nori.agents" not in source
     assert "class HollyRuntimeRun" not in source
     assert "def _create_runtime_run" not in source
     assert "def _record_stage" not in source
+
+
+def test_holly_live_case_uses_case_workspace_artifact_store():
+    path = ROOT / "scripts" / "run_holly_live_case.py"
+    source = path.read_text(encoding="utf-8")
+
+    assert "CaseWorkspace" in source
+    assert "CASE.create_run_dir" in source
+    assert "record_content_production_artifacts" in source
+    assert 'ROOT / "data" / "Holly"' not in source
+    assert 'CASE.brief_dir / "original.md"' in source

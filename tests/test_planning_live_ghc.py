@@ -5,8 +5,8 @@ import os
 
 import pytest
 
-import llms
-from nori.agents.user_profiling.models import AccountPlanResult
+import nori.core.llms as llms
+from nori.agents.user_profiling.schemas import AccountPlanResult
 from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
 
 

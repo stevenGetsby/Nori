@@ -8,7 +8,7 @@ from typing import Any
 from nori.core import LLMFactory, UserAsset
 from nori.shared.image_io import image_to_data_uri
 from nori.shared.llm_json import call_stage_messages_json
-from nori.agents.user_profiling.models import UserInput
+from nori.agents.user_profiling.schemas import UserInput
 from .package import IntakeVisionPromptBuilder
 
 
@@ -114,7 +114,6 @@ def tag_one_image_llm(
         timeout=60,
         error_type=IntakeVisionLLMError,
         retry_max_tokens=None,
-        chat_func=llm_gateway.chat_func,
         chat_json_func=llm_gateway.chat_json_func,
     )
 

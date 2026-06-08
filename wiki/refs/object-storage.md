@@ -37,17 +37,26 @@ The object key is persisted in `CoverResult.extra.reference_object_keys`; signed
 
 1. `CoverReferenceSelector` chooses local or remote reference paths.
 2. `ReferenceImagePublisher` uploads local image bytes to Volcengine TOS when OSS env is configured.
-3. CoverDirector passes signed HTTPS URLs to `llms.image(reference_images=...)`.
+3. CoverDirector passes signed HTTPS URLs to `nori.core.llms.image(reference_images=...)`.
 4. Relay image generation sends those URLs as `extra_body.reference_images`, which is the verified field for actual reference usage.
 
-If OSS env is absent, local tests and non-relay providers keep the previous local-bytes behavior.
+If OSS env is absent, local tests and non-relay providers keep the previous
+local-bytes behavior. Backend product runs can also map uploaded session assets
+to HTTPS URLs with `NORI_BACKEND_PUBLIC_BASE_URL` or request-level
+`backend_public_base_url`; this is useful when the FastAPI backend is exposed
+through a public tunnel/domain and the relay provider can fetch
+`/sessions/{session_id}/assets/{asset_id}/file`. Runs that set
+`require_image_references=true` do not use the local-bytes fallback: they fail
+explicitly when selected local references cannot be converted into
+provider-supported reference inputs, so the product cannot mistake prompt-only
+generation for true image-reference generation.
 
 ## Fidelity Verification
 
 Do not treat upload metadata alone as proof that the model used a reference image. A valid live check should include:
 
 - the TOS object is readable by HTTPS;
-- `llms.image(...)` returns successfully through the relay provider;
+- `nori.core.llms.image(...)` returns successfully through the relay provider;
 - the generated image visibly contains reference-only elements that were not fully described by the prompt.
 
 The 2026-06-07 probe verified signed OSS URLs with `extra_body.reference_images`: a hidden-content reference containing `OSS-REF-742`, a red triangle, a blue circle, and a green `NORI probe` card was reproduced in the output. The older `image_urls`, `images`, and `image` payload variants returned unrelated text-to-image outputs and should not be considered reliable reference-image paths.

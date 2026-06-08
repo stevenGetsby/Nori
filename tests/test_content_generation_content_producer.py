@@ -4,7 +4,7 @@ from nori.core import AccountOperationProject
 from nori.core import ContentTask, ClientBrief
 import pytest
 
-from nori.agents.content_generation.models import CandidateTitle, CoverResult, NoteDraft
+from nori.agents.content_generation.schemas import CandidateTitle, CoverResult, NoteDraft
 from nori.core import UserAsset
 from nori.agents.content_generation import ContentProducerAgent, ContentProductionError, produce_content_package
 

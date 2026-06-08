@@ -6,5 +6,6 @@ __all__ = [
     "learning_loop",
     "market_analysis",
     "planning",
+    "supervisor",
     "user_profiling",
 ]

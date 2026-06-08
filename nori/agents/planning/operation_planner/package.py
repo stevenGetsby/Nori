@@ -8,7 +8,7 @@ from typing import Any
 from nori.core import AgentInputPreparer, AgentPromptBuilder, ClientBrief
 from nori.shared.normalization import bounded_int, mapping, string_list
 from nori.shared.prompting import json_prompt
-from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPlanResult
 
 
 @dataclass(frozen=True)

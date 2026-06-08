@@ -5,7 +5,7 @@ from typing import Any
 
 from nori.core import ClientBrief, UserProfile, WorkflowBase, named_workflow_steps
 
-from .models import AccountPositioning
+from .schemas import AccountPositioning
 
 
 class UserProfilingFacade(WorkflowBase):

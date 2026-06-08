@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "case_id": "Holly",
+  "run_id": "20260608_154655_content_production",
+  "workflow": "content_production",
+  "path": "cases/Holly/runs/20260608_154655_content_production",
+  "status": "failed",
+  "metadata": {
+    "error_type": "ContentProductionError",
+    "error": "note failed: NoteMakerLLMError: llms.chat_json 失败: APIConnectionError: Connection error."
+  },
+  "artifacts": [
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:original_brief",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "original_brief",
+      "path": "cases/Holly/runs/20260608_154655_content_production/original_brief.md",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:input_asset_1",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "input_asset_1",
+      "path": "data/backend/uploads/session_2fd021e7fc3c/asset_27c57b9e9e55_20250617195920.jpg",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {
+        "asset_id": "asset_27c57b9e9e55",
+        "filename": "20250617195920.jpg"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:input_asset_2",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "input_asset_2",
+      "path": "data/backend/uploads/session_2fd021e7fc3c/asset_f4ede3ae28c0_49@2x.png",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {
+        "asset_id": "asset_f4ede3ae28c0",
+        "filename": "49@2x.png"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:input_asset_3",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "input_asset_3",
+      "path": "data/backend/uploads/session_2fd021e7fc3c/asset_e3e100e54b4f_50@2x.png",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {
+        "asset_id": "asset_e3e100e54b4f",
+        "filename": "50@2x.png"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:input_asset_4",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "input_asset_4",
+      "path": "data/backend/uploads/session_2fd021e7fc3c/asset_077c8d99c47c_1.png",
+      "created_by": "user",
+      "input_artifacts": [],
+      "status": "source",
+      "metadata": {
+        "asset_id": "asset_077c8d99c47c",
+        "filename": "1.png"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:xhs_top_notes",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "xhs_top_notes",
+      "path": "cases/Holly/runs/20260608_154655_content_production/xhs_top_notes_result.json",
+      "created_by": "DataCollector",
+      "input_artifacts": [],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:market_skill_report",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "market_skill_report",
+      "path": "cases/Holly/runs/20260608_154655_content_production/market_session_skill_report.json",
+      "created_by": "XHSNoteAnalyzer",
+      "input_artifacts": [
+        "xhs_top_notes"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:note_skill_guides",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "note_skill_guides",
+      "path": "cases/Holly/runs/20260608_154655_content_production/note_skill_guides.json",
+      "created_by": "XHSNoteAnalyzer",
+      "input_artifacts": [
+        "market_skill_report"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:intake_result",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "intake_result",
+      "path": "cases/Holly/runs/20260608_154655_content_production/intake_result.json",
+      "created_by": "IntakeAgent",
+      "input_artifacts": [
+        "original_brief"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:account_plan",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "account_plan",
+      "path": "cases/Holly/runs/20260608_154655_content_production/account_plan.json",
+      "created_by": "AccountPlannerAgent",
+      "input_artifacts": [
+        "intake_result"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:client_brief",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "client_brief",
+      "path": "cases/Holly/runs/20260608_154655_content_production/client_brief.json",
+      "created_by": "ContentProductionWorkflow",
+      "input_artifacts": [
+        "account_plan",
+        "xhs_top_notes"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:operation_project",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "operation_project",
+      "path": "cases/Holly/runs/20260608_154655_content_production/operation_project.json",
+      "created_by": "OperationPlannerAgent",
+      "input_artifacts": [
+        "client_brief",
+        "account_plan"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:kpi_plan",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "kpi_plan",
+      "path": "cases/Holly/runs/20260608_154655_content_production/kpi_plan.json",
+      "created_by": "KPIPlannerAgent",
+      "input_artifacts": [
+        "operation_project"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:content_calendar",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "content_calendar",
+      "path": "cases/Holly/runs/20260608_154655_content_production/content_calendar.json",
+      "created_by": "CalendarPlannerAgent",
+      "input_artifacts": [
+        "operation_project",
+        "kpi_plan"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:selected_task",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "selected_task",
+      "path": "cases/Holly/runs/20260608_154655_content_production/selected_task.json",
+      "created_by": "ContentProductionWorkflow",
+      "input_artifacts": [
+        "content_calendar"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:content_context_pack",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "content_context_pack",
+      "path": "cases/Holly/runs/20260608_154655_content_production/content_context_pack.json",
+      "created_by": "ContextPackBuilder",
+      "input_artifacts": [
+        "operation_project",
+        "selected_task"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:content_design_spec",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "content_design_spec",
+      "path": "cases/Holly/runs/20260608_154655_content_production/content_design_spec.json",
+      "created_by": "ContentSpecAgent",
+      "input_artifacts": [
+        "content_context_pack"
+      ],
+      "status": "failed",
+      "metadata": {}
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260608_154655_content_production:workflow_run",
+      "case_id": "Holly",
+      "run_id": "20260608_154655_content_production",
+      "type": "workflow_run",
+      "path": "cases/Holly/runs/20260608_154655_content_production/workflow_run.json",
+      "created_by": "RuntimeRunRecorder",
+      "input_artifacts": [
+        "session"
+      ],
+      "status": "failed",
+      "metadata": {}
+    }
+  ]
+}

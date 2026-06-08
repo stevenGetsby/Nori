@@ -1,0 +1,1463 @@
+{
+  "context_pack_id": "ctx_task_d01_01",
+  "user_profile": {
+    "user_id": "holly_live_20260608_000401_holly_live",
+    "display_name": "Holly",
+    "platform": "xhs",
+    "account_profile": {
+      "tags": {
+        "track": "文创设计",
+        "goal": "涨粉",
+        "platform": "小红书",
+        "product": "文创周边",
+        "positioning": "反焦虑文创"
+      },
+      "recommended_positioning": "一个用屎尿屁幽默讲打工人反焦虑哲学的设计学生文创账号。",
+      "audience_profile": [
+        "20-35岁年轻打工人、学生党，喜欢用幽默方式消解压力和班味",
+        "喜欢市集、原创文创、IP周边、贴纸挂件杯包等低门槛生活小物的人群",
+        "对“反内卷、合法摸鱼、厕所时间、带薪拉屎”等情绪议题有共鸣的人",
+        "愿意为有梗、有态度、有设计感的小众品牌买单的年轻消费者",
+        "关注设计过程、品牌故事、学生创业和原创IP养成的人群"
+      ],
+      "content_directions": [
+        "反焦虑快乐哲学：用不低俗但有冲击力的语言，把打工人的压力、羞耻感、被剥夺的休息时间讲成轻松好笑的观点内容",
+        "文创产品诞生记：分享杯子、包包、挂件、贴纸、冰箱贴、手机支架从灵感、草图、打样到市集反馈的真实过程",
+        "设计学生做品牌：以同济设计创意学院学生视角记录仓促起步、被喜欢、继续做下去的品牌成长故事",
+        "IP角色日常剧场：围绕小女孩、小狗、小猫做短篇图文小剧场，让角色替用户说出“我想躺平但我很体面”的心声",
+        "市集与线上转化：不硬广地记录摆摊现场、用户反馈、爆款原因、线上卖不动的复盘，让产品自然出现在内容里"
+      ],
+      "unique_selling_points": [
+        "把“屎尿屁”从低俗笑点转成反焦虑、反羞耻、争取个人时间的价值表达，辨识度强",
+        "设计学生本人作为主理人出镜或叙事，能同时提供专业感、真实感和养成感",
+        "产品天然适合内容化：杯子、包包、贴纸、挂件、冰箱贴等都能承载金句和IP小剧场",
+        "品牌语言不羁、自信、有趣、搞怪，适合制造收藏欲、转发欲和评论区共鸣",
+        "市集已被验证有线下喜爱度，线上可通过故事、理念和角色关系补足购买理由"
+      ],
+      "content_pillars": [
+        {
+          "name": "厕所哲学金句",
+          "description": "围绕厕所时间、带薪拉屎、合法躺平、反内卷等主题，输出犀利但不过界的观点图文，让用户先被态度吸引。"
+        },
+        {
+          "name": "文创诞生幕后",
+          "description": "记录从灵感、草图、IP设定、排版、打样、翻车到成品的过程，强化原创设计感和主理人真实感。"
+        },
+        {
+          "name": "IP角色小剧场",
+          "description": "让每天Shitting的小女孩、小狗和小猫承担情绪表达，用漫画式图文讲打工人日常、摸鱼瞬间和自我安慰。"
+        },
+        {
+          "name": "市集真实反馈",
+          "description": "展示线下摆摊、顾客反应、哪些产品被夸、哪些梗被记住，用真实反馈建立信任，并自然带出产品。"
+        },
+        {
+          "name": "不硬广产品人格化",
+          "description": "不直接叫卖，而是把杯子、包包、贴纸、挂件等设计成某种情绪道具，比如上班护身符、厕所结界、反焦虑小物。"
+        }
+      ],
+      "account_keywords": [
+        "反焦虑",
+        "屎尿屁文学",
+        "原创文创",
+        "打工人",
+        "快乐哲学"
+      ],
+      "cover_design_formats": [
+        {
+          "name": "大字宣言封面",
+          "ratio": "3:4",
+          "layout": "上方一句强钩子大字，中间放IP角色或产品局部，下方用小字补充场景，如上班、厕所、内耗、摸鱼",
+          "reason": "适合放大品牌犀利口号，快速筛选同频用户，也能避免封面过度依赖产品硬广。"
+        },
+        {
+          "name": "产品故事切片",
+          "ratio": "3:4",
+          "layout": "左侧展示产品成品或打样细节，右侧用手写感标注灵感、翻车点、用户反馈，底部加品牌小口号",
+          "reason": "能把商品变成创作过程，提升原创感和设计价值，弱化直接售卖感。"
+        },
+        {
+          "name": "IP漫画三格",
+          "ratio": "3:4",
+          "layout": "封面做成三格小剧场，第一格痛点，第二格发疯吐槽，第三格用IP或产品给出荒诞解决方案",
+          "reason": "适合承接屎尿屁文学和打工人情绪，增强可读性、收藏率和转发率。"
+        },
+        {
+          "name": "市集现场拼贴",
+          "ratio": "3:4",
+          "layout": "用市集照片、顾客反馈文字、热卖产品局部做拼贴，中心放一句真实反馈或反差标题",
+          "reason": "能把线下卖得好的事实转化为线上信任证据，同时保留生活感和品牌温度。"
+        }
+      ],
+      "benchmark_refs": [
+        {
+          "source": "benchmark_keyword",
+          "keyword": "原创文创"
+        },
+        {
+          "source": "benchmark_keyword",
+          "keyword": "反焦虑设计"
+        },
+        {
+          "source": "benchmark_keyword",
+          "keyword": "带薪拉屎"
+        },
+        {
+          "source": "benchmark_account",
+          "name": "原创文创品牌成长记录方向",
+          "url": ""
+        },
+        {
+          "source": "benchmark_account",
+          "name": "情绪价值设计表达方向",
+          "url": ""
+        },
+        {
+          "source": "benchmark_account",
+          "name": "打工人发疯文学周边方向",
+          "url": ""
+        }
+      ],
+      "benchmark_accounts": {
+        "keyword_levels": [
+          {
+            "level": 1,
+            "role": "赛道",
+            "keyword": "原创文创",
+            "reason": "账号核心资产是原创IP、口号、视觉语言和杯包贴纸等周边产品，属于以设计驱动消费的文创赛道。"
+          },
+          {
+            "level": 2,
+            "role": "主题",
+            "keyword": "反焦虑设计",
+            "reason": "品牌不是单纯卖可爱小物，而是围绕反焦虑、反内卷、厕所时间与身体权利表达情绪价值。"
+          },
+          {
+            "level": 3,
+            "role": "内容点",
+            "keyword": "带薪拉屎",
+            "reason": "这是最能代表品牌锋利态度和传播钩子的具体表达点，适合延展成图文标题、IP剧情和产品故事。"
+          }
+        ],
+        "search_keywords": [
+          "原创文创",
+          "反焦虑设计",
+          "带薪拉屎"
+        ],
+        "accounts": [
+          {
+            "name": "原创文创品牌成长记录方向",
+            "platform": "小红书",
+            "reason": "可参考这类账号如何把设计过程、市集反馈、产品上新和品牌人格结合，学习非硬广式卖货表达。",
+            "keyword": "原创文创"
+          },
+          {
+            "name": "情绪价值设计表达方向",
+            "platform": "小红书",
+            "reason": "可参考这类内容如何把压力、内耗、上班情绪转译成可分享的视觉梗和生活态度。",
+            "keyword": "反焦虑设计"
+          },
+          {
+            "name": "打工人发疯文学周边方向",
+            "platform": "小红书",
+            "reason": "可参考这类内容的标题钩子、评论区共鸣和尺度边界，避免违规与过度低俗。",
+            "keyword": "带薪拉屎"
+          }
+        ],
+        "search_results": []
+      },
+      "ip_portrait_report": {
+        "account_name_suggestions": [
+          "HollyShit开心拉屎",
+          "开心拉屎事务所",
+          "厕所时间保护协会",
+          "反焦虑文创Holly",
+          "带薪拉屎设计部"
+        ],
+        "account_keywords": [
+          "反焦虑",
+          "屎尿屁文学",
+          "原创文创",
+          "打工人",
+          "快乐哲学"
+        ],
+        "content_pillars": [
+          {
+            "name": "厕所哲学金句",
+            "description": "围绕厕所时间、带薪拉屎、合法躺平、反内卷等主题，输出犀利但不过界的观点图文，让用户先被态度吸引。"
+          },
+          {
+            "name": "文创诞生幕后",
+            "description": "记录从灵感、草图、IP设定、排版、打样、翻车到成品的过程，强化原创设计感和主理人真实感。"
+          },
+          {
+            "name": "IP角色小剧场",
+            "description": "让每天Shitting的小女孩、小狗和小猫承担情绪表达，用漫画式图文讲打工人日常、摸鱼瞬间和自我安慰。"
+          },
+          {
+            "name": "市集真实反馈",
+            "description": "展示线下摆摊、顾客反应、哪些产品被夸、哪些梗被记住，用真实反馈建立信任，并自然带出产品。"
+          },
+          {
+            "name": "不硬广产品人格化",
+            "description": "不直接叫卖，而是把杯子、包包、贴纸、挂件等设计成某种情绪道具，比如上班护身符、厕所结界、反焦虑小物。"
+          }
+        ],
+        "benchmark_creators": [
+          {
+            "name": "原创文创主理人记录方向",
+            "platform": "小红书",
+            "reason": "适合学习如何用主理人视角讲品牌成长、产品开发和摆摊故事，形成持续关注理由。",
+            "keyword": "原创文创"
+          },
+          {
+            "name": "发疯文学视觉设计方向",
+            "platform": "小红书",
+            "reason": "适合参考如何把强情绪文案做成有审美的图文内容，同时控制尺度不走向低俗违规。",
+            "keyword": "反焦虑设计"
+          },
+          {
+            "name": "打工人情绪周边方向",
+            "platform": "小红书",
+            "reason": "适合参考用户共鸣型标题、评论互动和周边植入方式，让产品成为情绪表达工具。",
+            "keyword": "带薪拉屎"
+          }
+        ],
+        "cover_design_formats": [
+          {
+            "name": "大字宣言封面",
+            "ratio": "3:4",
+            "layout": "上方一句强钩子大字，中间放IP角色或产品局部，下方用小字补充场景，如上班、厕所、内耗、摸鱼",
+            "reason": "适合放大品牌犀利口号，快速筛选同频用户，也能避免封面过度依赖产品硬广。"
+          },
+          {
+            "name": "产品故事切片",
+            "ratio": "3:4",
+            "layout": "左侧展示产品成品或打样细节，右侧用手写感标注灵感、翻车点、用户反馈，底部加品牌小口号",
+            "reason": "能把商品变成创作过程，提升原创感和设计价值，弱化直接售卖感。"
+          },
+          {
+            "name": "IP漫画三格",
+            "ratio": "3:4",
+            "layout": "封面做成三格小剧场，第一格痛点，第二格发疯吐槽，第三格用IP或产品给出荒诞解决方案",
+            "reason": "适合承接屎尿屁文学和打工人情绪，增强可读性、收藏率和转发率。"
+          },
+          {
+            "name": "市集现场拼贴",
+            "ratio": "3:4",
+            "layout": "用市集照片、顾客反馈文字、热卖产品局部做拼贴，中心放一句真实反馈或反差标题",
+            "reason": "能把线下卖得好的事实转化为线上信任证据，同时保留生活感和品牌温度。"
+          }
+        ]
+      },
+      "source": "account_plan"
+    },
+    "brand_profile": {
+      "brand_name": "Holly Shit开心拉屎",
+      "source_materials": [
+        {
+          "type": "xhs_note",
+          "keyword": "怪趣文创",
+          "title": "我的冰箱新护法➕1……🐾",
+          "url": "https://www.xiaohongshu.com/explore/68a0272b000000001c00d1ed?xsec_token=AB-rb6sWOxqJimjzW85jpNxhDPWe3ij-6t_D79TEOXH5A=&xsec_source=pc_search",
+          "liked": 26000,
+          "collected": 6486
+        },
+        {
+          "type": "xhs_note",
+          "keyword": "反焦虑文创",
+          "title": "你正在焦虑的事终会迎来好结果",
+          "url": "https://www.xiaohongshu.com/explore/69e9ce140000000013030800?xsec_token=ABZE8c0WcuHSYJ6ZI4b4GIYR8-bezMy7FpmrDqkwHtf1Q=&xsec_source=pc_search",
+          "liked": 1716,
+          "collected": 71
+        }
+      ]
+    },
+    "preferences": {},
+    "constraints": [
+      "保留 Holly Shit 的反叛、自信、搞笑、怪趣调性。",
+      "内容必须能落到具体产品或 IP，不只写抽象情绪。",
+      "小红书表达要有点击钩子、收藏理由和评论入口。",
+      "不要把便便梗写成低俗猎奇。",
+      "不要虚构销量、价格、疗效或未提供的合作背书。",
+      "不要照搬真实竞品笔记句子。"
+    ],
+    "source_refs": [
+      {
+        "source": "client_brief"
+      },
+      {
+        "source": "account_positioning"
+      },
+      {
+        "source": "account_operation_project",
+        "project_id": "holly_live_20260608_000401_holly_live"
+      }
+    ],
+    "metadata": {
+      "project_id": "holly_live_20260608_000401_holly_live",
+      "project_name": "Holly Shit 小红书冷启动"
+    }
+  },
+  "task_intent": {
+    "task_id": "task_d01_01",
+    "topic": "品牌认知开场：用怪趣幽默讲清反焦虑文创品牌理念",
+    "objective": "让新用户快速理解 Holly Shit开心拉屎的定位、主理人人设、品牌 slogan 和关注理由，并关联杯子、包包、贴纸、挂件等产品线。",
+    "content_type": "note",
+    "platform": "xhs",
+    "brief": {
+      "cover_title": "Shit人生，也要拉得开心",
+      "content_pillar": "厕所哲学金句",
+      "angle": "以品牌宣言形式开场：同济设计学生把“屎尿屁”做成反焦虑文创，不是低俗玩梗，而是用荒诞幽默夺回打工人一点点身体和情绪自主权。"
+    }
+  },
+  "context_slices": [
+    {
+      "kind": "brand_profile",
+      "payload": {
+        "user_id": "holly_live_20260608_000401_holly_live",
+        "display_name": "Holly",
+        "platform": "xhs",
+        "account_profile": {
+          "tags": {
+            "track": "文创设计",
+            "goal": "涨粉",
+            "platform": "小红书",
+            "product": "文创周边",
+            "positioning": "反焦虑文创"
+          },
+          "recommended_positioning": "一个用屎尿屁幽默讲打工人反焦虑哲学的设计学生文创账号。",
+          "audience_profile": [
+            "20-35岁年轻打工人、学生党，喜欢用幽默方式消解压力和班味",
+            "喜欢市集、原创文创、IP周边、贴纸挂件杯包等低门槛生活小物的人群",
+            "对“反内卷、合法摸鱼、厕所时间、带薪拉屎”等情绪议题有共鸣的人",
+            "愿意为有梗、有态度、有设计感的小众品牌买单的年轻消费者",
+            "关注设计过程、品牌故事、学生创业和原创IP养成的人群"
+          ],
+          "content_directions": [
+            "反焦虑快乐哲学：用不低俗但有冲击力的语言，把打工人的压力、羞耻感、被剥夺的休息时间讲成轻松好笑的观点内容",
+            "文创产品诞生记：分享杯子、包包、挂件、贴纸、冰箱贴、手机支架从灵感、草图、打样到市集反馈的真实过程",
+            "设计学生做品牌：以同济设计创意学院学生视角记录仓促起步、被喜欢、继续做下去的品牌成长故事",
+            "IP角色日常剧场：围绕小女孩、小狗、小猫做短篇图文小剧场，让角色替用户说出“我想躺平但我很体面”的心声",
+            "市集与线上转化：不硬广地记录摆摊现场、用户反馈、爆款原因、线上卖不动的复盘，让产品自然出现在内容里"
+          ],
+          "unique_selling_points": [
+            "把“屎尿屁”从低俗笑点转成反焦虑、反羞耻、争取个人时间的价值表达，辨识度强",
+            "设计学生本人作为主理人出镜或叙事，能同时提供专业感、真实感和养成感",
+            "产品天然适合内容化：杯子、包包、贴纸、挂件、冰箱贴等都能承载金句和IP小剧场",
+            "品牌语言不羁、自信、有趣、搞怪，适合制造收藏欲、转发欲和评论区共鸣",
+            "市集已被验证有线下喜爱度，线上可通过故事、理念和角色关系补足购买理由"
+          ],
+          "content_pillars": [
+            {
+              "name": "厕所哲学金句",
+              "description": "围绕厕所时间、带薪拉屎、合法躺平、反内卷等主题，输出犀利但不过界的观点图文，让用户先被态度吸引。"
+            },
+            {
+              "name": "文创诞生幕后",
+              "description": "记录从灵感、草图、IP设定、排版、打样、翻车到成品的过程，强化原创设计感和主理人真实感。"
+            },
+            {
+              "name": "IP角色小剧场",
+              "description": "让每天Shitting的小女孩、小狗和小猫承担情绪表达，用漫画式图文讲打工人日常、摸鱼瞬间和自我安慰。"
+            },
+            {
+              "name": "市集真实反馈",
+              "description": "展示线下摆摊、顾客反应、哪些产品被夸、哪些梗被记住，用真实反馈建立信任，并自然带出产品。"
+            },
+            {
+              "name": "不硬广产品人格化",
+              "description": "不直接叫卖，而是把杯子、包包、贴纸、挂件等设计成某种情绪道具，比如上班护身符、厕所结界、反焦虑小物。"
+            }
+          ],
+          "account_keywords": [
+            "反焦虑",
+            "屎尿屁文学",
+            "原创文创",
+            "打工人",
+            "快乐哲学"
+          ],
+          "cover_design_formats": [
+            {
+              "name": "大字宣言封面",
+              "ratio": "3:4",
+              "layout": "上方一句强钩子大字，中间放IP角色或产品局部，下方用小字补充场景，如上班、厕所、内耗、摸鱼",
+              "reason": "适合放大品牌犀利口号，快速筛选同频用户，也能避免封面过度依赖产品硬广。"
+            },
+            {
+              "name": "产品故事切片",
+              "ratio": "3:4",
+              "layout": "左侧展示产品成品或打样细节，右侧用手写感标注灵感、翻车点、用户反馈，底部加品牌小口号",
+              "reason": "能把商品变成创作过程，提升原创感和设计价值，弱化直接售卖感。"
+            },
+            {
+              "name": "IP漫画三格",
+              "ratio": "3:4",
+              "layout": "封面做成三格小剧场，第一格痛点，第二格发疯吐槽，第三格用IP或产品给出荒诞解决方案",
+              "reason": "适合承接屎尿屁文学和打工人情绪，增强可读性、收藏率和转发率。"
+            },
+            {
+              "name": "市集现场拼贴",
+              "ratio": "3:4",
+              "layout": "用市集照片、顾客反馈文字、热卖产品局部做拼贴，中心放一句真实反馈或反差标题",
+              "reason": "能把线下卖得好的事实转化为线上信任证据，同时保留生活感和品牌温度。"
+            }
+          ],
+          "benchmark_refs": [
+            {
+              "source": "benchmark_keyword",
+              "keyword": "原创文创"
+            },
+            {
+              "source": "benchmark_keyword",
+              "keyword": "反焦虑设计"
+            },
+            {
+              "source": "benchmark_keyword",
+              "keyword": "带薪拉屎"
+            },
+            {
+              "source": "benchmark_account",
+              "name": "原创文创品牌成长记录方向",
+              "url": ""
+            },
+            {
+              "source": "benchmark_account",
+              "name": "情绪价值设计表达方向",
+              "url": ""
+            },
+            {
+              "source": "benchmark_account",
+              "name": "打工人发疯文学周边方向",
+              "url": ""
+            }
+          ],
+          "benchmark_accounts": {
+            "keyword_levels": [
+              {
+                "level": 1,
+                "role": "赛道",
+                "keyword": "原创文创",
+                "reason": "账号核心资产是原创IP、口号、视觉语言和杯包贴纸等周边产品，属于以设计驱动消费的文创赛道。"
+              },
+              {
+                "level": 2,
+                "role": "主题",
+                "keyword": "反焦虑设计",
+                "reason": "品牌不是单纯卖可爱小物，而是围绕反焦虑、反内卷、厕所时间与身体权利表达情绪价值。"
+              },
+              {
+                "level": 3,
+                "role": "内容点",
+                "keyword": "带薪拉屎",
+                "reason": "这是最能代表品牌锋利态度和传播钩子的具体表达点，适合延展成图文标题、IP剧情和产品故事。"
+              }
+            ],
+            "search_keywords": [
+              "原创文创",
+              "反焦虑设计",
+              "带薪拉屎"
+            ],
+            "accounts": [
+              {
+                "name": "原创文创品牌成长记录方向",
+                "platform": "小红书",
+                "reason": "可参考这类账号如何把设计过程、市集反馈、产品上新和品牌人格结合，学习非硬广式卖货表达。",
+                "keyword": "原创文创"
+              },
+              {
+                "name": "情绪价值设计表达方向",
+                "platform": "小红书",
+                "reason": "可参考这类内容如何把压力、内耗、上班情绪转译成可分享的视觉梗和生活态度。",
+                "keyword": "反焦虑设计"
+              },
+              {
+                "name": "打工人发疯文学周边方向",
+                "platform": "小红书",
+                "reason": "可参考这类内容的标题钩子、评论区共鸣和尺度边界，避免违规与过度低俗。",
+                "keyword": "带薪拉屎"
+              }
+            ],
+            "search_results": []
+          },
+          "ip_portrait_report": {
+            "account_name_suggestions": [
+              "HollyShit开心拉屎",
+              "开心拉屎事务所",
+              "厕所时间保护协会",
+              "反焦虑文创Holly",
+              "带薪拉屎设计部"
+            ],
+            "account_keywords": [
+              "反焦虑",
+              "屎尿屁文学",
+              "原创文创",
+              "打工人",
+              "快乐哲学"
+            ],
+            "content_pillars": [
+              {
+                "name": "厕所哲学金句",
+                "description": "围绕厕所时间、带薪拉屎、合法躺平、反内卷等主题，输出犀利但不过界的观点图文，让用户先被态度吸引。"
+              },
+              {
+                "name": "文创诞生幕后",
+                "description": "记录从灵感、草图、IP设定、排版、打样、翻车到成品的过程，强化原创设计感和主理人真实感。"
+              },
+              {
+                "name": "IP角色小剧场",
+                "description": "让每天Shitting的小女孩、小狗和小猫承担情绪表达，用漫画式图文讲打工人日常、摸鱼瞬间和自我安慰。"
+              },
+              {
+                "name": "市集真实反馈",
+                "description": "展示线下摆摊、顾客反应、哪些产品被夸、哪些梗被记住，用真实反馈建立信任，并自然带出产品。"
+              },
+              {
+                "name": "不硬广产品人格化",
+                "description": "不直接叫卖，而是把杯子、包包、贴纸、挂件等设计成某种情绪道具，比如上班护身符、厕所结界、反焦虑小物。"
+              }
+            ],
+            "benchmark_creators": [
+              {
+                "name": "原创文创主理人记录方向",
+                "platform": "小红书",
+                "reason": "适合学习如何用主理人视角讲品牌成长、产品开发和摆摊故事，形成持续关注理由。",
+                "keyword": "原创文创"
+              },
+              {
+                "name": "发疯文学视觉设计方向",
+                "platform": "小红书",
+                "reason": "适合参考如何把强情绪文案做成有审美的图文内容，同时控制尺度不走向低俗违规。",
+                "keyword": "反焦虑设计"
+              },
+              {
+                "name": "打工人情绪周边方向",
+                "platform": "小红书",
+                "reason": "适合参考用户共鸣型标题、评论互动和周边植入方式，让产品成为情绪表达工具。",
+                "keyword": "带薪拉屎"
+              }
+            ],
+            "cover_design_formats": [
+              {
+                "name": "大字宣言封面",
+                "ratio": "3:4",
+                "layout": "上方一句强钩子大字，中间放IP角色或产品局部，下方用小字补充场景，如上班、厕所、内耗、摸鱼",
+                "reason": "适合放大品牌犀利口号，快速筛选同频用户，也能避免封面过度依赖产品硬广。"
+              },
+              {
+                "name": "产品故事切片",
+                "ratio": "3:4",
+                "layout": "左侧展示产品成品或打样细节，右侧用手写感标注灵感、翻车点、用户反馈，底部加品牌小口号",
+                "reason": "能把商品变成创作过程，提升原创感和设计价值，弱化直接售卖感。"
+              },
+              {
+                "name": "IP漫画三格",
+                "ratio": "3:4",
+                "layout": "封面做成三格小剧场，第一格痛点，第二格发疯吐槽，第三格用IP或产品给出荒诞解决方案",
+                "reason": "适合承接屎尿屁文学和打工人情绪，增强可读性、收藏率和转发率。"
+              },
+              {
+                "name": "市集现场拼贴",
+                "ratio": "3:4",
+                "layout": "用市集照片、顾客反馈文字、热卖产品局部做拼贴，中心放一句真实反馈或反差标题",
+                "reason": "能把线下卖得好的事实转化为线上信任证据，同时保留生活感和品牌温度。"
+              }
+            ]
+          },
+          "source": "account_plan"
+        },
+        "brand_profile": {
+          "brand_name": "Holly Shit开心拉屎",
+          "source_materials": [
+            {
+              "type": "xhs_note",
+              "keyword": "怪趣文创",
+              "title": "我的冰箱新护法➕1……🐾",
+              "url": "https://www.xiaohongshu.com/explore/68a0272b000000001c00d1ed?xsec_token=AB-rb6sWOxqJimjzW85jpNxhDPWe3ij-6t_D79TEOXH5A=&xsec_source=pc_search",
+              "liked": 26000,
+              "collected": 6486
+            },
+            {
+              "type": "xhs_note",
+              "keyword": "反焦虑文创",
+              "title": "你正在焦虑的事终会迎来好结果",
+              "url": "https://www.xiaohongshu.com/explore/69e9ce140000000013030800?xsec_token=ABZE8c0WcuHSYJ6ZI4b4GIYR8-bezMy7FpmrDqkwHtf1Q=&xsec_source=pc_search",
+              "liked": 1716,
+              "collected": 71
+            }
+          ]
+        },
+        "preferences": {},
+        "constraints": [
+          "保留 Holly Shit 的反叛、自信、搞笑、怪趣调性。",
+          "内容必须能落到具体产品或 IP，不只写抽象情绪。",
+          "小红书表达要有点击钩子、收藏理由和评论入口。",
+          "不要把便便梗写成低俗猎奇。",
+          "不要虚构销量、价格、疗效或未提供的合作背书。",
+          "不要照搬真实竞品笔记句子。"
+        ],
+        "source_refs": [
+          {
+            "source": "client_brief"
+          },
+          {
+            "source": "account_positioning"
+          },
+          {
+            "source": "account_operation_project",
+            "project_id": "holly_live_20260608_000401_holly_live"
+          }
+        ],
+        "metadata": {
+          "project_id": "holly_live_20260608_000401_holly_live",
+          "project_name": "Holly Shit 小红书冷启动"
+        }
+      },
+      "scope": {
+        "platform": "xhs",
+        "task_id": "task_d01_01"
+      },
+      "source_refs": [
+        {
+          "source": "client_brief"
+        },
+        {
+          "source": "account_positioning"
+        },
+        {
+          "source": "account_operation_project",
+          "project_id": "holly_live_20260608_000401_holly_live"
+        }
+      ],
+      "confidence": 1.0,
+      "priority": 20
+    },
+    {
+      "kind": "task_intent",
+      "payload": {
+        "task_id": "task_d01_01",
+        "topic": "品牌认知开场：用怪趣幽默讲清反焦虑文创品牌理念",
+        "objective": "让新用户快速理解 Holly Shit开心拉屎的定位、主理人人设、品牌 slogan 和关注理由，并关联杯子、包包、贴纸、挂件等产品线。",
+        "content_type": "note",
+        "platform": "xhs",
+        "brief": {
+          "cover_title": "Shit人生，也要拉得开心",
+          "content_pillar": "厕所哲学金句",
+          "angle": "以品牌宣言形式开场：同济设计学生把“屎尿屁”做成反焦虑文创，不是低俗玩梗，而是用荒诞幽默夺回打工人一点点身体和情绪自主权。"
+        }
+      },
+      "scope": {
+        "platform": "xhs",
+        "task_id": "task_d01_01"
+      },
+      "source_refs": [
+        {
+          "source": "content_task",
+          "task_id": "task_d01_01"
+        }
+      ],
+      "confidence": 1.0,
+      "priority": 10
+    },
+    {
+      "kind": "platform_strategy",
+      "payload": {
+        "platform": "xhs",
+        "content_type": "note",
+        "rules": [
+          {
+            "rule": "小红书图文首屏必须一眼看出情绪利益点和收藏理由。"
+          },
+          {
+            "rule": "标题、封面和正文开头要围绕同一个点击钩子。"
+          }
+        ]
+      },
+      "scope": {
+        "platform": "xhs",
+        "task_id": "task_d01_01"
+      },
+      "source_refs": [],
+      "confidence": 1.0,
+      "priority": 30
+    },
+    {
+      "kind": "market_hotspots",
+      "payload": {
+        "keywords": [],
+        "hot_examples": [],
+        "trend_insights": [],
+        "audience_insights": []
+      },
+      "scope": {
+        "platform": "xhs",
+        "task_id": "task_d01_01"
+      },
+      "source_refs": [
+        {
+          "source": "competitor_research",
+          "research_id": ""
+        },
+        {
+          "source": "account_operation_project",
+          "project_id": "holly_live_20260608_000401_holly_live"
+        }
+      ],
+      "confidence": 1.0,
+      "priority": 40
+    },
+    {
+      "kind": "learned_skills",
+      "payload": {
+        "skills": [
+          {
+            "skill_id": "种草推荐·朋友安利笔记制作指南",
+            "label": "种草推荐·朋友安利",
+            "goal": "planting",
+            "note_type": "视频",
+            "tone": "朋友安利",
+            "creative_goal": "把产品或对象包装成具体生活场景里的解决方案。",
+            "title_rules": [
+              {
+                "name": "数字钩子",
+                "rule": "标题里放数字，暗示清单、步骤或结果。",
+                "evidence": "我的冰箱新护法➕1……🐾"
+              },
+              {
+                "name": "短标题",
+                "rule": "标题控制在短句内，先给情绪或悬念。",
+                "evidence": "我的冰箱新护法➕1……🐾"
+              }
+            ],
+            "opening_rules": [
+              {
+                "name": "首句定场",
+                "rule": "第一句先给场景、情绪或判断，不急着解释信息。",
+                "evidence": "#礼物[话题]# #新奇的玩意儿[话题]# #稀奇古怪的小玩意儿[话题]# #冰箱贴[话题]##有趣[话题]##我家的可爱怪东西[话题]##冰箱贴推荐[话题]# #树蛙[话题]#"
+              }
+            ],
+            "body_structure": [
+              {
+                "name": "开场",
+                "rule": "先给情绪、场景或核心判断。",
+                "evidence": "#礼物[话题]# #新奇的玩意儿[话题]# #稀奇古怪的小玩意儿[话题]# #冰箱贴[话题]##有趣[话题]##我家的可爱怪东西[话题]##冰箱贴推荐[话题]# #树蛙[话题]#"
+              },
+              {
+                "name": "话题归档",
+                "rule": "用话题标签承接平台分发和活动入口。",
+                "evidence": "#礼物[话题]# #新奇的玩意儿[话题]# #稀奇古怪的小玩意儿[话题]# #冰箱贴[话题]##有趣[话题]##我家的可爱怪东西[话题]##冰箱贴推荐[话题]# #树蛙[话题]#"
+              }
+            ],
+            "interaction_rules": [
+              {
+                "name": "话题入口",
+                "rule": "保留核心话题标签，方便平台识别主题。",
+                "evidence": "礼物 新奇的玩意儿 稀奇古怪的小玩意儿"
+              },
+              {
+                "name": "评论触发",
+                "rule": "标题或正文要留下可回答的问题。",
+                "evidence": "comment_count=562"
+              }
+            ],
+            "visual_rules": [
+              {
+                "name": "封面先承担点击",
+                "rule": "封面必须先表达主题、情绪或问题，不只是放素材。",
+                "evidence": "cover"
+              },
+              {
+                "name": "少图集中",
+                "rule": "少图笔记要让单张图完成主题表达。",
+                "evidence": "image_count=1"
+              },
+              {
+                "name": "前 3 秒钩子",
+                "rule": "视频前 3 秒要先抛主题或情绪，不留缓冲。",
+                "evidence": "note_type=video"
+              }
+            ],
+            "cover_rules": [
+              {
+                "name": "封面一句话钩子",
+                "rule": "封面主文案用 6-14 个字说清这类内容的点击理由，优先承接标题里的结果、问题或情绪；不要把正文摘要整段搬上封面。类型：种草推荐·朋友安利。",
+                "evidence": "我的冰箱新护法➕1……🐾"
+              },
+              {
+                "name": "双层信息层级",
+                "rule": "封面只保留主标题和一个辅助信息层：主标题最大、辅助信息更小，可放数字、对象或场景；不要超过 3 组文字块。",
+                "evidence": "cover"
+              },
+              {
+                "name": "主体画面占位",
+                "rule": "产品、人物、截图或设计稿必须成为第一视觉主体，占画面约 60%-75%；四周留安全边，避免标题压住主体关键细节。",
+                "evidence": "image_count=1"
+              },
+              {
+                "name": "情绪符号强化",
+                "rule": "根据语气加一个明确情绪符号：吐槽类用夸张表情或反差字词，专业类用干净标签和编号，朋友安利用生活化场景词。当前语气：朋友安利。",
+                "evidence": "朋友安利"
+              },
+              {
+                "name": "图文一致校验",
+                "rule": "封面承诺必须能在标题或正文第一屏找到对应信息；不能用与笔记证据无关的大词、夸张收益或误导性前后对比。",
+                "evidence": "我的冰箱新护法➕1……🐾"
+              }
+            ],
+            "avoid_rules": [
+              "不要照搬原笔记句子，只抽结构和方法。",
+              "不要把单篇个例直接当稳定规律。"
+            ],
+            "metrics_summary": {
+              "liked_p25": 26000,
+              "liked_p50": 26000,
+              "liked_p75": 26000,
+              "collected_p50": 6486,
+              "sample": 1
+            },
+            "evidence_notes": [
+              {
+                "note_id": "68a0272b000000001c00d1ed",
+                "note_url": "https://www.xiaohongshu.com/explore/68a0272b000000001c00d1ed?xsec_token=AB-rb6sWOxqJimjzW85jpNxhDPWe3ij-6t_D79TEOXH5A=&xsec_source=pc_search",
+                "title": "我的冰箱新护法➕1……🐾",
+                "liked": 26000,
+                "collected": 6486,
+                "keyword": "怪趣文创",
+                "cover_path": null,
+                "image_paths": [],
+                "video_path": null,
+                "quoted_segments": [
+                  "#礼物[话题]# #新奇的玩意儿[话题]# #稀奇古怪的小玩意儿[话题]# #冰箱贴[话题]##有趣[话题]##我家的可爱怪东西[话题]##冰箱贴推荐[话题]# #树蛙[话题]#"
+                ]
+              }
+            ],
+            "cluster_signals": {
+              "rule_goal_distribution": {
+                "planting": 1
+              },
+              "size": 1
+            }
+          },
+          {
+            "skill_id": "综合通用·情绪疗愈笔记制作指南",
+            "label": "综合通用·情绪疗愈",
+            "goal": "general",
+            "note_type": "图文",
+            "tone": "情绪疗愈",
+            "creative_goal": "用一个明确角度组织内容，让用户愿意读完。",
+            "title_rules": [
+              {
+                "name": "短标题",
+                "rule": "标题控制在短句内，先给情绪或悬念。",
+                "evidence": "你正在焦虑的事终会迎来好结果"
+              }
+            ],
+            "opening_rules": [
+              {
+                "name": "首句定场",
+                "rule": "第一句先给场景、情绪或判断，不急着解释信息。",
+                "evidence": "越是心急事多，越容易被情绪牵着走。"
+              },
+              {
+                "name": "短句开场",
+                "rule": "用短句开场，让用户快速进入语境。",
+                "evidence": "越是心急事多，越容易被情绪牵着走。"
+              }
+            ],
+            "body_structure": [
+              {
+                "name": "开场",
+                "rule": "先给情绪、场景或核心判断。",
+                "evidence": "越是心急事多，越容易被情绪牵着走。"
+              },
+              {
+                "name": "话题归档",
+                "rule": "用话题标签承接平台分发和活动入口。",
+                "evidence": "其余的，慢慢交给时间就好。#记录吧就现在 #好事即将发生 #不必焦虑过好当下 #焦虑 #正能量 #情绪管理 #心理测试 #对抗焦虑 #焦虑躯体化 #心理"
+              }
+            ],
+            "interaction_rules": [
+              {
+                "name": "评论触发",
+                "rule": "标题或正文要留下可回答的问题。",
+                "evidence": "comment_count=997"
+              }
+            ],
+            "visual_rules": [
+              {
+                "name": "封面先承担点击",
+                "rule": "封面必须先表达主题、情绪或问题，不只是放素材。",
+                "evidence": "cover"
+              },
+              {
+                "name": "少图集中",
+                "rule": "少图笔记要让单张图完成主题表达。",
+                "evidence": "image_count=1"
+              }
+            ],
+            "cover_rules": [
+              {
+                "name": "封面一句话钩子",
+                "rule": "封面主文案用 6-14 个字说清这类内容的点击理由，优先承接标题里的结果、问题或情绪；不要把正文摘要整段搬上封面。类型：综合通用·情绪疗愈。",
+                "evidence": "你正在焦虑的事终会迎来好结果"
+              },
+              {
+                "name": "双层信息层级",
+                "rule": "封面只保留主标题和一个辅助信息层：主标题最大、辅助信息更小，可放数字、对象或场景；不要超过 3 组文字块。",
+                "evidence": "cover"
+              },
+              {
+                "name": "主体画面占位",
+                "rule": "产品、人物、截图或设计稿必须成为第一视觉主体，占画面约 60%-75%；四周留安全边，避免标题压住主体关键细节。",
+                "evidence": "image_count=1"
+              },
+              {
+                "name": "情绪符号强化",
+                "rule": "根据语气加一个明确情绪符号：吐槽类用夸张表情或反差字词，专业类用干净标签和编号，朋友安利用生活化场景词。当前语气：情绪疗愈。",
+                "evidence": "情绪疗愈"
+              },
+              {
+                "name": "图文一致校验",
+                "rule": "封面承诺必须能在标题或正文第一屏找到对应信息；不能用与笔记证据无关的大词、夸张收益或误导性前后对比。",
+                "evidence": "你正在焦虑的事终会迎来好结果"
+              }
+            ],
+            "avoid_rules": [
+              "不要照搬原笔记句子，只抽结构和方法。",
+              "不要把单篇个例直接当稳定规律。"
+            ],
+            "metrics_summary": {
+              "liked_p25": 1716,
+              "liked_p50": 1716,
+              "liked_p75": 1716,
+              "collected_p50": 71,
+              "sample": 1
+            },
+            "evidence_notes": [
+              {
+                "note_id": "69e9ce140000000013030800",
+                "note_url": "https://www.xiaohongshu.com/explore/69e9ce140000000013030800?xsec_token=ABZE8c0WcuHSYJ6ZI4b4GIYR8-bezMy7FpmrDqkwHtf1Q=&xsec_source=pc_search",
+                "title": "你正在焦虑的事终会迎来好结果",
+                "liked": 1716,
+                "collected": 71,
+                "keyword": "反焦虑文创",
+                "cover_path": null,
+                "image_paths": [],
+                "video_path": null,
+                "quoted_segments": [
+                  "越是心急事多，越容易被情绪牵着走。",
+                  "怕出错、怕赶不上、怕结果落空，也怕前路看不清方向。"
+                ]
+              }
+            ],
+            "cluster_signals": {
+              "rule_goal_distribution": {
+                "opinion": 1
+              },
+              "size": 1
+            }
+          }
+        ]
+      },
+      "scope": {
+        "platform": "xhs",
+        "task_id": "task_d01_01"
+      },
+      "source_refs": [
+        {
+          "source": "skill",
+          "skill_id": "种草推荐·朋友安利笔记制作指南"
+        },
+        {
+          "source": "skill",
+          "skill_id": "综合通用·情绪疗愈笔记制作指南"
+        }
+      ],
+      "confidence": 1.0,
+      "priority": 50
+    },
+    {
+      "kind": "content_strategy",
+      "payload": {
+        "artifact_type": "note",
+        "creative_angle": "以品牌宣言形式开场：同济设计学生把“屎尿屁”做成反焦虑文创，不是低俗玩梗，而是用荒诞幽默夺回打工人一点点身体和情绪自主权。",
+        "objective": "让新用户快速理解 Holly Shit开心拉屎的定位、主理人人设、品牌 slogan 和关注理由，并关联杯子、包包、贴纸、挂件等产品线。"
+      },
+      "scope": {
+        "platform": "xhs",
+        "task_id": "task_d01_01"
+      },
+      "source_refs": [],
+      "confidence": 1.0,
+      "priority": 60
+    },
+    {
+      "kind": "asset_context",
+      "payload": {
+        "assets": [
+          {
+            "asset_id": "intake_asset_1",
+            "kind": "image",
+            "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+            "text": "",
+            "usage": [
+              "cover",
+              "body"
+            ],
+            "status": "available",
+            "tags": [
+              "product_shot",
+              "ip_character",
+              "HollyShit",
+              "HOLY SHIT!",
+              "Shitting...",
+              "Just Doo It.",
+              "Shit happens but keep going",
+              "MEMO PAPER",
+              "To Do List"
+            ],
+            "source": "intake",
+            "metadata": {
+              "subject": "HollyShit便签纸产品，含厕所打工人IP与屎尿屁文案",
+              "quality": "medium"
+            }
+          },
+          {
+            "asset_id": "intake_asset_2",
+            "kind": "image",
+            "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 49@2x.png",
+            "text": "",
+            "usage": [
+              "cover",
+              "body"
+            ],
+            "status": "available",
+            "tags": [
+              "product_shot",
+              "ip_character",
+              "scene_photo",
+              "HOLLY SIT"
+            ],
+            "source": "intake",
+            "metadata": {
+              "subject": "白色布包印有搞怪女孩与屎尿屁贴片，契合品牌反焦虑调性",
+              "quality": "medium"
+            }
+          },
+          {
+            "asset_id": "intake_asset_3",
+            "kind": "image",
+            "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+            "text": "",
+            "usage": [
+              "cover",
+              "body"
+            ],
+            "status": "available",
+            "tags": [
+              "product_shot",
+              "scene_photo",
+              "lifestyle",
+              "shit"
+            ],
+            "source": "intake",
+            "metadata": {
+              "subject": "印有搞怪屎尿屁IP插画的帆布包，适合展示品牌产品与生活场景",
+              "quality": "medium"
+            }
+          },
+          {
+            "asset_id": "intake_asset_4",
+            "kind": "image",
+            "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png",
+            "text": "",
+            "usage": [
+              "cover",
+              "body"
+            ],
+            "status": "available",
+            "tags": [
+              "reference_style",
+              "brand_logo",
+              "Done is the New Daring",
+              "GET SHIT DOWN",
+              "完成比完美更性感",
+              "Holly Shit!"
+            ],
+            "source": "intake",
+            "metadata": {
+              "subject": "黑白颗粒感品牌海报，传达反完美主义与屎尿屁幽默理念",
+              "quality": "medium"
+            }
+          },
+          {
+            "asset_id": "intake_asset_5",
+            "kind": "text",
+            "path": "",
+            "text": "我是一个同济大学设计创意学院的学生，因为一个很偶然的机会，我用一周的时间仓促的做了几个文创产品做的很好，大家都很喜欢，于是我打算继续做下去。现在市集可以卖的很好，但是线上卖不动，于是我想做个小红书账号，给大家分享我的文创的品牌理念和做产品的小故事。这是我的想法，你有什么其他做账号的想法吗？\n我的文创品牌素材如下：\n关键词：\n反焦虑的快乐哲学\nSlogan：\nShit人生也要拉的开心\n品牌风格：\n不羁 自信 有趣 搞怪\n品牌理念：\n“Holly Shit开心拉屎”设计品牌致力于把排泄从羞耻行为回归到身体权利与精神庇护。\n“厕所时间神圣不可侵犯”“带薪拉屎是我应得的”用粗俗的话语把被剥夺的时间和尊严抢回来。\n不要永远鸡血奋斗，请允许自己在厕所里合法躺平。\n我们致力于用最不体面的语言，说出人们最体面的诉求。\n品牌IP形象：\n小女孩——每天Shitting的打工人\n小狗——草丛里拉屎尿尿\n小猫——爱玩蛋蛋\n可以围绕“屎尿屁”文学开展，用冲击力的画面传递价值，但是内容不要违规，不要太恶俗\n我的产品多数是：杯子，包包，挂件，贴纸，冰箱贴，手机支架\n我有一个小团队，后期需要的话她们也可以出镜，请你帮我先找一下我账号的定位，我应该是一个什么人设，在可以涨粉接单的同时还可以卖我的产品。",
+            "usage": [],
+            "status": "available",
+            "tags": [],
+            "source": "intake",
+            "metadata": {
+              "subject": "",
+              "quality": ""
+            }
+          }
+        ]
+      },
+      "scope": {
+        "platform": "xhs",
+        "task_id": "task_d01_01"
+      },
+      "source_refs": [
+        {
+          "source": "asset",
+          "asset_id": "intake_asset_1"
+        },
+        {
+          "source": "asset",
+          "asset_id": "intake_asset_2"
+        },
+        {
+          "source": "asset",
+          "asset_id": "intake_asset_3"
+        },
+        {
+          "source": "asset",
+          "asset_id": "intake_asset_4"
+        },
+        {
+          "source": "asset",
+          "asset_id": "intake_asset_5"
+        }
+      ],
+      "confidence": 1.0,
+      "priority": 70
+    },
+    {
+      "kind": "constraints",
+      "payload": {
+        "constraints": [
+          "保留 Holly Shit 的反叛、自信、搞笑、怪趣调性。",
+          "内容必须能落到具体产品或 IP，不只写抽象情绪。",
+          "小红书表达要有点击钩子、收藏理由和评论入口。",
+          "不要把便便梗写成低俗猎奇。",
+          "不要虚构销量、价格、疗效或未提供的合作背书。",
+          "不要照搬真实竞品笔记句子。",
+          "正文结构建议：我是谁 → 为什么叫 Holly Shit开心拉屎 → 品牌不是低俗而是反焦虑 → 目前做了哪些产品 → 为什么值得关注。",
+          "评论入口：你最想把哪句反焦虑厕所哲学做成贴纸/杯子？",
+          "收藏理由：作为账号置顶候选，方便用户快速理解品牌世界观。",
+          "合规注意：避免过度生理细节，不虚构销量、价格、媒体背书或合作经历。"
+        ]
+      },
+      "scope": {
+        "platform": "xhs",
+        "task_id": "task_d01_01"
+      },
+      "source_refs": [],
+      "confidence": 1.0,
+      "priority": 80
+    }
+  ],
+  "market_analysis": {
+    "analysis_id": "",
+    "platform": "xhs",
+    "keywords": [],
+    "competitor_samples": [],
+    "hot_examples": [],
+    "trend_insights": [],
+    "audience_insights": [],
+    "source_refs": [
+      {
+        "source": "competitor_research",
+        "research_id": ""
+      },
+      {
+        "source": "account_operation_project",
+        "project_id": "holly_live_20260608_000401_holly_live"
+      }
+    ],
+    "metadata": {
+      "project_id": "holly_live_20260608_000401_holly_live",
+      "project_name": "Holly Shit 小红书冷启动"
+    }
+  },
+  "assets": [
+    {
+      "asset_id": "intake_asset_1",
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+      "text": "",
+      "usage": [
+        "cover",
+        "body"
+      ],
+      "status": "available",
+      "tags": [
+        "product_shot",
+        "ip_character",
+        "HollyShit",
+        "HOLY SHIT!",
+        "Shitting...",
+        "Just Doo It.",
+        "Shit happens but keep going",
+        "MEMO PAPER",
+        "To Do List"
+      ],
+      "source": "intake",
+      "metadata": {
+        "subject": "HollyShit便签纸产品，含厕所打工人IP与屎尿屁文案",
+        "quality": "medium"
+      }
+    },
+    {
+      "asset_id": "intake_asset_2",
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 49@2x.png",
+      "text": "",
+      "usage": [
+        "cover",
+        "body"
+      ],
+      "status": "available",
+      "tags": [
+        "product_shot",
+        "ip_character",
+        "scene_photo",
+        "HOLLY SIT"
+      ],
+      "source": "intake",
+      "metadata": {
+        "subject": "白色布包印有搞怪女孩与屎尿屁贴片，契合品牌反焦虑调性",
+        "quality": "medium"
+      }
+    },
+    {
+      "asset_id": "intake_asset_3",
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+      "text": "",
+      "usage": [
+        "cover",
+        "body"
+      ],
+      "status": "available",
+      "tags": [
+        "product_shot",
+        "scene_photo",
+        "lifestyle",
+        "shit"
+      ],
+      "source": "intake",
+      "metadata": {
+        "subject": "印有搞怪屎尿屁IP插画的帆布包，适合展示品牌产品与生活场景",
+        "quality": "medium"
+      }
+    },
+    {
+      "asset_id": "intake_asset_4",
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png",
+      "text": "",
+      "usage": [
+        "cover",
+        "body"
+      ],
+      "status": "available",
+      "tags": [
+        "reference_style",
+        "brand_logo",
+        "Done is the New Daring",
+        "GET SHIT DOWN",
+        "完成比完美更性感",
+        "Holly Shit!"
+      ],
+      "source": "intake",
+      "metadata": {
+        "subject": "黑白颗粒感品牌海报，传达反完美主义与屎尿屁幽默理念",
+        "quality": "medium"
+      }
+    },
+    {
+      "asset_id": "intake_asset_5",
+      "kind": "text",
+      "path": "",
+      "text": "我是一个同济大学设计创意学院的学生，因为一个很偶然的机会，我用一周的时间仓促的做了几个文创产品做的很好，大家都很喜欢，于是我打算继续做下去。现在市集可以卖的很好，但是线上卖不动，于是我想做个小红书账号，给大家分享我的文创的品牌理念和做产品的小故事。这是我的想法，你有什么其他做账号的想法吗？\n我的文创品牌素材如下：\n关键词：\n反焦虑的快乐哲学\nSlogan：\nShit人生也要拉的开心\n品牌风格：\n不羁 自信 有趣 搞怪\n品牌理念：\n“Holly Shit开心拉屎”设计品牌致力于把排泄从羞耻行为回归到身体权利与精神庇护。\n“厕所时间神圣不可侵犯”“带薪拉屎是我应得的”用粗俗的话语把被剥夺的时间和尊严抢回来。\n不要永远鸡血奋斗，请允许自己在厕所里合法躺平。\n我们致力于用最不体面的语言，说出人们最体面的诉求。\n品牌IP形象：\n小女孩——每天Shitting的打工人\n小狗——草丛里拉屎尿尿\n小猫——爱玩蛋蛋\n可以围绕“屎尿屁”文学开展，用冲击力的画面传递价值，但是内容不要违规，不要太恶俗\n我的产品多数是：杯子，包包，挂件，贴纸，冰箱贴，手机支架\n我有一个小团队，后期需要的话她们也可以出镜，请你帮我先找一下我账号的定位，我应该是一个什么人设，在可以涨粉接单的同时还可以卖我的产品。",
+      "usage": [],
+      "status": "available",
+      "tags": [],
+      "source": "intake",
+      "metadata": {
+        "subject": "",
+        "quality": ""
+      }
+    }
+  ],
+  "constraints": [
+    "保留 Holly Shit 的反叛、自信、搞笑、怪趣调性。",
+    "内容必须能落到具体产品或 IP，不只写抽象情绪。",
+    "小红书表达要有点击钩子、收藏理由和评论入口。",
+    "不要把便便梗写成低俗猎奇。",
+    "不要虚构销量、价格、疗效或未提供的合作背书。",
+    "不要照搬真实竞品笔记句子。",
+    "正文结构建议：我是谁 → 为什么叫 Holly Shit开心拉屎 → 品牌不是低俗而是反焦虑 → 目前做了哪些产品 → 为什么值得关注。",
+    "评论入口：你最想把哪句反焦虑厕所哲学做成贴纸/杯子？",
+    "收藏理由：作为账号置顶候选，方便用户快速理解品牌世界观。",
+    "合规注意：避免过度生理细节，不虚构销量、价格、媒体背书或合作经历。"
+  ],
+  "evidence_refs": [
+    {
+      "source": "competitor_research",
+      "research_id": ""
+    },
+    {
+      "source": "account_operation_project",
+      "project_id": "holly_live_20260608_000401_holly_live"
+    }
+  ],
+  "decision_points": [],
+  "explanation_trace": {
+    "trace_id": "trace_ctx_task_d01_01",
+    "input_refs": [
+      "holly_live_20260608_000401_holly_live",
+      "task_d01_01"
+    ],
+    "retrieved_evidence": [
+      {
+        "source": "competitor_research",
+        "research_id": ""
+      },
+      {
+        "source": "account_operation_project",
+        "project_id": "holly_live_20260608_000401_holly_live"
+      }
+    ],
+    "decisions": [],
+    "stage_steps": [],
+    "selected_assets": [
+      {
+        "asset_id": "intake_asset_1",
+        "kind": "image",
+        "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/微信图片_20250617195920.jpg",
+        "text": "",
+        "usage": [
+          "cover",
+          "body"
+        ],
+        "status": "available",
+        "tags": [
+          "product_shot",
+          "ip_character",
+          "HollyShit",
+          "HOLY SHIT!",
+          "Shitting...",
+          "Just Doo It.",
+          "Shit happens but keep going",
+          "MEMO PAPER",
+          "To Do List"
+        ],
+        "source": "intake",
+        "metadata": {
+          "subject": "HollyShit便签纸产品，含厕所打工人IP与屎尿屁文案",
+          "quality": "medium"
+        }
+      },
+      {
+        "asset_id": "intake_asset_2",
+        "kind": "image",
+        "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 49@2x.png",
+        "text": "",
+        "usage": [
+          "cover",
+          "body"
+        ],
+        "status": "available",
+        "tags": [
+          "product_shot",
+          "ip_character",
+          "scene_photo",
+          "HOLLY SIT"
+        ],
+        "source": "intake",
+        "metadata": {
+          "subject": "白色布包印有搞怪女孩与屎尿屁贴片，契合品牌反焦虑调性",
+          "quality": "medium"
+        }
+      },
+      {
+        "asset_id": "intake_asset_3",
+        "kind": "image",
+        "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+        "text": "",
+        "usage": [
+          "cover",
+          "body"
+        ],
+        "status": "available",
+        "tags": [
+          "product_shot",
+          "scene_photo",
+          "lifestyle",
+          "shit"
+        ],
+        "source": "intake",
+        "metadata": {
+          "subject": "印有搞怪屎尿屁IP插画的帆布包，适合展示品牌产品与生活场景",
+          "quality": "medium"
+        }
+      },
+      {
+        "asset_id": "intake_asset_4",
+        "kind": "image",
+        "path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/明信片 打印文件_画板 1.png",
+        "text": "",
+        "usage": [
+          "cover",
+          "body"
+        ],
+        "status": "available",
+        "tags": [
+          "reference_style",
+          "brand_logo",
+          "Done is the New Daring",
+          "GET SHIT DOWN",
+          "完成比完美更性感",
+          "Holly Shit!"
+        ],
+        "source": "intake",
+        "metadata": {
+          "subject": "黑白颗粒感品牌海报，传达反完美主义与屎尿屁幽默理念",
+          "quality": "medium"
+        }
+      },
+      {
+        "asset_id": "intake_asset_5",
+        "kind": "text",
+        "path": "",
+        "text": "我是一个同济大学设计创意学院的学生，因为一个很偶然的机会，我用一周的时间仓促的做了几个文创产品做的很好，大家都很喜欢，于是我打算继续做下去。现在市集可以卖的很好，但是线上卖不动，于是我想做个小红书账号，给大家分享我的文创的品牌理念和做产品的小故事。这是我的想法，你有什么其他做账号的想法吗？\n我的文创品牌素材如下：\n关键词：\n反焦虑的快乐哲学\nSlogan：\nShit人生也要拉的开心\n品牌风格：\n不羁 自信 有趣 搞怪\n品牌理念：\n“Holly Shit开心拉屎”设计品牌致力于把排泄从羞耻行为回归到身体权利与精神庇护。\n“厕所时间神圣不可侵犯”“带薪拉屎是我应得的”用粗俗的话语把被剥夺的时间和尊严抢回来。\n不要永远鸡血奋斗，请允许自己在厕所里合法躺平。\n我们致力于用最不体面的语言，说出人们最体面的诉求。\n品牌IP形象：\n小女孩——每天Shitting的打工人\n小狗——草丛里拉屎尿尿\n小猫——爱玩蛋蛋\n可以围绕“屎尿屁”文学开展，用冲击力的画面传递价值，但是内容不要违规，不要太恶俗\n我的产品多数是：杯子，包包，挂件，贴纸，冰箱贴，手机支架\n我有一个小团队，后期需要的话她们也可以出镜，请你帮我先找一下我账号的定位，我应该是一个什么人设，在可以涨粉接单的同时还可以卖我的产品。",
+        "usage": [],
+        "status": "available",
+        "tags": [],
+        "source": "intake",
+        "metadata": {
+          "subject": "",
+          "quality": ""
+        }
+      }
+    ],
+    "selected_skill": "",
+    "review_findings": [],
+    "final_rationale": "ContextPack compiled from profile, task, market, skills, assets, and strategy slices.",
+    "metadata": {
+      "context_layer": "orchestration",
+      "project_id": "holly_live_20260608_000401_holly_live",
+      "project_name": "Holly Shit 小红书冷启动"
+    }
+  },
+  "metadata": {
+    "context_layer": "orchestration",
+    "project_id": "holly_live_20260608_000401_holly_live",
+    "project_name": "Holly Shit 小红书冷启动"
+  }
+}

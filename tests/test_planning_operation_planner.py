@@ -1,10 +1,11 @@
 from nori.core import AccountOperationProject
 from nori.core import ClientBrief
 import importlib
+import json
 
-import llms
+import nori.core.llms as llms
 
-from nori.agents.user_profiling.models import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPlanResult
 from nori.agents.planning import OperationPlannerAgent, plan_operation
 
 
@@ -105,11 +106,11 @@ def test_operation_planner_accepts_dict_inputs_and_round_trips_project():
 
 
 def test_operation_planner_uses_llm_json_when_available(monkeypatch):
-    def fake_chat(messages, *, usage="llm", **kwargs):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
         assert usage == "llm"
-        assert kwargs["response_format"] == {"type": "json_object"}
+        assert kwargs["json_mode"] is True
         assert "客户简报" in messages[1]["content"]
-        return """
+        return json.loads("""
         {
           "operation_plan": {
             "objectives": ["验证社区花艺定位"],
@@ -138,9 +139,9 @@ def test_operation_planner_uses_llm_json_when_available(monkeypatch):
             "notes": ["任务等待内容生产桥接"]
           }
         }
-        """
+        """)
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
 
     project = OperationPlannerAgent(use_llm=True).run(
         _brief(),
@@ -162,10 +163,10 @@ def test_operation_planner_uses_llm_json_when_available(monkeypatch):
 
 
 def test_operation_planner_llm_failure_keeps_fallback(monkeypatch):
-    def fake_chat(messages, *, usage="llm", **kwargs):
-        return "not json"
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        raise llms.ChatJSONError("bad json", "not json")
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
 
     project = OperationPlannerAgent(use_llm=True).run(
         _brief(),

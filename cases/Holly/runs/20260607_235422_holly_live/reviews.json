@@ -1,0 +1,64 @@
+[
+  {
+    "review_id": "review_compliance_pkg_task_d01_01",
+    "package_id": "pkg_task_d01_01",
+    "task_id": "task_d01_01",
+    "status": "passed",
+    "score": 100,
+    "issues": [],
+    "fix_suggestions": [],
+    "reviewer": "compliance",
+    "metadata": {
+      "review_type": "rule_based_text_compliance",
+      "checks": [
+        "required_title_body",
+        "xhs_length",
+        "client_taboos",
+        "absolute_claims",
+        "note_maker_validation"
+      ],
+      "issue_count": 0,
+      "severity_counts": {
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    }
+  },
+  {
+    "review_id": "review_consistency_pkg_task_d01_01",
+    "package_id": "pkg_task_d01_01",
+    "task_id": "task_d01_01",
+    "status": "needs_revision",
+    "score": 85,
+    "issues": [
+      {
+        "code": "objective_not_reflected",
+        "severity": "medium",
+        "field": "body",
+        "message": "正文没有体现任务目标",
+        "evidence": "让用户快速理解品牌核心：用怪趣幽默表达反焦虑、身体自主权和打工人情绪价值，并明确不是低俗猎奇。"
+      }
+    ],
+    "fix_suggestions": [
+      "让标题/正文明确回应任务主题和目标。"
+    ],
+    "reviewer": "consistency",
+    "metadata": {
+      "review_type": "rule_based_package_consistency",
+      "checks": [
+        "task_identity",
+        "topic_objective",
+        "cover_prompt",
+        "required_assets",
+        "brand_presence"
+      ],
+      "issue_count": 1,
+      "severity_counts": {
+        "high": 0,
+        "medium": 1,
+        "low": 0
+      }
+    }
+  }
+]

@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 from pathlib import Path
 
-import llms
+import nori.core.llms as llms
 from nori.core import AgentBase, LLMFactory, WorkflowBase, named_workflow_steps
 from nori.core import contracts
 from nori.agents.content_generation.content_producer import ContentProducerAgent
@@ -15,6 +15,7 @@ from nori.agents.planning.operation_planner import OperationPlannerAgent
 from nori.agents.learning_loop.review import ComplianceReviewerAgent, ConsistencyReviewerAgent, ReviewGateAgent
 from nori.agents.learning_loop.strategy import MetricsSnapshotAgent, StrategyIterationAgent
 from nori.agents.market_analysis.xhs_note_analyzer import XHSNoteAnalyzer
+from nori.agents.supervisor import NoriSupervisorAgent
 from nori.agents.user_profiling.account_planner import AccountPlannerAgent
 from nori.agents.user_profiling.intaker import IntakeAgent
 
@@ -37,6 +38,7 @@ AGENT_CLASSES = [
     MetricsSnapshotAgent,
     StrategyIterationAgent,
     XHSNoteAnalyzer,
+    NoriSupervisorAgent,
 ]
 
 
@@ -66,7 +68,7 @@ def test_llm_factory_delegates_to_project_llm_gateway():
     assert factory.chat_json(messages, usage="unit", json_mode=True) == {"ok": True}
     assert calls == [
         ("chat", messages, {"usage": "unit"}),
-        ("chat_json", messages, {"usage": "unit", "json_mode": True, "_chat": chat}),
+        ("chat_json", messages, {"usage": "unit", "json_mode": True}),
     ]
 
 

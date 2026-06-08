@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from nori.core import AccountOperationProject
 from nori.agents.learning_loop.strategy import state as strategy_iteration_state
-from nori.agents.learning_loop.models import MetricsSnapshot, StrategyIteration
+from nori.agents.learning_loop.schemas import MetricsSnapshot, StrategyIteration
 
 
 def test_attach_metrics_snapshot_appends_to_project_when_present():

@@ -5,7 +5,7 @@
                          用 LLM 从全量资产里选出本次封面需要的 0~N 张参考图
   2. CoverPromptWriter — 用 LLM 根据 skill.cover_rules / visual_rules + draft.title + bundle
                          写出一段 gpt-image-2 视觉 prompt
-  3. CoverImageMaker   — 调 llms.image(prompt, reference_images=选出的参考图) 生图并落盘
+  3. CoverImageMaker   — 调 nori.core.llms.image(prompt, reference_images=选出的参考图) 生图并落盘
 
 失败抛 CoverDirectorError；不再走规则兜底。
 """
@@ -19,9 +19,9 @@ from nori.core import AgentBase, ImageCapabilityError, LLMFactory
 from nori.shared.llm_json import call_stage_json
 from nori.storage import ObjectStoreError, ReferenceImagePublisher
 from nori.storage.reference_publisher import reference_publish_context
-from nori.agents.content_generation.models import CoverResult, NoteDraft
+from nori.agents.content_generation.schemas import CoverResult, NoteDraft
 from nori.core import UserAsset
-from nori.agents.market_analysis.models import NoteSkill
+from nori.agents.market_analysis.schemas import NoteSkill
 
 from . import output as _cover_output
 from .package import (
@@ -107,6 +107,7 @@ class CoverDirectorAgent(AgentBase):
                 ref_paths,
                 project=publish_context["project"],
                 session=publish_context["session"],
+                public_url_map=_public_url_map(intent),
             )
         except ObjectStoreError as exc:
             raise CoverDirectorError(f"参考图上传 OSS 失败: {exc}") from exc
@@ -124,6 +125,11 @@ class CoverDirectorAgent(AgentBase):
         except ImageCapabilityError as exc:
             if not _has_local_reference_inputs(ref_inputs):
                 raise CoverDirectorError(f"llms.image 失败: {type(exc).__name__}: {exc}") from exc
+            if intent.get("require_image_references"):
+                raise CoverDirectorError(
+                    "参考图已选中但未能作为 reference_images 发送给图像模型；"
+                    "请配置 OSS/公网图片 URL，或关闭 require_image_references。"
+                ) from exc
             reference_images_sent = False
             reference_fallback = "local_refs_not_supported"
             try:
@@ -169,7 +175,6 @@ class CoverDirectorAgent(AgentBase):
             user=user,
             timeout=timeout,
             error_type=CoverDirectorError,
-            chat_func=self.llm_factory.chat_func,
             chat_json_func=self.llm_factory.chat_json_func,
         )
 
@@ -189,3 +194,8 @@ def _normalize_skill(skill: NoteSkill | dict[str, Any]) -> dict[str, Any]:
 
 def _has_local_reference_inputs(items: list[Any]) -> bool:
     return any(not (isinstance(item, str) and item.startswith(("http://", "https://"))) for item in items)
+
+
+def _public_url_map(intent: dict[str, Any]) -> dict[str, str]:
+    value = intent.get("reference_public_urls_by_path")
+    return dict(value) if isinstance(value, dict) else {}

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from nori.agents.content_generation.models import CandidateTitle, NoteDraft
+from nori.agents.content_generation.schemas import CandidateTitle, NoteDraft
 from nori.agents.content_generation.cover_director.package import CoverPromptBuilder
 
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Any
 
 from nori.core import AgentPromptBuilder
-from nori.agents.market_analysis.models import XHSNoteSample, XHSSeedSkillDraft
+from nori.agents.market_analysis.schemas import XHSNoteSample, XHSSeedSkillDraft
 from nori.shared.prompting import json_prompt
 
 

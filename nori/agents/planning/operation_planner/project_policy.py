@@ -5,8 +5,8 @@ from typing import Any
 
 from nori.core import ClientBrief
 from nori.shared.normalization import dedupe_preserve_order
-from nori.agents.user_profiling.models import AccountPlanResult
-from nori.agents.user_profiling.models import AccountPositioning
+from nori.agents.user_profiling.schemas import AccountPlanResult
+from nori.agents.user_profiling.schemas import AccountPositioning
 
 from ..calendar_planner.policy import cadence_for_horizon, required_assets, scheduled_dates, short_brand
 from nori.core import KPIPlan, OperationPlan

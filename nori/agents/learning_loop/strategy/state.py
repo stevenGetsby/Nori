@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 from nori.core import AccountOperationProject
-from ..models import MetricsSnapshot, StrategyIteration
+from ..schemas import MetricsSnapshot, StrategyIteration
 
 
 def attach_metrics_snapshot(

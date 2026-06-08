@@ -4,7 +4,7 @@ from __future__ import annotations
 from nori.core import CandidateSet
 from nori.core.lazy_exports import lazy_export
 
-from .models import AssetBundle, CandidateTitle, ContentDesignSpec, ContentPackage, CoverResult, NoteDraft
+from .schemas import AssetBundle, CandidateTitle, ContentDesignSpec, ContentPackage, CoverResult, NoteDraft
 
 _LAZY_EXPORTS = {
     "ArtifactGenerationAgent": "artifact_generator",

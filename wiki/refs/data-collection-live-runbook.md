@@ -26,7 +26,7 @@ This runbook is for explicit live smoke runs only. Do not run it from the defaul
 From repo root:
 
 ```bash
-python 文档/codex-skills/nori-project-operator/scripts/nori_status.py .
+python wiki/archive/legacy-docs/codex-skills/nori-project-operator/scripts/nori_status.py .
 python -m pytest tests/test_data_collect_top_notes.py tests/test_market_analysis_xhs_note_analyzer.py tests/test_note_skill_fixture.py -q
 ```
 
@@ -77,7 +77,7 @@ try:
         keywords=["花艺"],
         top_k_per_keyword=2,
         download_media=False,
-        data_dir="nori/skill_base/data/xhs_note_analyzer/smoke",
+        data_dir="data/skill_runs/xhs_note_analyzer/smoke",
     ))
     print({
         "queries": result.queries,
@@ -132,7 +132,7 @@ draft = NoteMakerAgent().run(skills, assets, intent={"goal": "产品种草"})
 | `CookieBridge 未就绪` | Extension/service not running. | Start CookieBridge, confirm `/api/accounts` is reachable, then rerun health check. |
 | `没有可用 xhs cookie` | Browser is logged out, extension did not sync, or local cookie read failed. | Log into XHS in browser, sync extension, avoid printing the cookie payload. |
 | Empty or insufficient notes | Keyword too narrow, platform response changed, or account is rate-limited. | Try a broader keyword and `download_media=False`; stop if platform verification appears. |
-| `NoteMakerLLMError` during downstream generation | LLM config missing or model output invalid. | Run `llms.ensure_ready("llm")` through a local smoke script and check [api-config.md](./api-config.md). |
+| `NoteMakerLLMError` during downstream generation | LLM config missing or model output invalid. | Run `nori.core.llms.ensure_ready("llm")` through a local smoke script and check [api-config.md](./api-config.md). |
 
 ## Stop Conditions
 
