@@ -89,6 +89,7 @@ class HotNote:
     cover_path: Optional[str] = None
     image_paths: List[str] = field(default_factory=list)
     video_path: Optional[str] = None
+    visual_style: dict = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -110,6 +111,7 @@ class HotNote:
             "cover_path": self.cover_path,
             "image_paths": list(self.image_paths),
             "video_path": self.video_path,
+            "visual_style": dict(self.visual_style),
         }
 
 

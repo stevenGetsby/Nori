@@ -64,14 +64,17 @@ def test_cluster_hot_notes_groups_by_llm_goal_and_tracks_leftovers():
     assert leftover == ["n6"]
 
 
-def test_cluster_hot_notes_fails_when_llm_labels_are_empty_or_missing():
+def test_cluster_hot_notes_fails_when_llm_labels_are_empty_and_falls_back_for_missing():
     notes = [_note("n1", "教程 1"), _note("n2", "教程 2")]
 
     with pytest.raises(RuntimeError, match="LLM 标签结果为空"):
         xhs_session_clustering.cluster_hot_notes(notes, label_notes=lambda value: {})
 
-    with pytest.raises(RuntimeError, match="LLM 标签缺失 1 篇笔记"):
-        xhs_session_clustering.cluster_hot_notes(
-            notes,
-            label_notes=lambda value: {"n1": {"goal": "tutorial", "tone": "干货"}},
-        )
+    clusters, leftover, llm_used = xhs_session_clustering.cluster_hot_notes(
+        notes,
+        label_notes=lambda value: {"n1": {"goal": "tutorial", "tone": "干货"}},
+    )
+
+    assert llm_used is True
+    assert leftover == []
+    assert [note.note_id for note in clusters[0]["notes"]] == ["n1", "n2"]

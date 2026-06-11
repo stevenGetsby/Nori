@@ -32,8 +32,10 @@ class ContentProductionConfig:
     constraints: list[str]
     taboos: list[str]
     platform_rules: list[dict[str, str]]
-    top_k_per_keyword: int = 1
-    download_media: bool = False
+    top_k_per_keyword: int = 3
+    search_keywords_per_layer: int = 2
+    search_top_k_per_keyword: int = 3
+    download_media: bool = True
     horizon_days: int = 7
     market_case_brief_chars: int = 1200
     llm_label: str = ""
@@ -58,15 +60,17 @@ class ContentProductionWorkflow(WorkflowBase):
         super().__init__(
             workflow_name=config.workflow_name,
             steps=named_workflow_steps(
+                "intake",
+                "search_query_plan",
                 "xhs_top_notes",
                 "market_skill_report",
-                "intake",
                 "account_plan",
                 "client_brief",
                 "operation_project",
                 "kpi_plan",
                 "content_calendar",
                 "selected_task",
+                "intent_contract",
                 "content_context",
                 "content_design_spec",
                 "content_package",
@@ -107,15 +111,17 @@ class ContentProductionWorkflow(WorkflowBase):
         return WorkflowSpec(
             name=self.config.workflow_name,
             stages=[
+                StageSpec("intake", self.stages.intake, timeout_seconds=default_timeout),
+                StageSpec("search_query_plan", self.stages.search_query_plan, timeout_seconds=default_timeout),
                 StageSpec("xhs_top_notes", self.stages.xhs_top_notes, timeout_seconds=default_timeout),
                 StageSpec("market_skill_report", self.stages.market_skill_report, timeout_seconds=default_timeout),
-                StageSpec("intake", self.stages.intake, timeout_seconds=default_timeout),
                 StageSpec("account_plan", self.stages.account_plan, timeout_seconds=default_timeout),
                 StageSpec("client_brief", self.stages.client_brief, timeout_seconds=default_timeout),
                 StageSpec("operation_project", self.stages.operation_project, timeout_seconds=default_timeout),
                 StageSpec("kpi_plan", self.stages.kpi_plan, timeout_seconds=default_timeout),
                 StageSpec("content_calendar", self.stages.content_calendar, timeout_seconds=default_timeout),
                 StageSpec("selected_task", self.stages.selected_task, timeout_seconds=default_timeout),
+                StageSpec("intent_contract", self.stages.intent_contract, timeout_seconds=default_timeout),
                 StageSpec("content_context", self.stages.content_context, timeout_seconds=default_timeout),
                 StageSpec("content_design_spec", self.stages.content_design_spec, timeout_seconds=default_timeout),
                 StageSpec(

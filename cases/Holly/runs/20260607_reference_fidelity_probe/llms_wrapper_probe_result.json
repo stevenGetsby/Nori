@@ -1,9 +1,0 @@
-{
-  "reference_object_key": "nori/reference-fidelity-probes/reference-probe/llms-wrapper-reference-images/20260607/5ea2c17bc9b253c0_probe_reference_direct.png",
-  "reference_public_url": "https://nori.tos-cn-beijing.volces.com/nori/reference-fidelity-probes/reference-probe/llms-wrapper-reference-images/20260607/5ea2c17bc9b253c0_probe_reference_direct.png",
-  "output_path": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260607_reference_fidelity_probe/outputs_llms_wrapper/cover_llms_wrapper_probe_20260607_015701.png",
-  "elapsed_seconds": 50.39,
-  "via": "llms.image signed OSS URL",
-  "prompt": "Use the supplied reference image as the only source. Recreate the same poster faithfully. Preserve all visible text, colors, objects, and layout. Do not invent a new scene or any extra text.",
-  "source_prefix": "https://sd2oss-american.oss-us-west-1.aliyuncs.com/temp_images/2026/06/06/img-89"
-}

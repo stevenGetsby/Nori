@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os
 import hashlib
+import inspect
 import importlib
 import io
 import zipfile
@@ -52,7 +53,7 @@ class ContentProductionExperimentRunner:
         project_root: str | Path = PROJECT_ROOT,
         llm_factory: LLMFactory | None = None,
         workflow_factory: Callable[[ContentProductionConfig], Any] | None = None,
-        top_notes_collector: Callable[[dict[str, Any], Path], TopNotesResult] | None = None,
+        top_notes_collector: Callable[..., TopNotesResult] | None = None,
     ) -> None:
         self.project_root = Path(project_root)
         self.llm_factory = llm_factory
@@ -201,10 +202,10 @@ class ContentProductionExperimentRunner:
             require_image_references=config.require_image_references,
         )
 
-    def _collector(self, request: dict[str, Any]) -> Callable[[Path], TopNotesResult]:
-        def collect(market_dir: Path) -> TopNotesResult:
+    def _collector(self, request: dict[str, Any]) -> Callable[..., TopNotesResult]:
+        def collect(market_dir: Path, search_context: dict[str, Any] | None = None) -> TopNotesResult:
             if self.top_notes_collector is not None:
-                return self.top_notes_collector(request, market_dir)
+                return _call_backend_top_notes_collector(self.top_notes_collector, request, market_dir, search_context or {})
             evidence = request.get("market_evidence")
             if not isinstance(evidence, dict) or not evidence:
                 raise ValueError("market_evidence is required for backend content-production runs")
@@ -216,6 +217,27 @@ class ContentProductionExperimentRunner:
             return result
 
         return collect
+
+
+def _call_backend_top_notes_collector(
+    collector: Callable[..., TopNotesResult],
+    request: dict[str, Any],
+    market_dir: Path,
+    search_context: dict[str, Any],
+) -> TopNotesResult:
+    try:
+        signature = inspect.signature(collector)
+    except (TypeError, ValueError):
+        return collector(request, market_dir, search_context)
+    params = list(signature.parameters.values())
+    accepts_varargs = any(param.kind == inspect.Parameter.VAR_POSITIONAL for param in params)
+    positional = [
+        param for param in params
+        if param.kind in {inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD}
+    ]
+    if accepts_varargs or len(positional) >= 3:
+        return collector(request, market_dir, search_context)
+    return collector(request, market_dir)
 
 
 def _config_from_request(request: dict[str, Any], *, brief_text: str) -> ContentProductionConfig:
@@ -240,7 +262,9 @@ def _config_from_request(request: dict[str, Any], *, brief_text: str) -> Content
         constraints=_string_list(config.get("constraints")),
         taboos=_string_list(config.get("taboos")),
         platform_rules=_dict_list(config.get("platform_rules")) or [{"rule": "Keep platform copy concrete and inspectable."}],
-        top_k_per_keyword=int(config.get("top_k_per_keyword") or 1),
+        top_k_per_keyword=int(config.get("top_k_per_keyword") or config.get("search_top_k_per_keyword") or 3),
+        search_keywords_per_layer=int(config.get("search_keywords_per_layer") or 2),
+        search_top_k_per_keyword=int(config.get("search_top_k_per_keyword") or config.get("top_k_per_keyword") or 3),
         download_media=bool(config.get("download_media") or False),
         horizon_days=int(config.get("horizon_days") or 7),
         market_case_brief_chars=int(config.get("market_case_brief_chars") or 1200),

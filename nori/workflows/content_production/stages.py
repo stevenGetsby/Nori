@@ -1,6 +1,8 @@
 """Stage handlers for the content production workflow."""
 from __future__ import annotations
 
+import inspect
+import json
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -10,10 +12,12 @@ from nori.agents.content_generation import ArtifactGenerationAgent, ContentSpecA
 from nori.agents.learning_loop import ReviewGateAgent
 from nori.agents.market_analysis import SessionSkillReport, XHSNoteAnalyzer
 from nori.agents.market_analysis.xhs_note_analyzer import build_note_skill, skills_output, write_session_outputs
+from nori.agents.market_analysis.xhs_note_analyzer.visual_style import enrich_hot_note_visual_styles
 from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
 from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
 from nori.context import ContextPackBuilder, ContextResolver
-from nori.core import AssetLibrary, AssetRecord, ClientBrief
+from nori.core import AssetLibrary, AssetRecord, ClientBrief, IntentContract
+from nori.shared.llm_json import try_stage_json
 
 from .artifacts import with_artifact, write_json
 from .state import ContentProductionState
@@ -25,8 +29,40 @@ class ContentProductionStages:
     def __init__(self, config: Any) -> None:
         self.config = config
 
+    def intake(self, state: ContentProductionState) -> ContentProductionState:
+        intake = IntakeAgent(use_llm=True, use_vision=True, llm_factory=state["llm_factory"]).run(
+            UserInput(text=state["brief_text"], images=[str(path) for path in state["asset_paths"]])
+        )
+        path = state["run_dir"] / "intake_result.json"
+        write_json(path, intake.to_dict())
+        state = {**state, "intake": intake}
+        return with_artifact(state, "intake", path)
+
+    def search_query_plan(self, state: ContentProductionState) -> ContentProductionState:
+        plan = _build_xhs_search_query_plan(
+            brief_text=state["brief_text"],
+            intake=state["intake"],
+            config=self.config,
+            llm_factory=state["llm_factory"],
+        )
+        path = state["run_dir"] / "search_query_plan.json"
+        write_json(path, plan)
+        state = {**state, "search_query_plan": plan}
+        return with_artifact(state, "search_query_plan", path)
+
     def xhs_top_notes(self, state: ContentProductionState) -> ContentProductionState:
-        top_result = state["top_notes_collector"](state["market_dir"])
+        top_result = _call_top_notes_collector(
+            state["top_notes_collector"],
+            state["market_dir"],
+            search_context={
+                "query_plan": state["search_query_plan"],
+                "keywords": list(state["search_query_plan"].get("flattened_keywords") or []),
+                "top_k_per_keyword": int(state["search_query_plan"].get("top_k_per_keyword") or self.config.top_k_per_keyword),
+            },
+        )
+        llm_factory = state.get("llm_factory")
+        if self.config.download_media and top_result.hot_notes and llm_factory:
+            enrich_hot_note_visual_styles(top_result.hot_notes, llm_factory=llm_factory)
         path = state["run_dir"] / "xhs_top_notes_result.json"
         write_json(path, top_result.to_dict())
         state = {**state, "top_result": top_result}
@@ -41,15 +77,6 @@ class ContentProductionStages:
         write_json(guides_path, skills_output(market_report))
         state = {**state, "market_report": market_report}
         return with_artifact(state, "market_skill_report", report_path)
-
-    def intake(self, state: ContentProductionState) -> ContentProductionState:
-        intake = IntakeAgent(use_llm=True, use_vision=True, llm_factory=state["llm_factory"]).run(
-            UserInput(text=state["brief_text"], images=[str(path) for path in state["asset_paths"]])
-        )
-        path = state["run_dir"] / "intake_result.json"
-        write_json(path, intake.to_dict())
-        state = {**state, "intake": intake}
-        return with_artifact(state, "intake", path)
 
     def account_plan(self, state: ContentProductionState) -> ContentProductionState:
         account_plan = AccountPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(
@@ -114,6 +141,17 @@ class ContentProductionStages:
         state = {**state, "task": task}
         return with_artifact(state, "selected_task", path)
 
+    def intent_contract(self, state: ContentProductionState) -> ContentProductionState:
+        contract = IntentContract.from_brief_and_task(
+            state["client_brief"],
+            state["task"],
+            contract_id=f"intent_{state['run_dir'].name}_{state['task'].task_id or 'task'}",
+        )
+        path = state["run_dir"] / "intent_contract.json"
+        write_json(path, contract.to_dict())
+        state = {**state, "intent_contract": contract}
+        return with_artifact(state, "intent_contract", path)
+
     def content_context(self, state: ContentProductionState) -> ContentProductionState:
         context_pack = ContextPackBuilder().build_from_project(
             state["project"],
@@ -132,6 +170,7 @@ class ContentProductionStages:
     def content_design_spec(self, state: ContentProductionState) -> ContentProductionState:
         content_spec = ContentSpecAgent(llm_factory=state["llm_factory"]).run(
             context_view=state["content_context_view"],
+            intent_contract=state["intent_contract"],
         )
         path = state["run_dir"] / "content_design_spec.json"
         write_json(path, content_spec.to_dict())
@@ -152,6 +191,7 @@ class ContentProductionStages:
                 "run_id": state["run_dir"].name,
                 "reference_public_urls_by_path": dict(state.get("reference_public_urls_by_path") or {}),
             },
+            intent_contract=state["intent_contract"],
             use_cover=True,
         )
         path = state["run_dir"] / "content_package.json"
@@ -164,6 +204,7 @@ class ContentProductionStages:
             state["package"],
             task=state["task"],
             client_brief=state["client_brief"],
+            intent_contract=state["intent_contract"],
             project=state["project"],
         )
         path = state["run_dir"] / "reviews.json"
@@ -262,6 +303,171 @@ def top_notes_result_from_dict(data: dict[str, Any]) -> TopNotesResult:
     )
 
 
+def _build_xhs_search_query_plan(
+    *,
+    brief_text: str,
+    intake: Any,
+    config: Any,
+    llm_factory: Any,
+) -> dict[str, Any]:
+    fallback = _fallback_search_query_plan(brief_text=brief_text, intake=intake, config=config)
+    system = "你是 Nori 的小红书搜索策略规划器。只输出 JSON。"
+    user = f"""\
+基于用户 Intaker 结果，为小红书搜索生成三层关键词计划。
+
+用户原始 brief:
+{brief_text[:1600]}
+
+Intaker 结果:
+{_jsonish(intake)}
+
+项目配置:
+{_jsonish({
+    "platform": getattr(config, "platform", "xhs"),
+    "topic": getattr(config, "topic", ""),
+    "account_position": getattr(config, "account_position", ""),
+    "target_audience": getattr(config, "target_audience", ""),
+    "goals": list(getattr(config, "goals", []) or []),
+    "constraints": list(getattr(config, "constraints", []) or []),
+    "taboos": list(getattr(config, "taboos", []) or []),
+})}
+
+你要输出适合 XHS 搜索的三个层级：
+1. track_keywords: 赛道层，搜大盘内容范式，比如 AI工具、效率工具、职场成长。
+2. topic_keywords: 主题层，搜这次内容主题，比如 AI工具更新、新功能判断。
+3. content_point_keywords: 内容点层，搜具体切口/钩子，比如 伪需求判断、工具避坑、5步判断。
+
+规则：
+- 每层 1-{int(getattr(config, "search_keywords_per_layer", 2) or 2)} 个关键词。
+- 每个关键词 2-12 个汉字，适合直接放进小红书搜索框。
+- 不要返回品牌名，不要带 #、【】、标点或营销口号。
+- 关键词必须从宽到窄递进，不能三层重复。
+- 每个关键词后续会取热度最高的 {int(getattr(config, "search_top_k_per_keyword", 3) or 3)} 篇笔记。
+
+输出 JSON，字段固定：
+{{
+  "track_keywords": ["..."],
+  "topic_keywords": ["..."],
+  "content_point_keywords": ["..."],
+  "rationale": "一句话说明搜索策略"
+}}
+"""
+    data, error = try_stage_json(
+        system=system,
+        user=user,
+        timeout=45,
+        chat_json_func=llm_factory.chat_json_func,
+    )
+    plan = _normalize_search_query_plan(data or {}, fallback=fallback, config=config)
+    if error:
+        plan["metadata"]["llm_error"] = {"stage": "search_query_plan", **error}
+    return plan
+
+
+def _fallback_search_query_plan(*, brief_text: str, intake: Any, config: Any) -> dict[str, Any]:
+    intention = dict(getattr(intake, "intention", {}) or {})
+    context = dict(getattr(intake, "context", {}) or {})
+    topic = _clean_keyword(getattr(config, "topic", "")) or _clean_keyword(brief_text[:24]) or "小红书图文"
+    goal = _clean_keyword(intention.get("goal")) or _clean_keyword((getattr(config, "goals", []) or [""])[0])
+    fmt = _clean_keyword(intention.get("format")) or "小红书图文"
+    track = _dedupe_keywords([
+        _clean_keyword(getattr(config, "account_position", "")),
+        _clean_keyword(getattr(config, "target_audience", "")),
+        topic,
+    ])[:2]
+    topic_keywords = _dedupe_keywords([topic, goal])[:2]
+    points = _dedupe_keywords([
+        *_stringish_list(context.get("guardrails")),
+        *_stringish_list(context.get("data_refs")),
+        goal,
+        fmt,
+        topic,
+    ])[:2]
+    return _plan_dict(
+        track_keywords=track or [topic],
+        topic_keywords=topic_keywords or [topic],
+        content_point_keywords=points or [topic],
+        rationale="规则兜底：从 Intaker 和 workflow config 提取赛道、主题、内容点关键词。",
+        source="rule_fallback",
+        config=config,
+    )
+
+
+def _normalize_search_query_plan(data: dict[str, Any], *, fallback: dict[str, Any], config: Any) -> dict[str, Any]:
+    track = _dedupe_keywords(data.get("track_keywords") or data.get("track") or [])
+    topic = _dedupe_keywords(data.get("topic_keywords") or data.get("topic") or [])
+    points = _dedupe_keywords(data.get("content_point_keywords") or data.get("content_points") or [])
+    if not track:
+        track = list(fallback["layers"][0]["keywords"])
+    if not topic:
+        topic = list(fallback["layers"][1]["keywords"])
+    if not points:
+        points = list(fallback["layers"][2]["keywords"])
+    limit = max(1, int(getattr(config, "search_keywords_per_layer", 2) or 2))
+    return _plan_dict(
+        track_keywords=track[:limit],
+        topic_keywords=topic[:limit],
+        content_point_keywords=points[:limit],
+        rationale=str(data.get("rationale") or fallback.get("rationale") or ""),
+        source="llm_intake_query_plan" if data else fallback.get("source", "rule_fallback"),
+        config=config,
+    )
+
+
+def _plan_dict(
+    *,
+    track_keywords: list[str],
+    topic_keywords: list[str],
+    content_point_keywords: list[str],
+    rationale: str,
+    source: str,
+    config: Any,
+) -> dict[str, Any]:
+    top_k = _bounded_int(getattr(config, "search_top_k_per_keyword", 3), default=3, minimum=3, maximum=5)
+    layers = [
+        {"level": "track", "label": "赛道", "keywords": _dedupe_keywords(track_keywords), "top_k_per_keyword": top_k},
+        {"level": "topic", "label": "主题", "keywords": _dedupe_keywords(topic_keywords), "top_k_per_keyword": top_k},
+        {
+            "level": "content_point",
+            "label": "内容点",
+            "keywords": _dedupe_keywords(content_point_keywords),
+            "top_k_per_keyword": top_k,
+        },
+    ]
+    flattened = _dedupe_keywords([keyword for layer in layers for keyword in layer["keywords"]])
+    return {
+        "schema_version": 1,
+        "platform": "xhs",
+        "source": source,
+        "layers": layers,
+        "flattened_keywords": flattened,
+        "top_k_per_keyword": top_k,
+        "rationale": rationale,
+        "metadata": {
+            "search_rule": "track/topic/content_point layered XHS popular search",
+            "keyword_count": len(flattened),
+            "per_keyword_candidate_pool": 40,
+            "per_keyword_selected_notes": top_k,
+        },
+    }
+
+
+def _call_top_notes_collector(collector: Any, market_dir: Path, *, search_context: dict[str, Any]) -> TopNotesResult:
+    try:
+        signature = inspect.signature(collector)
+    except (TypeError, ValueError):
+        return collector(market_dir, search_context)
+    params = list(signature.parameters.values())
+    accepts_varargs = any(param.kind == inspect.Parameter.VAR_POSITIONAL for param in params)
+    positional = [
+        param for param in params
+        if param.kind in {inspect.Parameter.POSITIONAL_ONLY, inspect.Parameter.POSITIONAL_OR_KEYWORD}
+    ]
+    if accepts_varargs or len(positional) >= 2:
+        return collector(market_dir, search_context)
+    return collector(market_dir)
+
+
 def _select_task(calendar: Any) -> Any:
     if not calendar.tasks:
         raise RuntimeError("calendar has no content tasks")
@@ -274,6 +480,52 @@ def _content_strategy(task: Any) -> dict[str, Any]:
         "creative_angle": task.brief.get("angle") or task.objective or task.topic,
         "objective": task.objective,
     }
+
+
+def _jsonish(value: Any) -> str:
+    if hasattr(value, "to_dict"):
+        value = value.to_dict()
+    try:
+        return json.dumps(value, ensure_ascii=False, indent=2, default=str)
+    except TypeError:
+        return json.dumps(str(value), ensure_ascii=False)
+
+
+def _stringish_list(value: Any) -> list[str]:
+    if isinstance(value, (list, tuple, set)):
+        return [str(item) for item in value if str(item or "").strip()]
+    text = str(value or "").strip()
+    return [text] if text else []
+
+
+def _clean_keyword(value: Any) -> str:
+    text = str(value or "").strip()
+    for token in ("#", "【", "】", "「", "」", "：", ":", "，", ",", "。", "！", "!", "？", "?"):
+        text = text.replace(token, " ")
+    text = "".join(part for part in text.split())
+    if not text:
+        return ""
+    return text[:12]
+
+
+def _dedupe_keywords(values: Any) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for value in _stringish_list(values):
+        keyword = _clean_keyword(value)
+        if not keyword or keyword in seen:
+            continue
+        out.append(keyword)
+        seen.add(keyword)
+    return out
+
+
+def _bounded_int(value: Any, *, default: int, minimum: int, maximum: int) -> int:
+    try:
+        number = int(value)
+    except (TypeError, ValueError):
+        number = default
+    return max(minimum, min(maximum, number))
 
 
 def _asset_library_from_user_assets(assets: list[Any]) -> AssetLibrary:

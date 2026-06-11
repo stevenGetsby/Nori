@@ -22,6 +22,7 @@ from . import session_clustering as xhs_session_clustering
 from . import session_llm as xhs_session_llm
 from . import session_reporter as xhs_session_reporter
 from . import skill_builder as xhs_skill_builder
+from . import visual_style as xhs_visual_style
 
 
 class XHSNoteAnalyzerLLMError(xhs_session_llm.XHSSessionLLMError):
@@ -142,6 +143,8 @@ class XHSNoteAnalyzer(AgentBase):
             raise RuntimeError(f"高赞采集不足，停止生成 skill: {top_result.insufficient}")
 
         hot_notes = top_result.hot_notes
+        if rule.download_media:
+            xhs_visual_style.enrich_hot_note_visual_styles(hot_notes, llm_factory=self.llm_factory)
 
         # 3) 聚类
         clusters, leftover, llm_used = self._cluster_hot_notes(hot_notes)
