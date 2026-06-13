@@ -47,6 +47,7 @@ from .services import (
     BackendContentProductionConsoleService,
     BackendContentProductionRunService,
     BackendExperimentJobService,
+    BackendReferenceImageService,
     BackendSessionAssetService,
 )
 from .workflows import WorkflowCatalog
@@ -83,10 +84,13 @@ class NoriBackend:
         self.upload_root = Path(upload_root or project_root / "data" / "backend" / "uploads")
         self.session_asset_service = BackendSessionAssetService(
             session_manager=self.session_manager,
-            reference_publisher=reference_publisher,
             upload_root=self.upload_root,
         )
-        self.reference_publisher = self.session_asset_service.reference_publisher
+        self.reference_image_service = BackendReferenceImageService(
+            session_manager=self.session_manager,
+            reference_publisher=reference_publisher,
+        )
+        self.reference_publisher = self.reference_image_service.reference_publisher
         self.job_store = job_store or InProcessExperimentJobStore(
             storage_root=project_root / "data" / "backend" / "jobs"
         )
@@ -165,17 +169,17 @@ class NoriBackend:
         )
 
     def check_reference_publish(self, request: ReferencePublishCheckRequest) -> dict[str, Any]:
-        return self.session_asset_service.check_reference_publish(request)
+        return self.reference_image_service.check_reference_publish(request)
 
     def check_reference_image_generation(self, request: ReferenceImageGenerationCheckRequest) -> dict[str, Any]:
-        return self.session_asset_service.check_reference_image_generation(request)
+        return self.reference_image_service.check_reference_image_generation(request)
 
     def check_session_reference_image_generation(
         self,
         session_id: str,
         request: SessionReferenceImageGenerationCheckRequest,
     ) -> dict[str, Any]:
-        return self.session_asset_service.check_session_reference_image_generation(session_id, request)
+        return self.reference_image_service.check_session_reference_image_generation(session_id, request)
 
     def content_production_run_template(
         self,
@@ -246,7 +250,7 @@ class NoriBackend:
         return self.session_asset_service.get_session_asset_file(session_id, asset_id)
 
     def publish_session_asset_references(self, session_id: str, request: AssetReferencePublishRequest) -> dict[str, Any]:
-        return self.session_asset_service.publish_session_asset_references(session_id, request)
+        return self.reference_image_service.publish_session_asset_references(session_id, request)
 
     def run_content_production(self, request: ContentProductionRunRequest) -> dict[str, Any]:
         return self.content_production_run_service.run_content_production(request)
