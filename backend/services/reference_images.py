@@ -26,19 +26,13 @@ from .session_assets import (
 )
 
 
-class BackendReferenceImageService:
-    """Owns reference publish checks, reference URLs, and image-provider reference checks."""
+class ReferencePublishDiagnostic:
+    """Verifies that the configured publisher can produce provider-fetchable reference URLs."""
 
-    def __init__(
-        self,
-        *,
-        session_manager: SessionManager,
-        reference_publisher: Any | None = None,
-    ) -> None:
-        self.session_manager = session_manager
-        self.reference_publisher = reference_publisher or ReferenceImagePublisher.from_env()
+    def __init__(self, reference_publisher: Any) -> None:
+        self.reference_publisher = reference_publisher
 
-    def check_reference_publish(self, request: ReferencePublishCheckRequest) -> dict[str, Any]:
+    def check(self, request: ReferencePublishCheckRequest) -> dict[str, Any]:
         """Verify the configured reference publisher using a backend-owned tiny image."""
 
         with tempfile.TemporaryDirectory(prefix="nori_reference_publish_check_") as tmp_dir:
@@ -81,7 +75,11 @@ class BackendReferenceImageService:
                 metadata=dict(request.metadata or {}),
             )
 
-    def check_reference_image_generation(self, request: ReferenceImageGenerationCheckRequest) -> dict[str, Any]:
+
+class ReferenceImageGenerationChecker:
+    """Checks whether the active image provider accepts provider-fetchable reference images."""
+
+    def check(self, request: ReferenceImageGenerationCheckRequest) -> dict[str, Any]:
         """Verify that the active image provider accepts reference_images."""
 
         refs = [provider_fetchable_reference_url(str(item or "")) for item in request.reference_images]
@@ -123,6 +121,139 @@ class BackendReferenceImageService:
             first_image_preview=str(images[0])[:80] if images else "",
             metadata=dict(request.metadata or {}),
         )
+
+
+class SessionReferenceAssetPublisher:
+    """Publishes selected session asset rows into provider-fetchable reference URLs."""
+
+    def __init__(self, reference_publisher: Any) -> None:
+        self.reference_publisher = reference_publisher
+
+    def publish_selected(
+        self,
+        selected_assets: list[dict[str, Any]],
+        *,
+        session_id: str,
+        project: str,
+        request: AssetReferencePublishRequest,
+    ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+        results: list[dict[str, Any]] = []
+        updated_rows: list[dict[str, Any]] = []
+        for row in selected_assets:
+            updated, result = self._publish_one_reference_asset(
+                row,
+                project=project,
+                session_id=session_id,
+                force=bool(request.force),
+                backend_public_base_url=str(request.backend_public_base_url or ""),
+                public_url_map=dict(request.public_url_map or {}),
+            )
+            results.append(result)
+            if updated:
+                updated_rows.append(updated)
+
+        failed = [item for item in results if not item.get("public_reference_url")]
+        return (
+            {
+                "ready": not failed and bool(results),
+                "selected_count": len(selected_assets),
+                "published_count": len(results) - len(failed),
+                "failed_count": len(failed),
+                "assets": results,
+            },
+            updated_rows,
+        )
+
+    def _publish_one_reference_asset(
+        self,
+        row: dict[str, Any],
+        *,
+        project: str,
+        session_id: str,
+        force: bool,
+        backend_public_base_url: str,
+        public_url_map: dict[str, str],
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        asset_id = str(row.get("asset_id") or "")
+        path = str(row.get("path") or "")
+        existing_url = str(row.get("public_reference_url") or "").strip()
+        if provider_fetchable_reference_url(existing_url) and not force:
+            result = _asset_publish_result(
+                row,
+                public_reference_url=existing_url,
+                reason="existing_public_reference_url",
+            )
+            return dict(row), result
+        if is_remote_url(path):
+            updated = {**row, "public_reference_url": path}
+            return updated, _asset_publish_result(updated, public_reference_url=path, reason="remote")
+        backend_asset_url = backend_asset_public_reference_url(
+            session_id,
+            asset_id=asset_id,
+            path=path,
+            public_base_url=backend_public_base_url,
+        )
+        if backend_asset_url:
+            updated = {
+                **row,
+                "public_reference_url": backend_asset_url,
+                "reference_publish_reason": "backend_public_base_url",
+            }
+            return updated, _asset_publish_result(
+                updated,
+                public_reference_url=backend_asset_url,
+                reason="backend_public_base_url",
+            )
+        try:
+            published = self.reference_publisher.publish_path(
+                path,
+                project=project,
+                session=session_id,
+                public_url_map=public_url_map,
+            )
+        except ObjectStoreError as exc:
+            raise ApiError(f"reference asset publish failed: {exc}", status_code=502) from exc
+        public_url = str(getattr(published, "public_url", "") or getattr(published, "url", "") or "").strip()
+        updated = dict(row)
+        if provider_fetchable_reference_url(public_url):
+            updated["public_reference_url"] = public_url
+            updated["reference_object_key"] = str(getattr(published, "key", "") or "")
+            updated["reference_publish_reason"] = str(getattr(published, "reason", "") or "")
+        return updated, {
+            **_asset_publish_result(
+                updated,
+                public_reference_url=public_url,
+                reason=str(getattr(published, "reason", "") or ""),
+            ),
+            "uploaded": bool(getattr(published, "uploaded", False)),
+            "object_key": str(getattr(published, "key", "") or ""),
+            "asset_id": asset_id,
+        }
+
+
+class BackendReferenceImageService:
+    """Coordinates session state with reference publishing and provider checks."""
+
+    def __init__(
+        self,
+        *,
+        session_manager: SessionManager,
+        reference_publisher: Any | None = None,
+        publish_diagnostic: ReferencePublishDiagnostic | None = None,
+        asset_publisher: SessionReferenceAssetPublisher | None = None,
+        generation_checker: ReferenceImageGenerationChecker | None = None,
+    ) -> None:
+        self.session_manager = session_manager
+        self.reference_publisher = reference_publisher or ReferenceImagePublisher.from_env()
+        self.publish_diagnostic = publish_diagnostic or ReferencePublishDiagnostic(self.reference_publisher)
+        self.asset_publisher = asset_publisher or SessionReferenceAssetPublisher(self.reference_publisher)
+        self.generation_checker = generation_checker or ReferenceImageGenerationChecker()
+
+    def check_reference_publish(self, request: ReferencePublishCheckRequest) -> dict[str, Any]:
+        return self.publish_diagnostic.check(request)
+
+    def check_reference_image_generation(self, request: ReferenceImageGenerationCheckRequest) -> dict[str, Any]:
+        return self.generation_checker.check(request)
 
     def check_session_reference_image_generation(
         self,
@@ -211,21 +342,12 @@ class BackendReferenceImageService:
             raise ApiError(str(exc), status_code=400) from exc
 
         project = str(request.project or session.metadata.get("project") or session_id)
-        results: list[dict[str, Any]] = []
-        updated_rows: list[dict[str, Any]] = []
-        for row in selected_assets:
-            updated, result = self._publish_one_reference_asset(
-                row,
-                project=project,
-                session_id=session_id,
-                force=bool(request.force),
-                backend_public_base_url=str(request.backend_public_base_url or ""),
-                public_url_map=dict(request.public_url_map or {}),
-            )
-            results.append(result)
-            if updated:
-                updated_rows.append(updated)
-
+        result, updated_rows = self.asset_publisher.publish_selected(
+            selected_assets,
+            session_id=session_id,
+            project=project,
+            request=request,
+        )
         if updated_rows:
             session.metadata["assets"] = append_session_assets(session.metadata.get("assets"), updated_rows)
             session.events.append(
@@ -239,14 +361,7 @@ class BackendReferenceImageService:
             )
             self.session_manager.save_session(session_id)
 
-        failed = [item for item in results if not item.get("public_reference_url")]
-        return {
-            "ready": not failed and bool(results),
-            "selected_count": len(selected_assets),
-            "published_count": len(results) - len(failed),
-            "failed_count": len(failed),
-            "assets": results,
-        }
+        return result
 
     def _record_session_reference_image_generation_check(self, session_id: str, result: dict[str, Any]) -> None:
         session = self.session_manager.get_session(session_id)
@@ -259,68 +374,6 @@ class BackendReferenceImageService:
             )
         )
         self.session_manager.save_session(session_id)
-
-    def _publish_one_reference_asset(
-        self,
-        row: dict[str, Any],
-        *,
-        project: str,
-        session_id: str,
-        force: bool,
-        backend_public_base_url: str,
-        public_url_map: dict[str, str],
-    ) -> tuple[dict[str, Any], dict[str, Any]]:
-        asset_id = str(row.get("asset_id") or "")
-        path = str(row.get("path") or "")
-        existing_url = str(row.get("public_reference_url") or "").strip()
-        if provider_fetchable_reference_url(existing_url) and not force:
-            result = _asset_publish_result(row, public_reference_url=existing_url, reason="existing_public_reference_url")
-            return dict(row), result
-        if is_remote_url(path):
-            updated = {**row, "public_reference_url": path}
-            return updated, _asset_publish_result(updated, public_reference_url=path, reason="remote")
-        backend_asset_url = backend_asset_public_reference_url(
-            session_id,
-            asset_id=asset_id,
-            path=path,
-            public_base_url=backend_public_base_url,
-        )
-        if backend_asset_url:
-            updated = {
-                **row,
-                "public_reference_url": backend_asset_url,
-                "reference_publish_reason": "backend_public_base_url",
-            }
-            return updated, _asset_publish_result(
-                updated,
-                public_reference_url=backend_asset_url,
-                reason="backend_public_base_url",
-            )
-        try:
-            published = self.reference_publisher.publish_path(
-                path,
-                project=project,
-                session=session_id,
-                public_url_map=public_url_map,
-            )
-        except ObjectStoreError as exc:
-            raise ApiError(f"reference asset publish failed: {exc}", status_code=502) from exc
-        public_url = str(getattr(published, "public_url", "") or getattr(published, "url", "") or "").strip()
-        updated = dict(row)
-        if provider_fetchable_reference_url(public_url):
-            updated["public_reference_url"] = public_url
-            updated["reference_object_key"] = str(getattr(published, "key", "") or "")
-            updated["reference_publish_reason"] = str(getattr(published, "reason", "") or "")
-        return updated, {
-            **_asset_publish_result(
-                updated,
-                public_reference_url=public_url,
-                reason=str(getattr(published, "reason", "") or ""),
-            ),
-            "uploaded": bool(getattr(published, "uploaded", False)),
-            "object_key": str(getattr(published, "key", "") or ""),
-            "asset_id": asset_id,
-        }
 
 
 def _asset_publish_result(row: dict[str, Any], *, public_reference_url: str, reason: str) -> dict[str, Any]:

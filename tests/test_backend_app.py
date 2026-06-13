@@ -264,6 +264,20 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert backend.experiment_job_service.session_manager is backend.session_manager
     assert backend.reference_image_service.session_manager is backend.session_manager
     assert backend.reference_image_service.reference_publisher is backend.reference_publisher
+    assert isinstance(
+        backend.reference_image_service.publish_diagnostic,
+        REFERENCE_IMAGE_MODULE.ReferencePublishDiagnostic,
+    )
+    assert isinstance(
+        backend.reference_image_service.asset_publisher,
+        REFERENCE_IMAGE_MODULE.SessionReferenceAssetPublisher,
+    )
+    assert isinstance(
+        backend.reference_image_service.generation_checker,
+        REFERENCE_IMAGE_MODULE.ReferenceImageGenerationChecker,
+    )
+    assert backend.reference_image_service.publish_diagnostic.reference_publisher is backend.reference_publisher
+    assert backend.reference_image_service.asset_publisher.reference_publisher is backend.reference_publisher
     assert backend.session_asset_service.session_manager is backend.session_manager
     assert backend.session_asset_service.upload_root == tmp_path / "data" / "backend" / "uploads"
 

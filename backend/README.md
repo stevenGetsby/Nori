@@ -83,6 +83,9 @@ rerun with the current tunnel URL.
 - `services/experiment_jobs.py` owns experiment job lookup/cancellation and session task status synchronization.
 - `services/session_assets.py` owns backend sessions, uploaded assets, and asset file access.
 - `services/reference_images.py` owns reference publishing, provider-fetchable reference URLs, and image-provider reference checks.
+  Internally it composes focused strategy classes for publish diagnostics,
+  session-asset URL publishing, and live image-provider reference checks, so the
+  backend facade does not become the policy owner.
 - `routing.py` is the route composition root; it includes the focused routers in `routes/`.
 - `routes/system.py` owns health and capability endpoints.
 - `routes/workflows.py` owns workflow catalog and workflow resolution endpoints.
