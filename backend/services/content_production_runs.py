@@ -19,22 +19,21 @@ from ..jobs import InProcessExperimentJobStore, enrich_content_run_result
 from .content_production_preflight_actions import (
     _content_production_preflight_actions,
     _content_production_preflight_links,
-    _content_production_template_actions,
 )
 from .content_production_preflight_checks import (
     _assert_content_production_run_gates,
     _content_production_preflight_checks,
-    _content_production_template_checks,
 )
 from .content_production_preflight_summaries import (
     _asset_preflight_summary,
     _market_evidence_preflight_summary,
     _reference_image_preflight_summary,
 )
+from .content_production_run_payloads import _execution_mode, _model_data, _replay_payload_with_overrides
+from .content_production_run_templates import ContentProductionRunTemplateBuilder
 from .session_assets import (
     assert_asset_paths_exist as _assert_asset_paths_exist,
     attach_public_reference_urls as _attach_public_reference_urls,
-    backend_public_base_url as _backend_public_base_url,
     latest_reference_image_generation_check as _latest_reference_image_generation_check,
     reference_image_generation_run_evidence as _reference_image_generation_run_evidence,
 )
@@ -57,6 +56,11 @@ class BackendContentProductionRunService:
         self.session_manager = session_store.session_manager
         self.job_store = job_store
         self.enforce_model_readiness = bool(enforce_model_readiness)
+        self.template_builder = ContentProductionRunTemplateBuilder(
+            experiment_runner=experiment_runner,
+            session_store=session_store,
+            enforce_model_readiness=self.enforce_model_readiness,
+        )
 
     def experiment_readiness(self) -> dict[str, Any]:
         return experiment_readiness(project_root=self.experiment_runner.project_root)
@@ -84,144 +88,27 @@ class BackendContentProductionRunService:
         config: dict[str, Any] | None = None,
         request_metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
-        session_id = str(session_id or "").strip()
-        session = self.session_store.get_session(session_id) if session_id else None
-        metadata = dict(getattr(session, "metadata", {}) or {}) if session is not None else {}
-        task = None
-        task_id = str(task_id or "").strip()
-        if session is not None and task_id:
-            task = self.session_store.find_task(session, task_id)
-        elif session is not None:
-            task = self.session_store.latest_task(session)
-        if task is not None and not task_id:
-            task_id = task.task_id
-
-        resolved_goal = str(goal or getattr(task, "goal", "") or metadata.get("goal") or brief_text or "").strip()
-        resolved_brief = str(brief_text or metadata.get("brief_text") or resolved_goal).strip()
-        resolved_case_id = str(case_id or metadata.get("case_id") or metadata.get("project") or session_id or "").strip()
-        resolved_case_title = str(case_title or metadata.get("case_title") or resolved_case_id).strip()
-        resolved_base_url = str(
-            backend_public_base_url
-            or metadata.get("backend_public_base_url")
-            or _backend_public_base_url()
-        ).strip()
-        resolved_market_evidence = (
-            dict(market_evidence)
-            if isinstance(market_evidence, dict) and market_evidence
-            else dict(metadata.get("market_evidence") or {})
-            if isinstance(metadata.get("market_evidence"), dict)
-            else {}
+        return self.template_builder.build(
+            session_id=session_id,
+            task_id=task_id,
+            case_id=case_id,
+            case_title=case_title,
+            platform=platform,
+            goal=goal,
+            brief_text=brief_text,
+            asset_ids=asset_ids,
+            asset_paths=asset_paths,
+            backend_public_base_url=backend_public_base_url,
+            execution_mode=execution_mode,
+            human_gate_mode=human_gate_mode,
+            require_image_references=require_image_references,
+            require_reference_image_generation_check=require_reference_image_generation_check,
+            verify_reference_urls=verify_reference_urls,
+            reference_url_probe_timeout=reference_url_probe_timeout,
+            market_evidence=market_evidence,
+            config=config,
+            request_metadata=request_metadata,
         )
-        resolved_config = (
-            dict(config)
-            if isinstance(config, dict) and config
-            else dict(metadata.get("config") or {})
-            if isinstance(metadata.get("config"), dict)
-            else {}
-        )
-        selected_assets: list[dict[str, Any]] = []
-        asset_error = ""
-        if session is not None:
-            try:
-                selected_assets = select_assets(metadata.get("assets", []), asset_ids=list(asset_ids or []))
-                for path in asset_paths or []:
-                    selected_assets.append(
-                        {"asset_id": "", "kind": "image", "path": str(path), "filename": Path(str(path)).name}
-                    )
-                selected_assets = _attach_public_reference_urls(
-                    session_id,
-                    selected_assets,
-                    public_base_url=resolved_base_url,
-                )
-            except ValueError as exc:
-                asset_error = str(exc)
-
-        payload_metadata = dict(request_metadata or {})
-        payload_metadata.setdefault("source", "backend.content_production_run_template")
-        request_payload = {
-            "session_id": session_id,
-            "task_id": task_id,
-            "goal": resolved_goal,
-            "brief_text": resolved_brief,
-            "case_id": resolved_case_id,
-            "case_title": resolved_case_title,
-            "platform": str(platform or metadata.get("platform") or "xhs"),
-            "asset_ids": [str(row.get("asset_id") or "") for row in selected_assets if row.get("asset_id")],
-            "asset_paths": [str(row.get("path") or "") for row in selected_assets if not row.get("asset_id")],
-            "backend_public_base_url": resolved_base_url,
-            "execution_mode": _execution_mode(execution_mode),
-            "human_gate_mode": str(human_gate_mode or "skip"),
-            "require_image_references": bool(require_image_references),
-            "require_reference_image_generation_check": bool(require_reference_image_generation_check),
-            "verify_reference_urls": bool(verify_reference_urls),
-            "reference_url_probe_timeout": reference_url_probe_timeout,
-            "market_evidence": resolved_market_evidence,
-            "config": resolved_config,
-            "metadata": payload_metadata,
-        }
-        latest_reference_check = _latest_reference_image_generation_check(session.events if session is not None else [])
-        if latest_reference_check:
-            request_payload["reference_image_generation_check"] = _reference_image_generation_run_evidence(
-                latest_reference_check,
-                selected_assets,
-            )
-        readiness = self.experiment_readiness()
-        checks = _content_production_template_checks(
-            request_payload,
-            session_exists=session is not None,
-            task_exists=(not task_id or task is not None),
-            asset_error=asset_error,
-            selected_assets=selected_assets,
-            readiness=readiness,
-            has_custom_market_collector=getattr(self.experiment_runner, "top_notes_collector", None) is not None,
-            enforce_model_readiness=self.enforce_model_readiness,
-        )
-        missing_fields = [check["name"] for check in checks if check["status"] == "failed"]
-        asset_summary = _asset_preflight_summary(selected_assets)
-        reference_summary = _reference_image_preflight_summary(
-            request_payload,
-            readiness=readiness,
-            asset_rows=selected_assets,
-        )
-        reference_summary["latest_check"] = latest_reference_check
-        reference_summary["latest_check_for_selected_references"] = dict(
-            request_payload.get("reference_image_generation_check") or {}
-        )
-        return {
-            "schema_version": 1,
-            "ready_for_preflight": not missing_fields,
-            "ready_for_run": not missing_fields,
-            "missing_fields": missing_fields,
-            "checks": checks,
-            "request": request_payload,
-            "session": {
-                "session_id": session_id,
-                "exists": session is not None,
-                "task_id": task_id,
-                "task_exists": bool(not task_id or task is not None),
-                "will_create_task": bool(session is not None and not task_id),
-            },
-            "assets": asset_summary,
-            "market_evidence": _market_evidence_preflight_summary(resolved_market_evidence),
-            "reference_images": reference_summary,
-            "actions": _content_production_template_actions(
-                request_payload,
-                checks=checks,
-                session_id=session_id,
-                asset_summary=asset_summary,
-            ),
-            "links": {
-                "create_session": "/sessions",
-                "upload_assets": f"/sessions/{session_id}/assets" if session_id else "/sessions/{session_id}/assets",
-                "publish_references": (
-                    f"/sessions/{session_id}/assets/publish-references"
-                    if session_id
-                    else "/sessions/{session_id}/assets/publish-references"
-                ),
-                "preflight": "/workflows/content-production/runs/preflight",
-                "run": "/workflows/content-production/runs",
-            },
-        }
 
     def run_content_production(self, request: ContentProductionRunRequest) -> dict[str, Any]:
         payload = _model_data(request)
@@ -537,94 +424,3 @@ class BackendContentProductionRunService:
             session.events.append(SessionEvent(event_type="workflow_run_finished", payload=result))
             self.session_store.save_session(session_id)
         return result
-
-
-
-def _model_data(model: Any) -> dict[str, Any]:
-    if hasattr(model, "model_dump"):
-        return model.model_dump()
-    return model.dict()
-
-
-def _execution_mode(value: Any) -> str:
-    mode = str(value or "sync").strip().lower()
-    if mode in {"sync", "synchronous"}:
-        return "sync"
-    if mode in {"background", "async"}:
-        return "background"
-    raise ApiError(f"unsupported execution_mode: {value}", status_code=400)
-
-
-_REPLAY_OVERRIDE_FIELDS = {
-    "session_id",
-    "task_id",
-    "goal",
-    "brief_text",
-    "case_id",
-    "case_title",
-    "platform",
-    "asset_ids",
-    "asset_paths",
-    "backend_public_base_url",
-    "execution_mode",
-    "human_gate_mode",
-    "require_image_references",
-    "require_reference_image_generation_check",
-    "verify_reference_urls",
-    "reference_url_probe_timeout",
-    "market_evidence",
-    "config",
-    "metadata",
-}
-
-
-def _content_run_request_fields() -> set[str]:
-    fields = getattr(ContentProductionRunRequest, "model_fields", None) or getattr(ContentProductionRunRequest, "__fields__", {})
-    return set(fields)
-
-
-def _replay_payload_with_overrides(
-    replay_payload: dict[str, Any],
-    replay_data: dict[str, Any],
-    *,
-    source_case_id: str,
-    source_run_id: str,
-) -> dict[str, Any]:
-    run_fields = _content_run_request_fields()
-    payload = {key: value for key, value in replay_payload.items() if key in run_fields}
-    overrides = dict(replay_data.get("overrides") or {})
-    invalid = sorted(key for key in overrides if key not in _REPLAY_OVERRIDE_FIELDS)
-    if invalid:
-        raise ApiError(f"unsupported replay override fields: {invalid}", status_code=400)
-    payload.update({key: value for key, value in overrides.items() if key in run_fields})
-
-    for key in ("case_id", "case_title", "execution_mode", "human_gate_mode", "backend_public_base_url"):
-        value = str(replay_data.get(key) or "").strip()
-        if value:
-            payload[key] = value
-    if replay_data.get("require_image_references") is not None:
-        payload["require_image_references"] = bool(replay_data["require_image_references"])
-    if replay_data.get("require_reference_image_generation_check") is not None:
-        payload["require_reference_image_generation_check"] = bool(
-            replay_data["require_reference_image_generation_check"]
-        )
-    if replay_data.get("verify_reference_urls") is not None:
-        payload["verify_reference_urls"] = bool(replay_data["verify_reference_urls"])
-    if replay_data.get("reference_url_probe_timeout") is not None:
-        payload["reference_url_probe_timeout"] = replay_data["reference_url_probe_timeout"]
-
-    original_metadata = payload.get("metadata") if isinstance(payload.get("metadata"), dict) else {}
-    metadata = dict(original_metadata)
-    replay_metadata = replay_data.get("metadata") if isinstance(replay_data.get("metadata"), dict) else {}
-    metadata.update(replay_metadata)
-    metadata["replay_of"] = {"case_id": source_case_id, "run_id": source_run_id}
-    metadata.setdefault("source", "backend.replay_content_production_run")
-    payload["metadata"] = metadata
-
-    payload["_explicit_session_id"] = str(replay_data.get("session_id") or overrides.get("session_id") or "").strip()
-    payload["_explicit_task_id"] = str(replay_data.get("task_id") or overrides.get("task_id") or "").strip()
-    payload.setdefault("execution_mode", "sync")
-    payload.setdefault("human_gate_mode", "skip")
-    payload.setdefault("asset_ids", [])
-    payload.setdefault("asset_paths", [])
-    return payload

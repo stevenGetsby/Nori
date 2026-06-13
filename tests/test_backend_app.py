@@ -371,6 +371,23 @@ def test_content_production_preflight_policy_is_split_by_responsibility():
     assert "def _asset_preflight_summary" in summaries_source
 
 
+def test_content_production_run_service_delegates_template_and_payload_helpers():
+    run_source = (ROOT / "backend" / "services" / "content_production_runs.py").read_text(encoding="utf-8")
+    template_source = (ROOT / "backend" / "services" / "content_production_run_templates.py").read_text(encoding="utf-8")
+    payload_source = (ROOT / "backend" / "services" / "content_production_run_payloads.py").read_text(encoding="utf-8")
+
+    assert "ContentProductionRunTemplateBuilder" in run_source
+    assert "self.template_builder.build" in run_source
+    assert "def content_production_run_template" in run_source
+    assert "backend.content_production_run_template" not in run_source
+    assert "def _model_data" not in run_source
+    assert "def _replay_payload_with_overrides" not in run_source
+    assert "class ContentProductionRunTemplateBuilder" in template_source
+    assert "backend.content_production_run_template" in template_source
+    assert "def _model_data" in payload_source
+    assert "def _replay_payload_with_overrides" in payload_source
+
+
 def test_fastapi_content_production_experiment_overview_route(tmp_path):
     run_dir = tmp_path / "cases" / "case1" / "runs" / "run1"
     covers_dir = run_dir / "covers"

@@ -88,7 +88,12 @@ rerun with the current tunnel URL.
   diagnostics, and workbench service methods used by admin routes.
 - `services/catalogs.py` owns workflow, content-generation, and capability catalogs used by the facade.
 - `services/content_production_console.py` owns content-production case/run reporting, review, artifact, and export operations.
-- `services/content_production_runs.py` owns content-production template, preflight, run, and replay orchestration.
+- `services/content_production_runs.py` owns content-production preflight,
+  run, and replay orchestration.
+- `services/content_production_run_templates.py` owns UI-ready content-production
+  launch template construction from session/task/asset context.
+- `services/content_production_run_payloads.py` owns request/replay payload
+  normalization helpers shared by run and template services.
 - `services/content_production_preflight.py` is a compatibility export surface
   for preflight helpers used by older imports.
 - `services/content_production_preflight_checks.py` owns content-production
