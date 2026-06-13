@@ -6,12 +6,12 @@ from .acceptance import content_production_run_acceptance_report
 from .actions import content_production_case_next_actions
 from .artifacts import _run_export_url, _run_replay_url, inspect_content_production_run_artifacts
 from .cases import (
-    _case_selection_payload,
     _report_run,
     content_production_case_compare,
     content_production_experiment_report,
 )
 from .runs import summarize_content_production_run
+from .selections import _case_selection_payload
 
 
 def content_production_case_delivery(

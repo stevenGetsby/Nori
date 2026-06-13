@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from .common import Any, PROJECT_ROOT, Path, _content_case_dir_or_none
 from .artifacts import _run_export_url
-from .cases import _case_selection_payload, content_production_experiment_report
+from .cases import content_production_experiment_report
+from .selections import _case_selection_payload
 
 
 def content_production_case_next_actions(

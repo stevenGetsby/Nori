@@ -60,6 +60,11 @@ def test_backend_experiments_is_split_into_capability_modules():
         "actions": [
             "content_production_case_next_actions",
         ],
+        "selections": [
+            "get_content_production_case_selection",
+            "promote_content_production_case_run",
+            "record_content_production_case_selection",
+        ],
         "delivery": [
             "content_production_case_delivery",
         ],

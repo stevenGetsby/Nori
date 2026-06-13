@@ -359,10 +359,10 @@ def build_content_production_case_export(
 
     from .cases import (
         content_production_experiment_report,
-        get_content_production_case_selection,
         list_content_production_cases,
     )
     from .runs import list_content_production_runs
+    from .selections import get_content_production_case_selection
 
     _content_case_dir(project_root=project_root, case_id=case_id)
     report = content_production_experiment_report(project_root=project_root, case_id=case_id, limit=500)
