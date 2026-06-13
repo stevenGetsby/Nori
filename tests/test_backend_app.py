@@ -253,12 +253,14 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert isinstance(backend.service_bundle, services.BackendServiceBundle)
     assert backend.service_bundle.project_root == tmp_path
     assert isinstance(backend.catalog_service, services.BackendCatalogService)
+    assert isinstance(backend.content_production_admin, services.BackendContentProductionAdminService)
     assert isinstance(backend.content_production_console, services.BackendContentProductionConsoleService)
     assert isinstance(backend.content_production_run_service, services.BackendContentProductionRunService)
     assert isinstance(backend.experiment_job_service, services.BackendExperimentJobService)
     assert isinstance(backend.reference_image_service, services.BackendReferenceImageService)
     assert isinstance(backend.session_asset_service, services.BackendSessionAssetService)
     assert isinstance(backend.session_store, services.BackendSessionStore)
+    assert backend.content_production_admin.project_root == tmp_path
     assert backend.content_production_console.project_root == tmp_path
     assert backend.session_store.session_manager is backend.session_manager
     assert backend.content_production_run_service.experiment_runner is backend.experiment_runner
@@ -290,8 +292,18 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert backend.session_asset_service.upload_root == tmp_path / "data" / "backend" / "uploads"
 
     app_source = (ROOT / "backend" / "app.py").read_text(encoding="utf-8")
+    app_tree = ast.parse(app_source)
+    experiment_imports = [
+        alias.name
+        for node in ast.walk(app_tree)
+        if isinstance(node, ast.ImportFrom) and node.module == "experiments"
+        for alias in node.names
+    ]
     assert "BackendServiceBundle.create" in app_source
     assert "BackendCatalogService" not in app_source
+    assert "content_production_diagnostics" not in experiment_imports
+    assert "content_production_experiment_workbench" not in experiment_imports
+    assert "experiment_readiness" not in experiment_imports
     assert "BackendContentProductionRunService" not in app_source
     assert "BackendReferenceImageService" not in app_source
 

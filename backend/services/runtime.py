@@ -12,6 +12,7 @@ from ..experiments import ContentProductionExperimentRunner, PROJECT_ROOT
 from ..jobs import InProcessExperimentJobStore
 from ..workflows import WorkflowCatalog
 from .catalogs import BackendCatalogService
+from .content_production_admin import BackendContentProductionAdminService
 from .content_production_console import BackendContentProductionConsoleService
 from .content_production_runs import BackendContentProductionRunService
 from .experiment_jobs import BackendExperimentJobService
@@ -28,6 +29,7 @@ class BackendServiceBundle:
     experiment_runner: Any
     enforce_model_readiness: bool
     project_root: Path
+    content_production_admin: BackendContentProductionAdminService
     content_production_console: BackendContentProductionConsoleService
     session_manager: SessionManager
     session_store: BackendSessionStore
@@ -63,6 +65,7 @@ class BackendServiceBundle:
             else bool(enforce_model_readiness)
         )
         project_root = experiment_project_root(runner)
+        content_production_admin = BackendContentProductionAdminService(project_root=project_root)
         content_production_console = BackendContentProductionConsoleService(project_root=project_root)
         manager = session_manager or SessionManager(storage_root=project_root / "data" / "backend" / "sessions")
         session_store = BackendSessionStore(manager)
@@ -94,6 +97,7 @@ class BackendServiceBundle:
             experiment_runner=runner,
             enforce_model_readiness=should_enforce_model_readiness,
             project_root=project_root,
+            content_production_admin=content_production_admin,
             content_production_console=content_production_console,
             session_manager=manager,
             session_store=session_store,

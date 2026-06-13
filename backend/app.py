@@ -32,11 +32,6 @@ from .contracts import (
     api_error,
 )
 from .content import ContentGenerationCatalog
-from .experiments import (
-    content_production_diagnostics,
-    content_production_experiment_workbench,
-    experiment_readiness,
-)
 from .jobs import InProcessExperimentJobStore
 from .routing import register_routes
 from .services import BackendServiceBundle
@@ -73,6 +68,7 @@ class NoriBackend:
         self.catalog_service = bundle.catalog_service
         self.experiment_runner = bundle.experiment_runner
         self.enforce_model_readiness = bundle.enforce_model_readiness
+        self.content_production_admin = bundle.content_production_admin
         self.content_production_console = bundle.content_production_console
         self.session_manager = bundle.session_manager
         self.session_store = bundle.session_store
@@ -119,18 +115,10 @@ class NoriBackend:
         return self.catalog_service.plan_content_generation(request)
 
     def experiment_readiness(self) -> dict[str, Any]:
-        return experiment_readiness(project_root=self.experiment_runner.project_root)
+        return self.content_production_admin.experiment_readiness()
 
     def content_production_diagnostics(self) -> dict[str, Any]:
-        data = content_production_diagnostics(project_root=self.experiment_runner.project_root)
-        data["routes"]["reference_publish_check"] = "/experiments/content-production/reference-publish-check"
-        data["routes"]["reference_image_generation_check"] = (
-            "/experiments/content-production/reference-image-generation-check"
-        )
-        data["routes"]["session_reference_image_generation_check"] = (
-            "/sessions/{session_id}/assets/reference-image-generation-check"
-        )
-        return data
+        return self.content_production_admin.content_production_diagnostics()
 
     def content_production_experiment_workbench(
         self,
@@ -139,8 +127,7 @@ class NoriBackend:
         limit: int = 20,
         include_diagnostics: bool = True,
     ) -> dict[str, Any]:
-        return content_production_experiment_workbench(
-            project_root=self.experiment_runner.project_root,
+        return self.content_production_admin.content_production_experiment_workbench(
             case_id=case_id,
             limit=limit,
             include_diagnostics=include_diagnostics,

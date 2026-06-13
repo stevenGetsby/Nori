@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from .catalogs import BackendCatalogService
+from .content_production_admin import BackendContentProductionAdminService
 from .content_production_console import BackendContentProductionConsoleService
 from .content_production_runs import BackendContentProductionRunService
 from .experiment_jobs import BackendExperimentJobService
@@ -12,6 +13,7 @@ from .runtime import BackendServiceBundle
 
 __all__ = [
     "BackendCatalogService",
+    "BackendContentProductionAdminService",
     "BackendContentProductionConsoleService",
     "BackendContentProductionRunService",
     "BackendExperimentJobService",

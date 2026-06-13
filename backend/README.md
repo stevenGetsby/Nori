@@ -79,6 +79,8 @@ rerun with the current tunnel URL.
 - `services/runtime.py` owns backend service composition and dependency wiring
   through `BackendServiceBundle`; `app.py` exposes the facade without
   constructing each domain service directly.
+- `services/content_production_admin.py` owns content-production readiness,
+  diagnostics, and workbench service methods used by admin routes.
 - `services/catalogs.py` owns workflow, content-generation, and capability catalogs used by the facade.
 - `services/content_production_console.py` owns content-production case/run reporting, review, artifact, and export operations.
 - `services/content_production_runs.py` owns content-production template, preflight, run, and replay orchestration.
