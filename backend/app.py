@@ -102,7 +102,7 @@ class NoriBackend:
         )
         self.content_production_run_service = BackendContentProductionRunService(
             experiment_runner=self.experiment_runner,
-            session_manager=self.session_manager,
+            session_store=self.session_store,
             job_store=self.job_store,
             enforce_model_readiness=self.enforce_model_readiness,
         )

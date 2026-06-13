@@ -261,6 +261,7 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert backend.session_store.session_manager is backend.session_manager
     assert backend.content_production_run_service.experiment_runner is backend.experiment_runner
     assert backend.content_production_run_service.job_store is backend.job_store
+    assert backend.content_production_run_service.session_store is backend.session_store
     assert backend.content_production_run_service.session_manager is backend.session_manager
     assert backend.experiment_job_service.job_store is backend.job_store
     assert backend.experiment_job_service.session_store is backend.session_store

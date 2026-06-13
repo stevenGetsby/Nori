@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from nori.sessions import SessionEvent, SessionManager
+from nori.sessions import SessionEvent
 
 from ..assets import select_assets
 from ..contracts import ApiError, ContentProductionReplayRequest, ContentProductionRunRequest
@@ -34,6 +34,7 @@ from .session_assets import (
     latest_reference_image_generation_check as _latest_reference_image_generation_check,
     reference_image_generation_run_evidence as _reference_image_generation_run_evidence,
 )
+from .session_store import BackendSessionStore
 
 
 class BackendContentProductionRunService:
@@ -43,12 +44,13 @@ class BackendContentProductionRunService:
         self,
         *,
         experiment_runner: Any,
-        session_manager: SessionManager,
+        session_store: BackendSessionStore,
         job_store: InProcessExperimentJobStore,
         enforce_model_readiness: bool,
     ) -> None:
         self.experiment_runner = experiment_runner
-        self.session_manager = session_manager
+        self.session_store = session_store
+        self.session_manager = session_store.session_manager
         self.job_store = job_store
         self.enforce_model_readiness = bool(enforce_model_readiness)
 
@@ -79,14 +81,15 @@ class BackendContentProductionRunService:
         request_metadata: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         session_id = str(session_id or "").strip()
-        session = self.session_manager.get_session(session_id) if session_id else None
+        session = self.session_store.get_session(session_id) if session_id else None
         metadata = dict(getattr(session, "metadata", {}) or {}) if session is not None else {}
         task = None
         task_id = str(task_id or "").strip()
         if session is not None and task_id:
-            task = next((item for item in session.task_goals if item.task_id == task_id), None)
-        elif session is not None and session.task_goals:
-            task = session.task_goals[-1]
+            task = self.session_store.find_task(session, task_id)
+        elif session is not None:
+            task = self.session_store.latest_task(session)
+        if task is not None and not task_id:
             task_id = task.task_id
 
         resolved_goal = str(goal or getattr(task, "goal", "") or metadata.get("goal") or brief_text or "").strip()
@@ -238,7 +241,7 @@ class BackendContentProductionRunService:
                 },
             )
             session.events.append(SessionEvent(event_type="workflow_run_queued", payload={"job": job}))
-            self.session_manager.save_session(session_id)
+            self.session_store.save_session(session_id)
             self.job_store.start(
                 job["job_id"],
                 target=lambda: self._execute_content_production_run(
@@ -346,12 +349,10 @@ class BackendContentProductionRunService:
         explicit_session_id = str(payload.pop("_explicit_session_id", "") or "").strip()
         explicit_task_id = str(payload.pop("_explicit_task_id", "") or "").strip()
         if explicit_session_id:
-            session = self.session_manager.get_session(explicit_session_id)
-            if session is None:
-                raise ApiError(f"session not found: {explicit_session_id}", status_code=404)
+            self.session_store.require_session(explicit_session_id)
             payload["session_id"] = explicit_session_id
         else:
-            session = self.session_manager.create_session(
+            session = self.session_store.create_session(
                 metadata={
                     "source": "backend.replay_content_production_run",
                     "replay_of": {"case_id": case_id, "run_id": run_id},
@@ -360,7 +361,7 @@ class BackendContentProductionRunService:
             )
             payload["session_id"] = session.session_id
             payload["asset_ids"] = []
-            self.session_manager.save_session(session.session_id)
+            self.session_store.save_session(session.session_id)
 
         payload["task_id"] = explicit_task_id
         return self.run_content_production(ContentProductionRunRequest(**payload))
@@ -425,14 +426,12 @@ class BackendContentProductionRunService:
     ) -> dict[str, Any]:
         execution_mode = _execution_mode(payload.get("execution_mode"))
         session_id = str(payload.get("session_id") or "").strip()
-        session = self.session_manager.get_session(session_id)
-        if session is None:
-            raise ApiError(f"session not found: {session_id}", status_code=404)
+        session = self.session_store.require_session(session_id)
 
         task_id = str(payload.get("task_id") or "").strip()
         task = None
         if task_id:
-            task = next((item for item in session.task_goals if item.task_id == task_id), None)
+            task = self.session_store.find_task(session, task_id)
             if task is None:
                 raise ApiError(f"task not found in session: {task_id}", status_code=404)
         else:
@@ -474,7 +473,7 @@ class BackendContentProductionRunService:
 
         if create_task and not task_id:
             goal = str(payload.get("goal") or payload.get("brief_text") or "").strip()
-            task = self.session_manager.start_task(
+            task = self.session_store.start_task(
                 session_id,
                 goal=goal,
                 workflow_name="content-production",
@@ -501,11 +500,11 @@ class BackendContentProductionRunService:
         task_id: str,
         asset_rows: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        session = self.session_manager.get_session(session_id)
-        task = next((item for item in session.task_goals if item.task_id == task_id), None) if session else None
+        session = self.session_store.get_session(session_id)
+        task = self.session_store.find_task(session, task_id) if session is not None else None
         if task is not None:
             task.status = "running"
-            self.session_manager.save_session(session_id)
+            self.session_store.save_session(session_id)
         try:
             result = self.experiment_runner.run(payload, session_id=session_id, task_id=task_id, asset_rows=asset_rows)
         except Exception as exc:
@@ -522,7 +521,7 @@ class BackendContentProductionRunService:
                 if isinstance(failure_result, dict) and hasattr(exc, "failure_result"):
                     exc.failure_result = dict(payload_data)
                 session.events.append(SessionEvent(event_type="workflow_run_failed", payload=payload_data))
-                self.session_manager.save_session(session_id)
+                self.session_store.save_session(session_id)
             raise
         result = enrich_content_run_result(
             result,
@@ -532,7 +531,7 @@ class BackendContentProductionRunService:
             task.status = str(result.get("status") or task.status)
         if session is not None:
             session.events.append(SessionEvent(event_type="workflow_run_finished", payload=result))
-            self.session_manager.save_session(session_id)
+            self.session_store.save_session(session_id)
         return result
 
 

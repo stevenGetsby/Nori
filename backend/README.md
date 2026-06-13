@@ -84,7 +84,8 @@ rerun with the current tunnel URL.
 - `services/session_store.py` is the backend session persistence port around
   `nori.sessions.SessionManager`; backend services use it for session lookup,
   save, task lookup, and 404 normalization instead of reaching into manager
-  internals.
+  internals. Session assets, reference-image checks, experiment job sync, and
+  content-production run orchestration all share this port.
 - `services/session_assets.py` owns backend sessions, uploaded assets, and asset file access.
 - `services/reference_images.py` owns reference publishing, provider-fetchable reference URLs, and image-provider reference checks.
   Internally it composes focused strategy classes for publish diagnostics,

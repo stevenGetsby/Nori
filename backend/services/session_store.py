@@ -82,3 +82,6 @@ class BackendSessionStore:
 
     def find_task(self, session: Session, task_id: str) -> TaskGoal | None:
         return next((item for item in session.task_goals if item.task_id == task_id), None)
+
+    def latest_task(self, session: Session) -> TaskGoal | None:
+        return session.task_goals[-1] if session.task_goals else None
