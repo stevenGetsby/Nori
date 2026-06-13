@@ -20,6 +20,7 @@ from backend import NoriBackend, create_app
 
 ROOT = Path(__file__).resolve().parents[1]
 APP_MODULE = importlib.import_module("backend.app")
+SESSION_ASSET_MODULE = importlib.import_module("backend.services.session_assets")
 
 
 def _file_sha256_for_test(path: Path) -> str:
@@ -247,7 +248,10 @@ def test_backend_facade_composes_domain_services(tmp_path):
 
     assert isinstance(backend.catalog_service, services.BackendCatalogService)
     assert isinstance(backend.content_production_console, services.BackendContentProductionConsoleService)
+    assert isinstance(backend.session_asset_service, services.BackendSessionAssetService)
     assert backend.content_production_console.project_root == tmp_path
+    assert backend.session_asset_service.session_manager is backend.session_manager
+    assert backend.session_asset_service.upload_root == tmp_path / "data" / "backend" / "uploads"
 
     capability_ids = {row["capability_id"] for row in backend.list_capabilities()["capabilities"]}
     assert {"content_generation", "workflow_orchestration"} <= capability_ids
@@ -866,7 +870,7 @@ def test_fastapi_reference_image_generation_check_calls_image_model(monkeypatch,
         calls.append({"prompt": prompt, "usage": usage, "size": size, "reference_images": list(reference_images or [])})
         return ["data:image/png;base64,AAAA"]
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(SESSION_ASSET_MODULE.llms, "image", fake_image)
     service = NoriBackend(experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
 
@@ -902,7 +906,7 @@ def test_fastapi_reference_image_generation_check_rejects_invalid_reference_url(
     def fake_image(*_args, **_kwargs):
         raise AssertionError("invalid reference URLs should not call the image model")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(SESSION_ASSET_MODULE.llms, "image", fake_image)
     service = NoriBackend(experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
 
@@ -923,7 +927,7 @@ def test_fastapi_reference_image_generation_check_reports_provider_error(monkeyp
     def fake_image(*_args, **_kwargs):
         raise RuntimeError("provider rejected reference_images")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(SESSION_ASSET_MODULE.llms, "image", fake_image)
     service = NoriBackend(experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
 
@@ -952,7 +956,7 @@ def test_fastapi_session_reference_image_generation_check_publishes_and_calls_im
         def publish_path(self, path, *, project="", session="", public_url_map=None):
             raise AssertionError("backend public URL publishing should not call the object store")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(SESSION_ASSET_MODULE.llms, "image", fake_image)
     service = NoriBackend(
         upload_root=tmp_path / "uploads",
         experiment_runner=_project_runner(tmp_path),
@@ -1037,7 +1041,7 @@ def test_fastapi_session_reference_image_generation_check_requires_fetchable_url
         def publish_path(self, path, *, project="", session="", public_url_map=None):
             return SimpleNamespace(public_url="", url="", key="", uploaded=False, reason="local_bytes")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(SESSION_ASSET_MODULE.llms, "image", fake_image)
     service = NoriBackend(
         upload_root=tmp_path / "uploads",
         experiment_runner=_project_runner(tmp_path),
@@ -1092,8 +1096,8 @@ def test_fastapi_session_reference_image_generation_check_probes_urls_before_ima
         def publish_path(self, path, *, project="", session="", public_url_map=None):
             raise AssertionError("backend public URL publishing should not call the object store")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
-    monkeypatch.setattr(APP_MODULE, "probe_reference_url", fake_probe)
+    monkeypatch.setattr(SESSION_ASSET_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(SESSION_ASSET_MODULE, "probe_reference_url", fake_probe)
     service = NoriBackend(
         upload_root=tmp_path / "uploads",
         experiment_runner=_project_runner(tmp_path),
@@ -1485,7 +1489,7 @@ def test_fastapi_content_production_preflight_can_verify_reference_url_reachabil
             "error": "",
         }
 
-    monkeypatch.setattr(APP_MODULE, "probe_reference_url", fake_probe)
+    monkeypatch.setattr(SESSION_ASSET_MODULE, "probe_reference_url", fake_probe)
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1526,7 +1530,7 @@ def test_fastapi_content_production_preflight_can_verify_reference_url_reachabil
 def test_fastapi_content_production_run_rejects_unreachable_reference_url_before_task(monkeypatch, tmp_path):
     monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     monkeypatch.setattr(
-        APP_MODULE,
+        SESSION_ASSET_MODULE,
         "probe_reference_url",
         lambda url, *, timeout: {
             "url": url,
