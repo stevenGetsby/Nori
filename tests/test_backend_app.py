@@ -292,6 +292,7 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert backend.session_asset_service.upload_root == tmp_path / "data" / "backend" / "uploads"
 
     app_source = (ROOT / "backend" / "app.py").read_text(encoding="utf-8")
+    facade_source = (ROOT / "backend" / "facade.py").read_text(encoding="utf-8")
     app_tree = ast.parse(app_source)
     experiment_imports = [
         alias.name
@@ -299,13 +300,18 @@ def test_backend_facade_composes_domain_services(tmp_path):
         if isinstance(node, ast.ImportFrom) and node.module == "experiments"
         for alias in node.names
     ]
-    assert "BackendServiceBundle.create" in app_source
+    assert "class NoriBackend" not in app_source
+    assert "class NoriBackend" in facade_source
+    assert "BackendServiceBundle.create" in facade_source
     assert "BackendCatalogService" not in app_source
+    assert "BackendCatalogService" not in facade_source
     assert "content_production_diagnostics" not in experiment_imports
     assert "content_production_experiment_workbench" not in experiment_imports
     assert "experiment_readiness" not in experiment_imports
     assert "BackendContentProductionRunService" not in app_source
+    assert "BackendContentProductionRunService" not in facade_source
     assert "BackendReferenceImageService" not in app_source
+    assert "BackendReferenceImageService" not in facade_source
 
     capability_ids = {row["capability_id"] for row in backend.list_capabilities()["capabilities"]}
     assert {"content_generation", "workflow_orchestration"} <= capability_ids

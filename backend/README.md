@@ -75,9 +75,11 @@ rerun with the current tunnel URL.
 
 ## Code Layout
 
-- `app.py` owns app creation, exception handling, and the `NoriBackend` service facade.
+- `app.py` owns FastAPI app creation, exception handling, and route registration.
+- `facade.py` owns the `NoriBackend` service facade used by route modules and
+  tests.
 - `services/runtime.py` owns backend service composition and dependency wiring
-  through `BackendServiceBundle`; `app.py` exposes the facade without
+  through `BackendServiceBundle`; `facade.py` exposes the facade without
   constructing each domain service directly.
 - `services/content_production_admin.py` owns content-production readiness,
   diagnostics, and workbench service methods used by admin routes.
