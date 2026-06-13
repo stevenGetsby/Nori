@@ -238,6 +238,21 @@ def test_fastapi_routes_are_registered_from_routing_module():
     assert "/workflows/content-production/runs" in paths
 
 
+def test_backend_facade_composes_domain_services(tmp_path):
+    services = importlib.import_module("backend.services")
+    backend = NoriBackend(
+        experiment_runner=_project_runner(tmp_path),
+        reference_publisher=SimpleNamespace(),
+    )
+
+    assert isinstance(backend.catalog_service, services.BackendCatalogService)
+    assert isinstance(backend.content_production_console, services.BackendContentProductionConsoleService)
+    assert backend.content_production_console.project_root == tmp_path
+
+    capability_ids = {row["capability_id"] for row in backend.list_capabilities()["capabilities"]}
+    assert {"content_generation", "workflow_orchestration"} <= capability_ids
+
+
 def test_fastapi_content_production_experiment_overview_route(tmp_path):
     run_dir = tmp_path / "cases" / "case1" / "runs" / "run1"
     covers_dir = run_dir / "covers"
