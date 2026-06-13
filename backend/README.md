@@ -105,7 +105,10 @@ rerun with the current tunnel URL.
 - `experiments/models.py` owns typed case/run identifiers used at storage boundaries.
 - `experiments/repositories.py` owns the current JSON/filesystem experiment repository boundary.
 - `experiments/diagnostics.py` owns model/reference readiness and diagnostic action planning.
-- `experiments/runs.py` owns run listing, run summaries, filters, and run comparisons.
+- `experiments/runs.py` owns run listing, run summaries, filters, and run
+  comparison row projection plus shared count helpers for experiment summaries.
+- `experiments/presenters.py` owns shared product-facing report projections
+  such as run report rows and best-run scoring.
 - `experiments/artifacts.py` owns artifact catalogs, artifact resolution, reference traces, and zip exports.
 - `experiments/cases.py` owns case reports, workbench state, and comparison.
 - `experiments/selections.py` owns case selection state, selection history,
@@ -119,7 +122,7 @@ rerun with the current tunnel URL.
 - `experiments/visual_reviews.py` owns visual-reference review panels and their
   rule-based evaluation-review adapter.
 - `experiments/acceptance.py` owns run proof gates, reference-transfer proof,
-  and operator acceptance reports.
+  operator acceptance reports, and run-summary reference-transfer snapshots.
 - `experiments/reviews.py` owns evaluation drafts, evaluation summaries, and
   evaluation persistence.
 - `jobs.py` owns the current process-local background job store.

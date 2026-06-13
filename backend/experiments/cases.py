@@ -10,12 +10,12 @@ from .common import (
     datetime,
 )
 from .artifacts import _run_export_url, inspect_content_production_run_artifacts
-from .acceptance import _summary_reference_transfer
 from .diagnostics import content_production_diagnostics
+from .presenters import content_production_report_run, content_production_report_run_score
 from .runs import (
-    _comparison_run,
-    _count_by,
-    _count_values,
+    content_production_comparison_run,
+    content_production_count_by,
+    content_production_count_values,
     compare_content_production_runs,
     list_content_production_runs,
     summarize_content_production_run,
@@ -49,10 +49,10 @@ def content_production_experiment_overview(
         "case_count": len(cases),
         "latest_runs": rows[:normalized_limit],
         "summary": {
-            "status_counts": _count_by(rows, "status"),
-            "acceptance_status_counts": _count_by(rows, "acceptance_status"),
-            "reference_status_counts": _count_by(rows, "reference_status"),
-            "evaluation_status_counts": _count_by(rows, "evaluation_status"),
+            "status_counts": content_production_count_by(rows, "status"),
+            "acceptance_status_counts": content_production_count_by(rows, "acceptance_status"),
+            "reference_status_counts": content_production_count_by(rows, "reference_status"),
+            "evaluation_status_counts": content_production_count_by(rows, "evaluation_status"),
             "ready_count": sum(1 for row in rows if row["candidate"]["ready_for_review"]),
             "blocked_count": sum(1 for row in rows if not row["candidate"]["ready_for_review"]),
             "blocking_reason_counts": blocked_reasons,
@@ -202,9 +202,9 @@ def content_production_experiment_report(
     normalized_limit = max(1, min(int(limit or 50), 500))
     listed = list_content_production_runs(project_root=project_root, case_id=case_id, limit=normalized_limit)
     summaries = [dict(row) for row in listed.get("runs") or [] if isinstance(row, dict)]
-    rows = [_report_run(summary) for summary in summaries]
-    best_summary = max(summaries, key=_report_run_score) if summaries else {}
-    best_run = _report_run(best_summary) if best_summary else {}
+    rows = [content_production_report_run(summary) for summary in summaries]
+    best_summary = max(summaries, key=content_production_report_run_score) if summaries else {}
+    best_run = content_production_report_run(best_summary) if best_summary else {}
     if best_run:
         best_run["selection_reason"] = _best_run_reason(best_run)
     latest_run = rows[0] if rows else {}
@@ -411,7 +411,7 @@ def _case_compare_candidate(
     best_run_id: str,
     recommended_run_id: str,
 ) -> dict[str, Any]:
-    row = _comparison_run(summary)
+    row = content_production_comparison_run(summary)
     run_id = row["run_id"]
     case_id = str(summary.get("case_id") or "")
     proof = summary.get("proof") if isinstance(summary.get("proof"), dict) else {}
@@ -443,7 +443,7 @@ def _case_compare_candidate(
 
 
 def _overview_run(summary: dict[str, Any]) -> dict[str, Any]:
-    row = _comparison_run(summary)
+    row = content_production_comparison_run(summary)
     evaluation = summary.get("evaluations") if isinstance(summary.get("evaluations"), dict) else {}
     evaluation_summary_data = evaluation.get("summary") if isinstance(evaluation.get("summary"), dict) else {}
     reference = summary.get("image_reference") if isinstance(summary.get("image_reference"), dict) else {}
@@ -504,10 +504,10 @@ def _overview_case(rows: list[dict[str, Any]], *, project_root: str | Path = PRO
         "latest_status": str(latest.get("status") or ""),
         "latest_created_at": str(latest.get("created_at") or ""),
         "latest_finished_at": str(latest.get("finished_at") or ""),
-        "status_counts": _count_by(rows, "status"),
-        "acceptance_status_counts": _count_by(rows, "acceptance_status"),
-        "reference_status_counts": _count_by(rows, "reference_status"),
-        "evaluation_status_counts": _count_by(rows, "evaluation_status"),
+        "status_counts": content_production_count_by(rows, "status"),
+        "acceptance_status_counts": content_production_count_by(rows, "acceptance_status"),
+        "reference_status_counts": content_production_count_by(rows, "reference_status"),
+        "evaluation_status_counts": content_production_count_by(rows, "evaluation_status"),
         "ready_count": sum(1 for row in rows if row["candidate"]["ready_for_review"]),
         "blocked_count": sum(1 for row in rows if not row["candidate"]["ready_for_review"]),
         "selection": selection,
@@ -533,84 +533,6 @@ def _overview_case(rows: list[dict[str, Any]], *, project_root: str | Path = PRO
     }
 
 
-def _report_run(summary: dict[str, Any]) -> dict[str, Any]:
-    row = _comparison_run(summary)
-    case_id = str(summary.get("case_id") or "")
-    run_id = row["run_id"]
-    proof = summary.get("proof") if isinstance(summary.get("proof"), dict) else {}
-    acceptance = summary.get("acceptance") if isinstance(summary.get("acceptance"), dict) else {}
-    evidence = acceptance.get("evidence") if isinstance(acceptance.get("evidence"), dict) else {}
-    evaluations = summary.get("evaluations") if isinstance(summary.get("evaluations"), dict) else {}
-    evaluation = evaluations.get("summary") if isinstance(evaluations.get("summary"), dict) else {}
-    transfer = _summary_reference_transfer(summary)
-    artifact_catalog = [item for item in summary.get("artifact_catalog") or [] if isinstance(item, dict)]
-    base = f"/workflows/content-production/runs/{case_id}/{run_id}" if case_id and run_id else ""
-    return {
-        "case_id": case_id,
-        "run_id": run_id,
-        "session_id": row["session_id"],
-        "task_id": row["task_id"],
-        "workflow_name": str(summary.get("workflow_name") or ""),
-        "status": row["status"],
-        "created_at": row["created_at"],
-        "finished_at": row["finished_at"],
-        "acceptance_status": row["acceptance_status"],
-        "accepted": row["accepted"],
-        "proof_status": str(proof.get("status") or ""),
-        "evaluation_status": row["evaluation_status"],
-        "evaluation_score": row["evaluation_score"],
-        "evaluation_count": row["evaluation_count"],
-        "reference_status": row["reference_status"],
-        "reference_required": row["reference_required"],
-        "reference_sent": row["reference_sent"],
-        "asset_ids": list(row.get("asset_ids") or []),
-        "run_options": dict(row.get("run_options") or {}),
-        "backend_public_base_url": str(row.get("backend_public_base_url") or ""),
-        "provider_fetchable_count": int(transfer.get("provider_fetchable_count") or evidence.get("provider_fetchable_count") or 0),
-        "selected_reference_count": int(transfer.get("selected_count") or evidence.get("selected_reference_count") or 0),
-        "cover_count": row["cover_count"],
-        "artifact_count": len(summary.get("artifact_paths") or {}),
-        "artifact_catalog_count": len(artifact_catalog),
-        "blocking_checks": row["acceptance_blocking_checks"],
-        "warning_checks": row["acceptance_warning_checks"],
-        "proof_failed_checks": list(proof.get("failed_checks") or []),
-        "proof_warning_checks": list(proof.get("warning_checks") or []),
-        "candidate": row["candidate"],
-        "evaluation": dict(evaluation),
-        "links": {
-            "self": base,
-            "acceptance": f"{base}/acceptance" if base else "",
-            "evaluations": f"{base}/evaluations" if base else "",
-            "evaluation_draft": f"{base}/evaluations/draft" if base else "",
-            "replay": f"{base}/replay" if base else "",
-            "export": f"{base}/export" if base else "",
-        },
-    }
-
-
-def _report_run_score(summary: dict[str, Any]) -> tuple[int, int, int, int, int, int, float, str]:
-    row = _comparison_run(summary)
-    proof = summary.get("proof") if isinstance(summary.get("proof"), dict) else {}
-    acceptance_rank = {"accepted": 3, "needs_review": 2, "rejected": 1}.get(row["acceptance_status"], 0)
-    proof_rank = {"ready": 3, "needs_review": 2, "blocked": 1}.get(str(proof.get("status") or ""), 0)
-    evaluation_rank = {"passed": 3, "pending": 2, "needs_revision": 1, "blocked": 0}.get(row["evaluation_status"], 0)
-    reference_rank = 2 if (not row["reference_required"] or row["reference_sent"]) else 0
-    cover_rank = min(int(row["cover_count"] or 0), 3)
-    artifact_rank = min(len(row["artifact_names"]), 10)
-    score = row.get("evaluation_score")
-    numeric_score = float(score) if isinstance(score, (int, float)) else -1.0
-    return (
-        acceptance_rank,
-        proof_rank,
-        evaluation_rank,
-        reference_rank,
-        cover_rank,
-        artifact_rank,
-        numeric_score,
-        str(row.get("created_at") or ""),
-    )
-
-
 def _best_run_reason(row: dict[str, Any]) -> str:
     if row.get("acceptance_status") == "accepted":
         return "accepted run with the strongest proof, evaluation, reference, and artifact signal"
@@ -623,16 +545,16 @@ def _best_run_reason(row: dict[str, Any]) -> str:
 
 def _report_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return {
-        "status_counts": _count_by(rows, "status"),
-        "acceptance_status_counts": _count_by(rows, "acceptance_status"),
-        "proof_status_counts": _count_by(rows, "proof_status"),
-        "reference_status_counts": _count_by(rows, "reference_status"),
-        "evaluation_status_counts": _count_by(rows, "evaluation_status"),
-        "blocking_check_counts": _count_values([name for row in rows for name in row["blocking_checks"]]),
-        "warning_check_counts": _count_values([name for row in rows for name in row["warning_checks"]]),
-        "proof_failed_check_counts": _count_values([name for row in rows for name in row["proof_failed_checks"]]),
-        "proof_warning_check_counts": _count_values([name for row in rows for name in row["proof_warning_checks"]]),
-        "candidate_blocking_reason_counts": _count_values(
+        "status_counts": content_production_count_by(rows, "status"),
+        "acceptance_status_counts": content_production_count_by(rows, "acceptance_status"),
+        "proof_status_counts": content_production_count_by(rows, "proof_status"),
+        "reference_status_counts": content_production_count_by(rows, "reference_status"),
+        "evaluation_status_counts": content_production_count_by(rows, "evaluation_status"),
+        "blocking_check_counts": content_production_count_values([name for row in rows for name in row["blocking_checks"]]),
+        "warning_check_counts": content_production_count_values([name for row in rows for name in row["warning_checks"]]),
+        "proof_failed_check_counts": content_production_count_values([name for row in rows for name in row["proof_failed_checks"]]),
+        "proof_warning_check_counts": content_production_count_values([name for row in rows for name in row["proof_warning_checks"]]),
+        "candidate_blocking_reason_counts": content_production_count_values(
             [name for row in rows for name in row["candidate"]["blocking_reasons"]]
         ),
         "evaluation_issue_counts": _evaluation_issue_counts(rows),
@@ -650,7 +572,7 @@ def _evaluation_issue_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
         for issue in row.get("evaluation", {}).get("issues") or []:
             if isinstance(issue, dict):
                 issue_codes.append(str(issue.get("code") or issue.get("category") or "issue"))
-    return _count_values(issue_codes)
+    return content_production_count_values(issue_codes)
 
 
 def _report_recommendations(

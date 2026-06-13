@@ -5,8 +5,8 @@ from .common import Any, PROJECT_ROOT, Path, _content_case_dir_or_none, datetime
 from .acceptance import content_production_run_acceptance_report
 from .actions import content_production_case_next_actions
 from .artifacts import _run_export_url, _run_replay_url, inspect_content_production_run_artifacts
+from .presenters import content_production_report_run
 from .cases import (
-    _report_run,
     content_production_case_compare,
     content_production_experiment_report,
 )
@@ -103,7 +103,7 @@ def content_production_case_delivery(
         "warning_reasons": warnings,
         "acceptance": acceptance,
         "proof": dict(summary.get("proof") or {}) if summary else {},
-        "run": _report_run(summary) if summary else {},
+        "run": content_production_report_run(summary) if summary else {},
         "artifact_inspection": inspection,
         "case_compare": case_compare,
         "next_actions": next_actions,

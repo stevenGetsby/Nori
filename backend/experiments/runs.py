@@ -3,53 +3,14 @@ from __future__ import annotations
 
 from .common import (
     Any,
-    Callable,
-    CaseWorkspace,
-    ClientBrief,
-    ContentProductionConfig,
-    ContentProductionWorkflow,
-    ContentTask,
-    EVALUATION_STATUSES,
-    EXPERIMENT_EVALUATIONS_NAME,
     EXPERIMENT_MANIFEST_NAME,
-    EXPERIMENT_SELECTION_NAME,
-    IntentContract,
-    LLMFactory,
     PROJECT_ROOT,
     Path,
-    SELECTION_DECISIONS,
-    TopNotesResult,
-    _case_id_from_run_dir,
-    _content_case_dir,
-    _content_case_dir_or_none,
-    _content_run_dir,
     _dedupe_strings,
-    _dict_list,
-    _exportable_input_files,
-    _exportable_run_files,
-    _file_sha256,
     _first_stage_time,
-    _is_relative_to,
-    _is_remote_url,
-    _json_sha256,
     _read_json,
-    _reference_transfer_snapshot,
-    _safe_run_artifact_path,
-    _slug,
     _string_list,
-    _write_json,
-    datetime,
-    hashlib,
-    importlib,
-    infer_project_root_from_cases_path,
-    io,
     json,
-    llms,
-    os,
-    provider_fetchable_reference_url,
-    record_content_production_artifacts,
-    top_notes_result_from_dict,
-    zipfile,
 )
 from .artifacts import (
     _enrich_image_reference_trace,
@@ -59,7 +20,7 @@ from .artifacts import (
     image_reference_from_package,
 )
 from .acceptance import (
-    _summary_reference_transfer,
+    content_production_summary_reference_transfer,
     content_production_run_acceptance_report,
     content_production_run_proof,
 )
@@ -116,7 +77,7 @@ def list_content_production_runs(
     normalized_offset = max(0, int(offset or 0))
     normalized_limit = max(1, min(int(limit or 100), 500))
     paged = filtered[normalized_offset : normalized_offset + normalized_limit]
-    rows = [_comparison_run(summary) for summary in filtered]
+    rows = [content_production_comparison_run(summary) for summary in filtered]
     return {
         "runs": paged,
         "total_count": len(all_runs),
@@ -127,13 +88,13 @@ def list_content_production_runs(
         "has_more": normalized_offset + normalized_limit < len(filtered),
         "filters": filters,
         "summary": {
-            "status_counts": _count_by(rows, "status"),
-            "proof_status_counts": _count_values([str((summary.get("proof") or {}).get("status") or "") for summary in filtered]),
-            "acceptance_status_counts": _count_values(
+            "status_counts": content_production_count_by(rows, "status"),
+            "proof_status_counts": content_production_count_values([str((summary.get("proof") or {}).get("status") or "") for summary in filtered]),
+            "acceptance_status_counts": content_production_count_values(
                 [str((summary.get("acceptance") or {}).get("status") or "") for summary in filtered]
             ),
-            "reference_status_counts": _count_by(rows, "reference_status"),
-            "evaluation_status_counts": _count_by(rows, "evaluation_status"),
+            "reference_status_counts": content_production_count_by(rows, "reference_status"),
+            "evaluation_status_counts": content_production_count_by(rows, "evaluation_status"),
             "ready_count": sum(1 for row in rows if row["candidate"]["ready_for_review"]),
             "blocked_count": sum(1 for row in rows if not row["candidate"]["ready_for_review"]),
         },
@@ -170,20 +131,20 @@ def compare_content_production_runs(
     if missing:
         raise FileNotFoundError(f"content-production runs not found: {normalized_case_id}/{missing}")
 
-    rows = [_comparison_run(summary) for summary in summaries]
+    rows = [content_production_comparison_run(summary) for summary in summaries]
     return {
         "case_id": normalized_case_id,
         "run_ids": normalized_run_ids,
         "run_count": len(rows),
         "runs": rows,
         "summary": {
-            "status_counts": _count_by(rows, "status"),
-            "acceptance_status_counts": _count_by(rows, "acceptance_status"),
-            "reference_status_counts": _count_by(rows, "reference_status"),
+            "status_counts": content_production_count_by(rows, "status"),
+            "acceptance_status_counts": content_production_count_by(rows, "acceptance_status"),
+            "reference_status_counts": content_production_count_by(rows, "reference_status"),
             "ready_run_ids": [row["run_id"] for row in rows if row["candidate"]["ready_for_review"]],
             "blocked_run_ids": [row["run_id"] for row in rows if not row["candidate"]["ready_for_review"]],
             "artifact_names": sorted({name for row in rows for name in row["artifact_names"]}),
-            "evaluation_status_counts": _count_by(rows, "evaluation_status"),
+            "evaluation_status_counts": content_production_count_by(rows, "evaluation_status"),
         },
         "differences": {
             "brief_sha256": _value_diff(rows, "brief_sha256"),
@@ -260,7 +221,7 @@ def summarize_content_production_run(
     }
     summary["image_reference"] = _enrich_image_reference_trace(
         summary.get("image_reference") if isinstance(summary.get("image_reference"), dict) else {},
-        _summary_reference_transfer(summary),
+        content_production_summary_reference_transfer(summary),
     )
     summary["proof"] = content_production_run_proof(summary)
     summary["proof_status"] = str(summary["proof"].get("status") or "")
@@ -274,7 +235,7 @@ def summarize_content_production_run(
     return summary
 
 
-def _comparison_run(summary: dict[str, Any]) -> dict[str, Any]:
+def content_production_comparison_run(summary: dict[str, Any]) -> dict[str, Any]:
     manifest = summary.get("experiment_manifest") if isinstance(summary.get("experiment_manifest"), dict) else {}
     inputs = manifest.get("inputs") if isinstance(manifest.get("inputs"), dict) else {}
     input_manifest = summary.get("input_manifest") if isinstance(summary.get("input_manifest"), dict) else {}
@@ -357,7 +318,7 @@ def _run_matches_filters(
     evaluation_status: str,
     search: str,
 ) -> bool:
-    row = _comparison_run(summary)
+    row = content_production_comparison_run(summary)
     if status and row["status"] != status:
         return False
     actual_proof_status = str((summary.get("proof") or {}).get("status") or "")
@@ -412,7 +373,7 @@ def _asset_fingerprints(assets: Any) -> list[str]:
     return out
 
 
-def _count_by(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
+def content_production_count_by(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
     counts: dict[str, int] = {}
     for row in rows:
         value = str(row.get(key) or "")
@@ -420,7 +381,7 @@ def _count_by(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
     return counts
 
 
-def _count_values(values: list[str]) -> dict[str, int]:
+def content_production_count_values(values: list[str]) -> dict[str, int]:
     counts: dict[str, int] = {}
     for value in values:
         text = str(value or "")

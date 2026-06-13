@@ -48,7 +48,17 @@ def test_backend_experiments_is_split_into_capability_modules():
     expected_modules = {
         "runner": ["ContentProductionExperimentRunner", "ContentProductionRunFailed"],
         "diagnostics": ["experiment_readiness", "content_production_diagnostics"],
-        "runs": ["list_content_production_runs", "summarize_content_production_run"],
+        "runs": [
+            "list_content_production_runs",
+            "summarize_content_production_run",
+            "content_production_comparison_run",
+            "content_production_count_by",
+            "content_production_count_values",
+        ],
+        "presenters": [
+            "content_production_report_run",
+            "content_production_report_run_score",
+        ],
         "artifacts": [
             "artifact_catalog_for_run",
             "resolve_content_production_artifact_path",
@@ -76,6 +86,7 @@ def test_backend_experiments_is_split_into_capability_modules():
         "acceptance": [
             "content_production_run_acceptance_report",
             "content_production_run_proof",
+            "content_production_summary_reference_transfer",
         ],
         "visual_reviews": ["visual_reference_review"],
         "models": ["ContentRunRef", "ContentCaseRef"],

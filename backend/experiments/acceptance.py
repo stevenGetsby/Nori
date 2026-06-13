@@ -17,9 +17,9 @@ from .artifacts import _run_export_url, _run_replay_url
 def content_production_run_proof(summary: dict[str, Any]) -> dict[str, Any]:
     """Build a product-facing proof summary for one recorded experiment run."""
 
-    from .runs import _comparison_run
+    from .runs import content_production_comparison_run
 
-    row = _comparison_run(summary)
+    row = content_production_comparison_run(summary)
     artifact_paths = summary.get("artifact_paths") if isinstance(summary.get("artifact_paths"), dict) else {}
     artifact_urls = summary.get("artifact_urls") if isinstance(summary.get("artifact_urls"), dict) else {}
     input_manifest = summary.get("input_manifest") if isinstance(summary.get("input_manifest"), dict) else {}
@@ -27,7 +27,7 @@ def content_production_run_proof(summary: dict[str, Any]) -> dict[str, Any]:
     inputs = experiment_manifest.get("inputs") if isinstance(experiment_manifest.get("inputs"), dict) else {}
     run_options = dict(inputs.get("run_options") or input_manifest.get("run_options") or {})
     market_evidence = dict(inputs.get("market_evidence") or input_manifest.get("market_evidence") or {})
-    reference_transfer = _summary_reference_transfer(summary)
+    reference_transfer = content_production_summary_reference_transfer(summary)
     image_reference = summary.get("image_reference") if isinstance(summary.get("image_reference"), dict) else {}
     reference_generation_check = _summary_reference_generation_check(summary)
     evaluations = summary.get("evaluations") if isinstance(summary.get("evaluations"), dict) else {}
@@ -123,9 +123,9 @@ def content_production_run_proof(summary: dict[str, Any]) -> dict[str, Any]:
 def content_production_run_acceptance_report(summary: dict[str, Any]) -> dict[str, Any]:
     """Build the operator/product acceptance report for one experiment run."""
 
-    from .runs import _comparison_run
+    from .runs import content_production_comparison_run
 
-    row = _comparison_run(summary)
+    row = content_production_comparison_run(summary)
     proof = summary.get("proof") if isinstance(summary.get("proof"), dict) else {}
     artifact_paths = summary.get("artifact_paths") if isinstance(summary.get("artifact_paths"), dict) else {}
     artifact_catalog = [item for item in summary.get("artifact_catalog") or [] if isinstance(item, dict)]
@@ -515,7 +515,7 @@ def _stored_project_path(value: str, *, project_root: Path | None) -> Path:
     return project_root / path
 
 
-def _summary_reference_transfer(summary: dict[str, Any]) -> dict[str, Any]:
+def content_production_summary_reference_transfer(summary: dict[str, Any]) -> dict[str, Any]:
     input_manifest = summary.get("input_manifest") if isinstance(summary.get("input_manifest"), dict) else {}
     experiment_manifest = summary.get("experiment_manifest") if isinstance(summary.get("experiment_manifest"), dict) else {}
     inputs = experiment_manifest.get("inputs") if isinstance(experiment_manifest.get("inputs"), dict) else {}

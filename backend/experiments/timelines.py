@@ -9,7 +9,7 @@ from .common import (
 )
 from .models import ContentCaseRef
 from .repositories import ContentProductionExperimentRepository
-from .runs import _comparison_run, _count_by, list_content_production_runs
+from .runs import content_production_comparison_run, content_production_count_by, list_content_production_runs
 
 
 def content_production_case_timeline(
@@ -41,7 +41,7 @@ def content_production_case_timeline(
         "has_more": len(events) > normalized_limit,
         "events": visible,
         "summary": {
-            "event_type_counts": _count_by(events, "event_type"),
+            "event_type_counts": content_production_count_by(events, "event_type"),
             "run_count": len(runs),
             "evaluation_count": sum(1 for event in events if event["event_type"] == "evaluation_recorded"),
             "selection_count": sum(1 for event in events if event["event_type"] == "selection_recorded"),
@@ -113,7 +113,7 @@ def _timeline_events_for_run(summary: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _timeline_run_row(summary: dict[str, Any]) -> dict[str, Any]:
-    row = _comparison_run(summary)
+    row = content_production_comparison_run(summary)
     case_id = str(summary.get("case_id") or "")
     run_id = str(row.get("run_id") or "")
     proof = summary.get("proof") if isinstance(summary.get("proof"), dict) else {}

@@ -15,6 +15,7 @@ from .common import (
 from .acceptance import content_production_run_acceptance_report
 from .artifacts import _run_export_url, _run_replay_url
 from .models import ContentCaseRef
+from .presenters import content_production_report_run
 from .repositories import ContentProductionExperimentRepository
 from .runs import summarize_content_production_run
 
@@ -87,7 +88,7 @@ def promote_content_production_case_run(
 ) -> dict[str, Any]:
     """Promote an accepted run into the current case decision."""
 
-    from .cases import _report_run, content_production_experiment_report
+    from .cases import content_production_experiment_report
 
     normalized_case_id = str(case_id or "").strip()
     if not normalized_case_id:
@@ -144,7 +145,7 @@ def promote_content_production_case_run(
         "selection_history_count": len(selection_result.get("history") or []),
         "acceptance": acceptance,
         "proof": dict(summary.get("proof") or {}),
-        "run": _report_run(summary),
+        "run": content_production_report_run(summary),
         "links": {
             "selection": f"/experiments/content-production/cases/{normalized_case_id}/selection",
             "selected_run": f"/experiments/content-production/cases/{normalized_case_id}/selected-run",
@@ -182,12 +183,10 @@ def _normalize_case_selection(
     report: dict[str, Any],
     existing_count: int,
 ) -> dict[str, Any]:
-    from .cases import _report_run
-
     decision = str(data.get("decision") or "selected").strip().lower()
     if decision not in SELECTION_DECISIONS:
         raise ValueError(f"unsupported selection decision: {decision}")
-    run = _report_run(run_summary)
+    run = content_production_report_run(run_summary)
     reviewer = str(data.get("reviewer") or "operator").strip() or "operator"
     created_at = datetime.now().isoformat(timespec="seconds")
     run_id = str(run.get("run_id") or "")

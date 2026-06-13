@@ -13,7 +13,11 @@ from .common import (
     _read_json,
     llms,
 )
-from .acceptance import content_production_run_acceptance_report, content_production_run_proof
+from .acceptance import (
+    content_production_run_acceptance_report,
+    content_production_run_proof,
+    content_production_summary_reference_transfer,
+)
 from .diagnostics import content_production_diagnostics, experiment_readiness
 from .models import ContentCaseRef, ContentRunRef
 from .repositories import ContentProductionExperimentRepository
@@ -37,7 +41,15 @@ from .artifacts import (
     inspect_content_production_run_artifacts,
     resolve_content_production_artifact_path,
 )
-from .runs import compare_content_production_runs, list_content_production_runs, summarize_content_production_run
+from .runs import (
+    compare_content_production_runs,
+    content_production_count_by,
+    content_production_count_values,
+    content_production_comparison_run,
+    list_content_production_runs,
+    summarize_content_production_run,
+)
+from .presenters import content_production_report_run, content_production_report_run_score
 from .actions import content_production_case_next_actions
 from .delivery import content_production_case_delivery
 from .selections import (
@@ -74,12 +86,18 @@ __all__ = [
     'content_production_case_delivery',
     'content_production_case_next_actions',
     'content_production_case_timeline',
+    'content_production_comparison_run',
+    'content_production_count_by',
+    'content_production_count_values',
     'content_production_diagnostics',
     'content_production_experiment_overview',
     'content_production_experiment_report',
     'content_production_experiment_workbench',
+    'content_production_report_run',
+    'content_production_report_run_score',
     'content_production_run_acceptance_report',
     'content_production_run_proof',
+    'content_production_summary_reference_transfer',
     'cover_urls_for_run',
     'evaluation_summary',
     'experiment_readiness',
