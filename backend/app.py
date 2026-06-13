@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
 from typing import Any
 from pathlib import Path
 
@@ -50,7 +49,12 @@ from .experiments import (
 from .jobs import InProcessExperimentJobStore, enrich_content_run_result
 from .reference_urls import provider_fetchable_reference_url
 from .routing import register_routes
-from .services import BackendCatalogService, BackendContentProductionConsoleService, BackendSessionAssetService
+from .services import (
+    BackendCatalogService,
+    BackendContentProductionConsoleService,
+    BackendExperimentJobService,
+    BackendSessionAssetService,
+)
 from .services.session_assets import (
     assert_asset_paths_exist as _assert_asset_paths_exist,
     attach_public_reference_urls as _attach_public_reference_urls,
@@ -102,7 +106,11 @@ class NoriBackend:
         self.job_store = job_store or InProcessExperimentJobStore(
             storage_root=project_root / "data" / "backend" / "jobs"
         )
-        self._sync_interrupted_experiment_jobs()
+        self.experiment_job_service = BackendExperimentJobService(
+            job_store=self.job_store,
+            session_manager=self.session_manager,
+        )
+        self.experiment_job_service.sync_interrupted_experiment_jobs()
 
     def health(self) -> dict[str, Any]:
         return {
@@ -686,70 +694,10 @@ class NoriBackend:
         return result
 
     def get_experiment_job(self, job_id: str) -> dict[str, Any]:
-        job = self.job_store.get(job_id)
-        if job is None:
-            raise ApiError(f"experiment job not found: {job_id}", status_code=404)
-        return {"job": job}
+        return self.experiment_job_service.get_experiment_job(job_id)
 
     def cancel_experiment_job(self, job_id: str, request: ExperimentJobCancelRequest) -> dict[str, Any]:
-        job = self.job_store.cancel(job_id, reason=str(request.reason or ""))
-        if job is None:
-            raise ApiError(f"experiment job not found: {job_id}", status_code=404)
-        return {"job": job, "session": self._sync_cancelled_experiment_job(job)}
-
-    def _sync_cancelled_experiment_job(self, job: dict[str, Any]) -> dict[str, Any]:
-        metadata = job.get("metadata") if isinstance(job.get("metadata"), dict) else {}
-        session_id = str(metadata.get("session_id") or "").strip()
-        task_id = str(metadata.get("task_id") or "").strip()
-        if not session_id or not task_id:
-            return {}
-        session = self.session_manager.get_session(session_id)
-        if session is None:
-            return {"session_id": session_id, "task_id": task_id, "task_found": False}
-        task = next((item for item in session.task_goals if item.task_id == task_id), None)
-        if task is None:
-            return {"session_id": session_id, "task_id": task_id, "task_found": False}
-
-        job_status = str(job.get("status") or "")
-        if job_status == "cancelled":
-            task_status = "cancelled"
-            event_type = "workflow_run_cancelled"
-        elif job_status == "cancelling":
-            task_status = "cancelling"
-            event_type = "workflow_run_cancel_requested"
-        else:
-            return {
-                "session_id": session_id,
-                "task_id": task_id,
-                "task_found": True,
-                "task_status": task.status,
-                "event_type": "",
-            }
-
-        if task.status not in {"succeeded", "failed", "cancelled"}:
-            task.status = task_status
-        if not _session_has_job_event(session.events, event_type=event_type, job_id=str(job.get("job_id") or "")):
-            cancel_request = metadata.get("cancel_request") if isinstance(metadata.get("cancel_request"), dict) else {}
-            session.events.append(
-                SessionEvent(
-                    event_type=event_type,
-                    payload={
-                        "job_id": str(job.get("job_id") or ""),
-                        "job_status": job_status,
-                        "task_id": task_id,
-                        "reason": str(cancel_request.get("reason") or ""),
-                    },
-                )
-            )
-        session.updated_at = _utc_now_iso()
-        self.session_manager.save_session(session_id)
-        return {
-            "session_id": session_id,
-            "task_id": task_id,
-            "task_found": True,
-            "task_status": task.status,
-            "event_type": event_type,
-        }
+        return self.experiment_job_service.cancel_experiment_job(job_id, request)
 
     def list_experiment_jobs(
         self,
@@ -759,48 +707,12 @@ class NoriBackend:
         case_id: str = "",
         job_type: str = "",
     ) -> dict[str, Any]:
-        return {
-            "jobs": self.job_store.list_jobs(
-                status=status,
-                session_id=session_id,
-                case_id=case_id,
-                job_type=job_type,
-            )
-        }
-
-    def _sync_interrupted_experiment_jobs(self) -> None:
-        for job in self.job_store.list_jobs(status="interrupted"):
-            metadata = job.get("metadata") if isinstance(job.get("metadata"), dict) else {}
-            session_id = str(metadata.get("session_id") or "").strip()
-            task_id = str(metadata.get("task_id") or "").strip()
-            if not session_id or not task_id:
-                continue
-            session = self.session_manager.get_session(session_id)
-            if session is None:
-                continue
-            task = next((item for item in session.task_goals if item.task_id == task_id), None)
-            if task is None:
-                continue
-            if task.status not in {"succeeded", "failed", "cancelled", "interrupted"}:
-                task.status = "interrupted"
-            if not _session_has_job_event(
-                session.events,
-                event_type="workflow_run_interrupted",
-                job_id=str(job.get("job_id") or ""),
-            ):
-                session.events.append(
-                    SessionEvent(
-                        event_type="workflow_run_interrupted",
-                        payload={
-                            "job_id": str(job.get("job_id") or ""),
-                            "job_status": "interrupted",
-                            "task_id": task_id,
-                            "error": dict(job.get("error") or {}) if isinstance(job.get("error"), dict) else {},
-                        },
-                    )
-                )
-            session.updated_at = _utc_now_iso()
-            self.session_manager.save_session(session_id)
+        return self.experiment_job_service.list_experiment_jobs(
+            status=status,
+            session_id=session_id,
+            case_id=case_id,
+            job_type=job_type,
+        )
 
     def content_production_experiment_overview(self, *, case_id: str = "", limit: int = 20) -> dict[str, Any]:
         return self.content_production_console.experiment_overview(case_id=case_id, limit=limit)
@@ -952,17 +864,6 @@ class NoriBackend:
 
 def _experiment_project_root(experiment_runner: Any) -> Path:
     return Path(getattr(experiment_runner, "project_root", PROJECT_ROOT))
-
-
-def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
-
-
-def _session_has_job_event(events: list[SessionEvent], *, event_type: str, job_id: str) -> bool:
-    return any(
-        event.event_type == event_type and str((event.payload or {}).get("job_id") or "") == job_id
-        for event in events
-    )
 
 
 def create_app(*, backend: NoriBackend | None = None) -> FastAPI:

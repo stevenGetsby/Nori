@@ -248,8 +248,11 @@ def test_backend_facade_composes_domain_services(tmp_path):
 
     assert isinstance(backend.catalog_service, services.BackendCatalogService)
     assert isinstance(backend.content_production_console, services.BackendContentProductionConsoleService)
+    assert isinstance(backend.experiment_job_service, services.BackendExperimentJobService)
     assert isinstance(backend.session_asset_service, services.BackendSessionAssetService)
     assert backend.content_production_console.project_root == tmp_path
+    assert backend.experiment_job_service.job_store is backend.job_store
+    assert backend.experiment_job_service.session_manager is backend.session_manager
     assert backend.session_asset_service.session_manager is backend.session_manager
     assert backend.session_asset_service.upload_root == tmp_path / "data" / "backend" / "uploads"
 

@@ -78,6 +78,7 @@ rerun with the current tunnel URL.
 - `app.py` owns app creation, exception handling, and the `NoriBackend` service facade.
 - `services/catalogs.py` owns workflow, content-generation, and capability catalogs used by the facade.
 - `services/content_production_console.py` owns content-production case/run reporting, review, artifact, and export operations.
+- `services/experiment_jobs.py` owns experiment job lookup/cancellation and session task status synchronization.
 - `services/session_assets.py` owns backend sessions, uploaded assets, reference publishing, and reference-image checks.
 - `routing.py` is the route composition root; it includes the focused routers in `routes/`.
 - `routes/system.py` owns health and capability endpoints.
