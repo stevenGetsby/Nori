@@ -352,6 +352,25 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert {"content_generation", "workflow_orchestration"} <= capability_ids
 
 
+def test_content_production_preflight_policy_is_split_by_responsibility():
+    run_source = (ROOT / "backend" / "services" / "content_production_runs.py").read_text(encoding="utf-8")
+    compat_source = (ROOT / "backend" / "services" / "content_production_preflight.py").read_text(encoding="utf-8")
+    checks_source = (ROOT / "backend" / "services" / "content_production_preflight_checks.py").read_text(encoding="utf-8")
+    actions_source = (ROOT / "backend" / "services" / "content_production_preflight_actions.py").read_text(encoding="utf-8")
+    summaries_source = (ROOT / "backend" / "services" / "content_production_preflight_summaries.py").read_text(encoding="utf-8")
+
+    assert "from .content_production_preflight import" not in run_source
+    assert "from .content_production_preflight_checks import" in run_source
+    assert "from .content_production_preflight_actions import" in run_source
+    assert "from .content_production_preflight_summaries import" in run_source
+    assert "def _assert_content_production_run_gates" not in compat_source
+    assert "def _content_production_preflight_actions" not in compat_source
+    assert "def _asset_preflight_summary" not in compat_source
+    assert "def _assert_content_production_run_gates" in checks_source
+    assert "def _content_production_preflight_actions" in actions_source
+    assert "def _asset_preflight_summary" in summaries_source
+
+
 def test_fastapi_content_production_experiment_overview_route(tmp_path):
     run_dir = tmp_path / "cases" / "case1" / "runs" / "run1"
     covers_dir = run_dir / "covers"

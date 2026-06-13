@@ -89,7 +89,14 @@ rerun with the current tunnel URL.
 - `services/catalogs.py` owns workflow, content-generation, and capability catalogs used by the facade.
 - `services/content_production_console.py` owns content-production case/run reporting, review, artifact, and export operations.
 - `services/content_production_runs.py` owns content-production template, preflight, run, and replay orchestration.
-- `services/content_production_preflight.py` owns content-production readiness gates, preflight summaries, and repair actions.
+- `services/content_production_preflight.py` is a compatibility export surface
+  for preflight helpers used by older imports.
+- `services/content_production_preflight_checks.py` owns content-production
+  readiness gates and deterministic run rejection.
+- `services/content_production_preflight_actions.py` owns repair/next-step
+  actions and preflight links returned to the UI.
+- `services/content_production_preflight_summaries.py` owns asset, market, and
+  reference-image preflight summaries.
 - `services/experiment_jobs.py` owns experiment job lookup/cancellation and session task status synchronization.
 - `services/session_store.py` is the backend session persistence port around
   `nori.sessions.SessionManager`; backend services use it for session lookup,
