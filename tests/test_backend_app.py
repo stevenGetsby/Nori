@@ -388,6 +388,25 @@ def test_content_production_run_service_delegates_template_and_payload_helpers()
     assert "def _replay_payload_with_overrides" in payload_source
 
 
+def test_reference_image_service_is_split_by_strategy_and_result_payloads():
+    service_source = (ROOT / "backend" / "services" / "reference_images.py").read_text(encoding="utf-8")
+    publishers_source = (ROOT / "backend" / "services" / "reference_image_publishers.py").read_text(encoding="utf-8")
+    generation_source = (ROOT / "backend" / "services" / "reference_image_generation.py").read_text(encoding="utf-8")
+    results_source = (ROOT / "backend" / "services" / "reference_image_results.py").read_text(encoding="utf-8")
+
+    assert "class BackendReferenceImageService" in service_source
+    assert "class ReferencePublishDiagnostic" not in service_source
+    assert "class SessionReferenceAssetPublisher" not in service_source
+    assert "class ReferenceImageGenerationChecker" not in service_source
+    assert "def _reference_publish_check_result" not in service_source
+    assert "def _session_reference_image_generation_check_result" not in service_source
+    assert "class ReferencePublishDiagnostic" in publishers_source
+    assert "class SessionReferenceAssetPublisher" in publishers_source
+    assert "class ReferenceImageGenerationChecker" in generation_source
+    assert "def _reference_publish_check_result" in results_source
+    assert "def _session_reference_image_generation_check_result" in results_source
+
+
 def test_fastapi_content_production_experiment_overview_route(tmp_path):
     run_dir = tmp_path / "cases" / "case1" / "runs" / "run1"
     covers_dir = run_dir / "covers"

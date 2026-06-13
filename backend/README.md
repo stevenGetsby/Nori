@@ -109,10 +109,14 @@ rerun with the current tunnel URL.
   internals. Session assets, reference-image checks, experiment job sync, and
   content-production run orchestration all share this port.
 - `services/session_assets.py` owns backend sessions, uploaded assets, and asset file access.
-- `services/reference_images.py` owns reference publishing, provider-fetchable reference URLs, and image-provider reference checks.
-  Internally it composes focused strategy classes for publish diagnostics,
-  session-asset URL publishing, and live image-provider reference checks, so the
-  backend facade does not become the policy owner.
+- `services/reference_images.py` coordinates session state for reference
+  publishing and image-provider reference checks.
+- `services/reference_image_publishers.py` owns publish diagnostics and
+  session-asset URL publishing strategies.
+- `services/reference_image_generation.py` owns live image-provider reference
+  checks.
+- `services/reference_image_results.py` owns reference-image result payloads,
+  event payloads, and next-action builders.
 - `routing.py` is the route composition root; it includes the focused routers in `routes/`.
 - `routes/system.py` owns health and capability endpoints.
 - `routes/workflows.py` owns workflow catalog and workflow resolution endpoints.
