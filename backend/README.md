@@ -107,7 +107,9 @@ rerun with the current tunnel URL.
 - `experiments/diagnostics.py` owns model/reference readiness and diagnostic action planning.
 - `experiments/runs.py` owns run listing, run summaries, filters, and run comparisons.
 - `experiments/artifacts.py` owns artifact catalogs, artifact resolution, reference traces, and zip exports.
-- `experiments/cases.py` owns case selection, case reports, workbench state, delivery, comparison, and timelines.
+- `experiments/cases.py` owns case selection, case reports, workbench state, delivery, and comparison.
+- `experiments/timelines.py` owns read-only case timeline assembly for runs,
+  evaluations, and selections.
 - `experiments/reviews.py` owns review gates, acceptance checks, evaluation drafts, and evaluation persistence.
 - `jobs.py` owns the current process-local background job store.
 

@@ -43,7 +43,6 @@ from .cases import (
     content_production_case_compare,
     content_production_case_delivery,
     content_production_case_next_actions,
-    content_production_case_timeline,
     content_production_experiment_overview,
     content_production_experiment_report,
     content_production_experiment_workbench,
@@ -53,6 +52,7 @@ from .cases import (
     promote_content_production_case_run,
     record_content_production_case_selection,
 )
+from .timelines import content_production_case_timeline
 from .runner import ContentProductionExperimentRunner, ContentProductionRunFailed
 
 

@@ -1,4 +1,4 @@
-"""Case-level selections, reports, comparisons, delivery, and timelines."""
+"""Case-level selections, reports, comparisons, and delivery."""
 from __future__ import annotations
 
 from .common import (
@@ -28,7 +28,6 @@ from .common import (
     _exportable_input_files,
     _exportable_run_files,
     _file_sha256,
-    _first_stage_time,
     _is_relative_to,
     _is_remote_url,
     _json_sha256,
@@ -523,50 +522,6 @@ def content_production_case_delivery(
             ),
             "export": _run_export_url(normalized_case_id, run_id) if summary else "",
             "replay": _run_replay_url(normalized_case_id, run_id) if summary else "",
-        },
-    }
-
-
-def content_production_case_timeline(
-    *,
-    project_root: str | Path = PROJECT_ROOT,
-    case_id: str,
-    limit: int = 200,
-) -> dict[str, Any]:
-    """Return a chronological audit timeline for one content-production case."""
-
-    _content_case_dir(project_root=project_root, case_id=case_id)
-    normalized_limit = max(1, min(int(limit or 200), 1000))
-    runs = list_content_production_runs(project_root=project_root, case_id=case_id, limit=1000).get("runs", [])
-    selection = get_content_production_case_selection(project_root=project_root, case_id=case_id)
-    events: list[dict[str, Any]] = []
-    for summary in runs:
-        events.extend(_timeline_events_for_run(summary))
-    for item in selection.get("history") or []:
-        if isinstance(item, dict):
-            events.append(_timeline_selection_event(item))
-    events = sorted(events, key=_timeline_sort_key, reverse=True)
-    visible = events[:normalized_limit]
-    return {
-        "schema_version": 1,
-        "case_id": str(case_id),
-        "event_count": len(events),
-        "returned_count": len(visible),
-        "limit": normalized_limit,
-        "has_more": len(events) > normalized_limit,
-        "events": visible,
-        "summary": {
-            "event_type_counts": _count_by(events, "event_type"),
-            "run_count": len(runs),
-            "evaluation_count": sum(1 for event in events if event["event_type"] == "evaluation_recorded"),
-            "selection_count": sum(1 for event in events if event["event_type"] == "selection_recorded"),
-        },
-        "links": {
-            "report": f"/experiments/content-production/report?case_id={case_id}",
-            "cases": "/experiments/content-production/cases",
-            "selection": f"/experiments/content-production/cases/{case_id}/selection",
-            "export": f"/experiments/content-production/cases/{case_id}/export",
-            "runs": f"/workflows/content-production/runs?case_id={case_id}",
         },
     }
 
@@ -1664,95 +1619,3 @@ def _normalize_case_selection(
             "links": dict(run.get("links") or {}),
         },
     }
-
-
-def _timeline_events_for_run(summary: dict[str, Any]) -> list[dict[str, Any]]:
-    case_id = str(summary.get("case_id") or "")
-    run_id = str(summary.get("run_id") or "")
-    row = _report_run(summary)
-    base = {
-        "case_id": case_id,
-        "run_id": run_id,
-        "workflow_name": str(summary.get("workflow_name") or ""),
-        "run_status": str(row.get("status") or ""),
-        "acceptance_status": str(row.get("acceptance_status") or ""),
-        "proof_status": str(row.get("proof_status") or ""),
-        "evaluation_status": str(row.get("evaluation_status") or ""),
-        "reference_status": str(row.get("reference_status") or ""),
-        "links": dict(row.get("links") or {}),
-    }
-    events: list[dict[str, Any]] = []
-    created_at = str(summary.get("created_at") or "")
-    if created_at:
-        events.append(
-            {
-                **base,
-                "event_id": f"run_started:{case_id}:{run_id}",
-                "event_type": "run_started",
-                "timestamp": created_at,
-                "title": f"Run started: {run_id}",
-            }
-        )
-    finished_at = str(summary.get("finished_at") or "")
-    if finished_at:
-        events.append(
-            {
-                **base,
-                "event_id": f"run_finished:{case_id}:{run_id}",
-                "event_type": "run_finished",
-                "timestamp": finished_at,
-                "title": f"Run finished: {run_id}",
-            }
-        )
-    evaluations = summary.get("evaluations") if isinstance(summary.get("evaluations"), dict) else {}
-    for evaluation in evaluations.get("items") or []:
-        if isinstance(evaluation, dict):
-            events.append(_timeline_evaluation_event(evaluation, base=base))
-    return events
-
-
-def _timeline_evaluation_event(evaluation: dict[str, Any], *, base: dict[str, Any]) -> dict[str, Any]:
-    evaluation_id = str(evaluation.get("evaluation_id") or "")
-    run_id = str(base.get("run_id") or "")
-    timestamp = str(evaluation.get("created_at") or "")
-    return {
-        **base,
-        "event_id": evaluation_id or f"evaluation:{base.get('case_id')}:{run_id}:{timestamp}",
-        "event_type": "evaluation_recorded",
-        "timestamp": timestamp,
-        "title": f"Evaluation recorded: {run_id}",
-        "evaluation_id": evaluation_id,
-        "reviewer": str(evaluation.get("reviewer") or ""),
-        "source": str(evaluation.get("source") or ""),
-        "status": str(evaluation.get("status") or ""),
-        "score": evaluation.get("score"),
-        "issue_count": len(evaluation.get("issues") or []),
-    }
-
-
-def _timeline_selection_event(selection: dict[str, Any]) -> dict[str, Any]:
-    case_id = str(selection.get("case_id") or "")
-    run_id = str(selection.get("run_id") or "")
-    return {
-        "event_id": str(selection.get("selection_id") or f"selection:{case_id}:{run_id}:{selection.get('selected_at') or ''}"),
-        "event_type": "selection_recorded",
-        "timestamp": str(selection.get("selected_at") or ""),
-        "title": f"Selection recorded: {run_id}",
-        "case_id": case_id,
-        "run_id": run_id,
-        "decision": str(selection.get("decision") or ""),
-        "reviewer": str(selection.get("reviewer") or ""),
-        "reason": str(selection.get("reason") or ""),
-        "matches_report_best": bool(selection.get("matches_report_best")),
-        "run_status": str((selection.get("run") or {}).get("status") or ""),
-        "acceptance_status": str((selection.get("run") or {}).get("acceptance_status") or ""),
-        "links": dict((selection.get("run") or {}).get("links") or {}),
-    }
-
-
-def _timeline_sort_key(event: dict[str, Any]) -> tuple[str, str, str]:
-    return (
-        str(event.get("timestamp") or ""),
-        str(event.get("event_type") or ""),
-        str(event.get("event_id") or ""),
-    )
