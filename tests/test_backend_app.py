@@ -204,8 +204,32 @@ def test_fastapi_builtin_docs_and_openapi_are_served():
 
 def test_fastapi_routes_are_registered_from_routing_module():
     routing = importlib.import_module("backend.routing")
+    route_package = importlib.import_module("backend.routes")
 
     assert callable(routing.register_routes)
+    assert callable(route_package.register_route_modules)
+    builder_modules = {builder.__module__ for builder in route_package.ROUTE_BUILDERS}
+    assert {
+        "backend.routes.system",
+        "backend.routes.workflows",
+        "backend.routes.content_generation",
+        "backend.routes.sessions",
+        "backend.routes.experiment_jobs",
+        "backend.routes.content_production_admin",
+        "backend.routes.content_production_cases",
+        "backend.routes.content_production_runs",
+    } <= builder_modules
+
+    routing_tree = ast.parse((ROOT / "backend" / "routing.py").read_text())
+    route_decorator_calls = [
+        node
+        for node in ast.walk(routing_tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in {"delete", "get", "patch", "post", "put"}
+    ]
+    assert route_decorator_calls == []
+
     client = TestClient(create_app())
 
     paths = client.get("/openapi.json").json()["paths"]

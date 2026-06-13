@@ -76,7 +76,15 @@ rerun with the current tunnel URL.
 ## Code Layout
 
 - `app.py` owns app creation, exception handling, and the `NoriBackend` service facade.
-- `routing.py` owns FastAPI route registration and keeps HTTP request/response wiring out of the service facade.
+- `routing.py` is the route composition root; it includes the focused routers in `routes/`.
+- `routes/system.py` owns health and capability endpoints.
+- `routes/workflows.py` owns workflow catalog and workflow resolution endpoints.
+- `routes/content_generation.py` owns content-generation option/action planning endpoints.
+- `routes/sessions.py` owns session, task, upload, and reference-asset endpoints.
+- `routes/experiment_jobs.py` owns background experiment job endpoints.
+- `routes/content_production_admin.py` owns content-production readiness, diagnostics, run-template, overview, workbench, and report endpoints.
+- `routes/content_production_cases.py` owns case selection, replay, evaluation, delivery, timeline, and export endpoints.
+- `routes/content_production_runs.py` owns run execution, preflight, listing, comparison, replay, evaluation, artifact, and export endpoints.
 - `contracts.py` owns API request models and shared response/error shapes.
 - `experiments/runner.py` owns content-production execution and run manifest writing.
 - `experiments/models.py` owns typed case/run identifiers used at storage boundaries.

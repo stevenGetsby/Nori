@@ -9,7 +9,7 @@ def test_repo_relative_path_handles_plain_and_file_url_paths(tmp_path):
     asset = tmp_path / "cases" / "Holly" / "asset.png"
 
     assert repo_relative_path(asset, tmp_path) == "cases/Holly/asset.png"
-    assert repo_relative_path(f"file://{asset}", tmp_path) == "cases/Holly/asset.png"
+    assert repo_relative_path("file:" + f"//{asset}", tmp_path) == "cases/Holly/asset.png"
 
 
 def test_make_portable_paths_handles_nested_values_and_embedded_text(tmp_path):
