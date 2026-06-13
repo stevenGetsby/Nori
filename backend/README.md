@@ -110,7 +110,9 @@ rerun with the current tunnel URL.
 - `experiments/cases.py` owns case selection, case reports, workbench state, delivery, and comparison.
 - `experiments/timelines.py` owns read-only case timeline assembly for runs,
   evaluations, and selections.
-- `experiments/reviews.py` owns review gates, acceptance checks, evaluation drafts, and evaluation persistence.
+- `experiments/visual_reviews.py` owns visual-reference review panels and their
+  rule-based evaluation-review adapter.
+- `experiments/reviews.py` owns proof gates, acceptance checks, evaluation drafts, and evaluation persistence.
 - `jobs.py` owns the current process-local background job store.
 
 ## Routes

@@ -64,8 +64,8 @@ from .reviews import (
     content_production_run_acceptance_report,
     content_production_run_proof,
     evaluation_summary,
-    visual_reference_review,
 )
+from .visual_reviews import visual_reference_review
 
 
 def list_content_production_runs(

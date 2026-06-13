@@ -24,8 +24,8 @@ from .reviews import (
     get_content_production_run_acceptance,
     list_content_production_run_evaluations,
     record_content_production_run_evaluation,
-    visual_reference_review,
 )
+from .visual_reviews import visual_reference_review
 from .artifacts import (
     artifact_catalog_for_run,
     artifact_urls_for_run,
