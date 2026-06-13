@@ -79,6 +79,7 @@ rerun with the current tunnel URL.
 - `services/catalogs.py` owns workflow, content-generation, and capability catalogs used by the facade.
 - `services/content_production_console.py` owns content-production case/run reporting, review, artifact, and export operations.
 - `services/content_production_runs.py` owns content-production template, preflight, run, and replay orchestration.
+- `services/content_production_preflight.py` owns content-production readiness gates, preflight summaries, and repair actions.
 - `services/experiment_jobs.py` owns experiment job lookup/cancellation and session task status synchronization.
 - `services/session_assets.py` owns backend sessions, uploaded assets, reference publishing, and reference-image checks.
 - `routing.py` is the route composition root; it includes the focused routers in `routes/`.
