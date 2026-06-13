@@ -1,54 +1,17 @@
-"""Case-level selections, reports, comparisons, and delivery."""
+"""Case-level selections, reports, comparisons, and next actions."""
 from __future__ import annotations
 
 from .common import (
     Any,
-    Callable,
-    CaseWorkspace,
-    ClientBrief,
-    ContentProductionConfig,
-    ContentProductionWorkflow,
-    ContentTask,
-    EVALUATION_STATUSES,
-    EXPERIMENT_EVALUATIONS_NAME,
-    EXPERIMENT_MANIFEST_NAME,
     EXPERIMENT_SELECTION_NAME,
-    IntentContract,
-    LLMFactory,
     PROJECT_ROOT,
     Path,
     SELECTION_DECISIONS,
-    TopNotesResult,
-    _case_id_from_run_dir,
     _content_case_dir,
     _content_case_dir_or_none,
-    _content_run_dir,
-    _dedupe_strings,
-    _dict_list,
-    _exportable_input_files,
-    _exportable_run_files,
-    _file_sha256,
-    _is_relative_to,
-    _is_remote_url,
-    _json_sha256,
     _read_json,
-    _reference_transfer_snapshot,
-    _safe_run_artifact_path,
-    _slug,
-    _string_list,
-    _write_json,
     datetime,
     hashlib,
-    importlib,
-    infer_project_root_from_cases_path,
-    io,
-    json,
-    llms,
-    os,
-    provider_fetchable_reference_url,
-    record_content_production_artifacts,
-    top_notes_result_from_dict,
-    zipfile,
 )
 from .artifacts import _run_export_url, _run_replay_url, inspect_content_production_run_artifacts
 from .acceptance import _summary_reference_transfer, content_production_run_acceptance_report
@@ -163,6 +126,8 @@ def content_production_experiment_workbench(
         if normalized_case_id and active_run_id
         else {}
     )
+    from .delivery import content_production_case_delivery
+
     case_delivery = (
         content_production_case_delivery(
             project_root=project_root,
@@ -409,119 +374,6 @@ def promote_content_production_case_run(
             "artifact_inspection": f"/workflows/content-production/runs/{normalized_case_id}/{run_id}/artifacts/inspect",
             "export": _run_export_url(normalized_case_id, run_id),
             "replay": _run_replay_url(normalized_case_id, run_id),
-        },
-    }
-
-
-def content_production_case_delivery(
-    *,
-    project_root: str | Path = PROJECT_ROOT,
-    case_id: str,
-    allow_unpromoted: bool = False,
-) -> dict[str, Any]:
-    """Return a case-level delivery readiness snapshot."""
-
-    normalized_case_id = str(case_id or "").strip()
-    if not normalized_case_id:
-        raise ValueError("case_id is required")
-
-    case_dir = _content_case_dir_or_none(project_root=project_root, case_id=normalized_case_id)
-    selection_payload = _case_selection_payload(case_dir, include_history=True)
-    selection = dict(selection_payload.get("current") or {})
-    report = content_production_experiment_report(
-        project_root=project_root,
-        case_id=normalized_case_id,
-        limit=500,
-    )
-    best_run = dict(report.get("best_run") or {})
-    run_id = str(selection.get("run_id") or "").strip() or str(best_run.get("run_id") or "").strip()
-    promoted = str(selection.get("decision") or "") == "promoted" and bool(selection.get("run_id"))
-    blockers: list[str] = []
-    warnings: list[str] = []
-    summary: dict[str, Any] = {}
-    acceptance: dict[str, Any] = {}
-    inspection: dict[str, Any] = {}
-
-    if not run_id:
-        blockers.append("no_run")
-    else:
-        summary = summarize_content_production_run(
-            project_root=project_root,
-            case_id=normalized_case_id,
-            run_id=run_id,
-        )
-        if not summary:
-            blockers.append("run_not_found")
-        else:
-            acceptance = content_production_run_acceptance_report(summary)
-            inspection = inspect_content_production_run_artifacts(
-                project_root=project_root,
-                case_id=normalized_case_id,
-                run_id=run_id,
-            )
-            if not promoted and not allow_unpromoted:
-                blockers.append("not_promoted")
-            elif not promoted:
-                warnings.append("unpromoted_preview")
-            if str(acceptance.get("status") or "") != "accepted":
-                blockers.append("not_accepted")
-            missing_core = [str(item) for item in inspection.get("missing_core_artifacts") or [] if item]
-            if missing_core:
-                blockers.append("missing_core_artifacts")
-            if not _run_export_url(normalized_case_id, run_id):
-                blockers.append("missing_export")
-
-    status = _case_delivery_status(blockers, warnings)
-    case_compare = content_production_case_compare(
-        project_root=project_root,
-        case_id=normalized_case_id,
-        limit=500,
-    )
-    next_actions = content_production_case_next_actions(
-        project_root=project_root,
-        case_id=normalized_case_id,
-        limit=500,
-    )
-    delivery = _case_delivery_payload(
-        case_id=normalized_case_id,
-        run_id=run_id if summary else "",
-        inspection=inspection,
-    )
-    return {
-        "schema_version": 1,
-        "case_id": normalized_case_id,
-        "generated_at": datetime.now().isoformat(timespec="seconds"),
-        "ready": not blockers,
-        "status": status,
-        "allow_unpromoted": bool(allow_unpromoted),
-        "run_id": run_id if summary else "",
-        "promoted": promoted,
-        "selection": selection,
-        "selection_history": list(selection_payload.get("history") or []),
-        "blocking_reasons": blockers,
-        "warning_reasons": warnings,
-        "acceptance": acceptance,
-        "proof": dict(summary.get("proof") or {}) if summary else {},
-        "run": _report_run(summary) if summary else {},
-        "artifact_inspection": inspection,
-        "case_compare": case_compare,
-        "next_actions": next_actions,
-        "delivery": delivery,
-        "links": {
-            "workbench": f"/experiments/content-production/workbench?case_id={normalized_case_id}",
-            "case_compare": f"/experiments/content-production/cases/{normalized_case_id}/compare",
-            "selection": f"/experiments/content-production/cases/{normalized_case_id}/selection",
-            "promotion": f"/experiments/content-production/cases/{normalized_case_id}/promotion",
-            "next_actions": f"/experiments/content-production/cases/{normalized_case_id}/next-actions",
-            "delivery_export": f"/experiments/content-production/cases/{normalized_case_id}/delivery/export",
-            "run": f"/workflows/content-production/runs/{normalized_case_id}/{run_id}" if summary else "",
-            "artifact_inspection": (
-                f"/workflows/content-production/runs/{normalized_case_id}/{run_id}/artifacts/inspect"
-                if summary
-                else ""
-            ),
-            "export": _run_export_url(normalized_case_id, run_id) if summary else "",
-            "replay": _run_replay_url(normalized_case_id, run_id) if summary else "",
         },
     }
 
@@ -1093,83 +945,6 @@ def _workbench_active_run_id(case_compare: dict[str, Any]) -> str:
         if value:
             return value
     return ""
-
-
-def _case_delivery_status(blockers: list[str], warnings: list[str]) -> str:
-    if not blockers:
-        return "preview_ready" if "unpromoted_preview" in warnings else "ready"
-    if "no_run" in blockers:
-        return "needs_run"
-    if "run_not_found" in blockers:
-        return "missing_run"
-    if "not_promoted" in blockers:
-        return "needs_promotion"
-    if "not_accepted" in blockers:
-        return "needs_acceptance"
-    if "missing_core_artifacts" in blockers:
-        return "needs_artifacts"
-    return "blocked"
-
-
-def _case_delivery_payload(*, case_id: str, run_id: str, inspection: dict[str, Any]) -> dict[str, Any]:
-    if not run_id or not inspection:
-        return {
-            "content_package": {},
-            "covers": [],
-            "export_url": "",
-            "artifact_inspection_url": "",
-        }
-    return {
-        "content_package": dict(inspection.get("content_package") or {}),
-        "covers": list(inspection.get("covers") or []),
-        "visual_reference_review": dict(inspection.get("visual_reference_review") or {}),
-        "export_url": _run_export_url(case_id, run_id),
-        "artifact_inspection_url": f"/workflows/content-production/runs/{case_id}/{run_id}/artifacts/inspect",
-    }
-
-
-def _delivery_review_evidence(*, delivery: dict[str, Any], summary: dict[str, Any]) -> dict[str, Any]:
-    inspection = delivery.get("artifact_inspection") if isinstance(delivery.get("artifact_inspection"), dict) else {}
-    return {
-        "schema_version": 1,
-        "case_id": str(delivery.get("case_id") or summary.get("case_id") or ""),
-        "run_id": str(delivery.get("run_id") or summary.get("run_id") or ""),
-        "ready": bool(delivery.get("ready")),
-        "status": str(delivery.get("status") or ""),
-        "blocking_reasons": list(delivery.get("blocking_reasons") or []),
-        "warning_reasons": list(delivery.get("warning_reasons") or []),
-        "proof": dict(delivery.get("proof") or summary.get("proof") or {}),
-        "acceptance": dict(delivery.get("acceptance") or summary.get("acceptance") or {}),
-        "evaluations": dict(inspection.get("evaluations") or summary.get("evaluations") or {}),
-        "image_reference": dict(inspection.get("image_reference") or summary.get("image_reference") or {}),
-        "visual_reference_review": dict(
-            inspection.get("visual_reference_review")
-            or summary.get("visual_reference_review")
-            or {}
-        ),
-        "artifact_counts": dict(inspection.get("artifact_counts") or {}),
-        "missing_core_artifacts": list(inspection.get("missing_core_artifacts") or []),
-    }
-
-
-def _run_review_evidence(*, summary: dict[str, Any], inspection: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "schema_version": 1,
-        "case_id": str(summary.get("case_id") or ""),
-        "run_id": str(summary.get("run_id") or ""),
-        "status": str(summary.get("status") or ""),
-        "proof": dict(summary.get("proof") or {}),
-        "acceptance": dict(summary.get("acceptance") or {}),
-        "evaluations": dict(inspection.get("evaluations") or summary.get("evaluations") or {}),
-        "image_reference": dict(inspection.get("image_reference") or summary.get("image_reference") or {}),
-        "visual_reference_review": dict(
-            inspection.get("visual_reference_review")
-            or summary.get("visual_reference_review")
-            or {}
-        ),
-        "artifact_counts": dict(inspection.get("artifact_counts") or {}),
-        "missing_core_artifacts": list(inspection.get("missing_core_artifacts") or []),
-    }
 
 
 def _workbench_case(row: dict[str, Any], *, project_root: str | Path) -> dict[str, Any]:

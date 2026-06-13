@@ -56,6 +56,9 @@ def test_backend_experiments_is_split_into_capability_modules():
         ],
         "cases": [
             "content_production_case_compare",
+            "content_production_case_next_actions",
+        ],
+        "delivery": [
             "content_production_case_delivery",
         ],
         "timelines": ["content_production_case_timeline"],
