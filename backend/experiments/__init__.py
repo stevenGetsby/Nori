@@ -38,10 +38,10 @@ from .artifacts import (
     resolve_content_production_artifact_path,
 )
 from .runs import compare_content_production_runs, list_content_production_runs, summarize_content_production_run
+from .actions import content_production_case_next_actions
 from .delivery import content_production_case_delivery
 from .cases import (
     content_production_case_compare,
-    content_production_case_next_actions,
     content_production_experiment_overview,
     content_production_experiment_report,
     content_production_experiment_workbench,
