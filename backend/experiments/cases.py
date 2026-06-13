@@ -51,10 +51,10 @@ from .common import (
     zipfile,
 )
 from .artifacts import _run_export_url, _run_replay_url, inspect_content_production_run_artifacts
+from .acceptance import _summary_reference_transfer, content_production_run_acceptance_report
 from .diagnostics import content_production_diagnostics
 from .models import ContentCaseRef
 from .repositories import ContentProductionExperimentRepository
-from .reviews import _summary_reference_transfer, content_production_run_acceptance_report
 from .runs import (
     _comparison_run,
     _count_by,

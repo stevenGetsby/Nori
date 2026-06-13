@@ -112,7 +112,10 @@ rerun with the current tunnel URL.
   evaluations, and selections.
 - `experiments/visual_reviews.py` owns visual-reference review panels and their
   rule-based evaluation-review adapter.
-- `experiments/reviews.py` owns proof gates, acceptance checks, evaluation drafts, and evaluation persistence.
+- `experiments/acceptance.py` owns run proof gates, reference-transfer proof,
+  and operator acceptance reports.
+- `experiments/reviews.py` owns evaluation drafts, evaluation summaries, and
+  evaluation persistence.
 - `jobs.py` owns the current process-local background job store.
 
 ## Routes

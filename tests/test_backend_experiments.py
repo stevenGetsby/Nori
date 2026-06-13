@@ -61,7 +61,11 @@ def test_backend_experiments_is_split_into_capability_modules():
         "timelines": ["content_production_case_timeline"],
         "reviews": [
             "build_content_production_evaluation_draft",
+            "evaluation_summary",
+        ],
+        "acceptance": [
             "content_production_run_acceptance_report",
+            "content_production_run_proof",
         ],
         "visual_reviews": ["visual_reference_review"],
         "models": ["ContentRunRef", "ContentCaseRef"],
