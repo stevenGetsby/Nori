@@ -30,27 +30,16 @@ from .contracts import (
     TurnCreateRequest,
     WorkflowResolveRequest,
     api_error,
-    api_ok,
 )
 from .content import ContentGenerationCatalog
 from .experiments import (
-    ContentProductionExperimentRunner,
-    PROJECT_ROOT,
     content_production_diagnostics,
     content_production_experiment_workbench,
     experiment_readiness,
 )
 from .jobs import InProcessExperimentJobStore
 from .routing import register_routes
-from .services import (
-    BackendCatalogService,
-    BackendContentProductionConsoleService,
-    BackendContentProductionRunService,
-    BackendExperimentJobService,
-    BackendReferenceImageService,
-    BackendSessionAssetService,
-    BackendSessionStore,
-)
+from .services import BackendServiceBundle
 from .workflows import WorkflowCatalog
 
 
@@ -63,50 +52,37 @@ class NoriBackend:
         session_manager: SessionManager | None = None,
         workflow_catalog: WorkflowCatalog | None = None,
         content_catalog: ContentGenerationCatalog | None = None,
-        experiment_runner: ContentProductionExperimentRunner | None = None,
+        experiment_runner: Any | None = None,
         job_store: InProcessExperimentJobStore | None = None,
         reference_publisher: Any | None = None,
         upload_root: str | Path | None = None,
         enforce_model_readiness: bool | None = None,
+        service_bundle: BackendServiceBundle | None = None,
     ) -> None:
-        self.catalog_service = BackendCatalogService(
+        bundle = service_bundle or BackendServiceBundle.create(
+            session_manager=session_manager,
             workflow_catalog=workflow_catalog,
             content_catalog=content_catalog,
-        )
-        self.experiment_runner = experiment_runner or ContentProductionExperimentRunner()
-        self.enforce_model_readiness = (
-            isinstance(self.experiment_runner, ContentProductionExperimentRunner)
-            if enforce_model_readiness is None
-            else bool(enforce_model_readiness)
-        )
-        project_root = _experiment_project_root(self.experiment_runner)
-        self.content_production_console = BackendContentProductionConsoleService(project_root=project_root)
-        self.session_manager = session_manager or SessionManager(storage_root=project_root / "data" / "backend" / "sessions")
-        self.session_store = BackendSessionStore(self.session_manager)
-        self.upload_root = Path(upload_root or project_root / "data" / "backend" / "uploads")
-        self.session_asset_service = BackendSessionAssetService(
-            session_store=self.session_store,
-            upload_root=self.upload_root,
-        )
-        self.reference_image_service = BackendReferenceImageService(
-            session_store=self.session_store,
+            experiment_runner=experiment_runner,
+            job_store=job_store,
             reference_publisher=reference_publisher,
+            upload_root=upload_root,
+            enforce_model_readiness=enforce_model_readiness,
         )
-        self.reference_publisher = self.reference_image_service.reference_publisher
-        self.job_store = job_store or InProcessExperimentJobStore(
-            storage_root=project_root / "data" / "backend" / "jobs"
-        )
-        self.experiment_job_service = BackendExperimentJobService(
-            job_store=self.job_store,
-            session_store=self.session_store,
-        )
-        self.content_production_run_service = BackendContentProductionRunService(
-            experiment_runner=self.experiment_runner,
-            session_store=self.session_store,
-            job_store=self.job_store,
-            enforce_model_readiness=self.enforce_model_readiness,
-        )
-        self.experiment_job_service.sync_interrupted_experiment_jobs()
+        self.service_bundle = bundle
+        self.catalog_service = bundle.catalog_service
+        self.experiment_runner = bundle.experiment_runner
+        self.enforce_model_readiness = bundle.enforce_model_readiness
+        self.content_production_console = bundle.content_production_console
+        self.session_manager = bundle.session_manager
+        self.session_store = bundle.session_store
+        self.upload_root = bundle.upload_root
+        self.session_asset_service = bundle.session_asset_service
+        self.reference_image_service = bundle.reference_image_service
+        self.reference_publisher = bundle.reference_publisher
+        self.job_store = bundle.job_store
+        self.experiment_job_service = bundle.experiment_job_service
+        self.content_production_run_service = bundle.content_production_run_service
 
     def health(self) -> dict[str, Any]:
         return {
@@ -442,10 +418,6 @@ class NoriBackend:
 
     def start_task(self, session_id: str, request: TaskCreateRequest) -> dict[str, Any]:
         return self.session_asset_service.start_task(session_id, request)
-
-
-def _experiment_project_root(experiment_runner: Any) -> Path:
-    return Path(getattr(experiment_runner, "project_root", PROJECT_ROOT))
 
 
 def create_app(*, backend: NoriBackend | None = None) -> FastAPI:

@@ -76,6 +76,9 @@ rerun with the current tunnel URL.
 ## Code Layout
 
 - `app.py` owns app creation, exception handling, and the `NoriBackend` service facade.
+- `services/runtime.py` owns backend service composition and dependency wiring
+  through `BackendServiceBundle`; `app.py` exposes the facade without
+  constructing each domain service directly.
 - `services/catalogs.py` owns workflow, content-generation, and capability catalogs used by the facade.
 - `services/content_production_console.py` owns content-production case/run reporting, review, artifact, and export operations.
 - `services/content_production_runs.py` owns content-production template, preflight, run, and replay orchestration.

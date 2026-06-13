@@ -250,6 +250,8 @@ def test_backend_facade_composes_domain_services(tmp_path):
         reference_publisher=SimpleNamespace(),
     )
 
+    assert isinstance(backend.service_bundle, services.BackendServiceBundle)
+    assert backend.service_bundle.project_root == tmp_path
     assert isinstance(backend.catalog_service, services.BackendCatalogService)
     assert isinstance(backend.content_production_console, services.BackendContentProductionConsoleService)
     assert isinstance(backend.content_production_run_service, services.BackendContentProductionRunService)
@@ -286,6 +288,12 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert backend.session_asset_service.session_store is backend.session_store
     assert backend.session_asset_service.session_manager is backend.session_manager
     assert backend.session_asset_service.upload_root == tmp_path / "data" / "backend" / "uploads"
+
+    app_source = (ROOT / "backend" / "app.py").read_text(encoding="utf-8")
+    assert "BackendServiceBundle.create" in app_source
+    assert "BackendCatalogService" not in app_source
+    assert "BackendContentProductionRunService" not in app_source
+    assert "BackendReferenceImageService" not in app_source
 
     capability_ids = {row["capability_id"] for row in backend.list_capabilities()["capabilities"]}
     assert {"content_generation", "workflow_orchestration"} <= capability_ids

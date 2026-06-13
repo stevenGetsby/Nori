@@ -8,6 +8,7 @@ from .experiment_jobs import BackendExperimentJobService
 from .reference_images import BackendReferenceImageService
 from .session_assets import BackendSessionAssetService
 from .session_store import BackendSessionStore
+from .runtime import BackendServiceBundle
 
 __all__ = [
     "BackendCatalogService",
@@ -15,6 +16,7 @@ __all__ = [
     "BackendContentProductionRunService",
     "BackendExperimentJobService",
     "BackendReferenceImageService",
+    "BackendServiceBundle",
     "BackendSessionAssetService",
     "BackendSessionStore",
 ]
