@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from nori.core import llms
-from nori.sessions import SessionEvent, SessionManager
+from nori.sessions import SessionEvent
 from nori.storage import ObjectStoreError, ReferenceImagePublisher
 
 from ..assets import append_session_assets, select_assets
@@ -24,6 +24,7 @@ from .session_assets import (
     is_remote_url,
     reference_url_probe_summary,
 )
+from .session_store import BackendSessionStore
 
 
 class ReferencePublishDiagnostic:
@@ -237,13 +238,14 @@ class BackendReferenceImageService:
     def __init__(
         self,
         *,
-        session_manager: SessionManager,
+        session_store: BackendSessionStore,
         reference_publisher: Any | None = None,
         publish_diagnostic: ReferencePublishDiagnostic | None = None,
         asset_publisher: SessionReferenceAssetPublisher | None = None,
         generation_checker: ReferenceImageGenerationChecker | None = None,
     ) -> None:
-        self.session_manager = session_manager
+        self.session_store = session_store
+        self.session_manager = session_store.session_manager
         self.reference_publisher = reference_publisher or ReferenceImagePublisher.from_env()
         self.publish_diagnostic = publish_diagnostic or ReferencePublishDiagnostic(self.reference_publisher)
         self.asset_publisher = asset_publisher or SessionReferenceAssetPublisher(self.reference_publisher)
@@ -332,9 +334,7 @@ class BackendReferenceImageService:
         session_id: str,
         request: AssetReferencePublishRequest,
     ) -> dict[str, Any]:
-        session = self.session_manager.get_session(session_id)
-        if session is None:
-            raise ApiError(f"session not found: {session_id}", status_code=404)
+        session = self.session_store.require_session(session_id)
         try:
             selected_assets = select_assets(session.metadata.get("assets", []), asset_ids=list(request.asset_ids or []))
             assert_asset_paths_exist(selected_assets)
@@ -359,12 +359,12 @@ class BackendReferenceImageService:
                     },
                 )
             )
-            self.session_manager.save_session(session_id)
+            self.session_store.save_session(session_id)
 
         return result
 
     def _record_session_reference_image_generation_check(self, session_id: str, result: dict[str, Any]) -> None:
-        session = self.session_manager.get_session(session_id)
+        session = self.session_store.get_session(session_id)
         if session is None:
             return
         session.events.append(
@@ -373,7 +373,7 @@ class BackendReferenceImageService:
                 payload=_session_reference_image_generation_event_payload(result),
             )
         )
-        self.session_manager.save_session(session_id)
+        self.session_store.save_session(session_id)
 
 
 def _asset_publish_result(row: dict[str, Any], *, public_reference_url: str, reason: str) -> dict[str, Any]:

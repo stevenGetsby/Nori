@@ -7,7 +7,7 @@ from typing import Any
 
 from fastapi import UploadFile
 
-from nori.sessions import SessionEvent, SessionManager
+from nori.sessions import SessionEvent
 
 from ..assets import append_session_assets, parse_metadata_json, save_uploaded_asset
 from ..contracts import (
@@ -17,6 +17,7 @@ from ..contracts import (
     TurnCreateRequest,
 )
 from ..reference_urls import probe_reference_url, provider_fetchable_reference_url
+from .session_store import BackendSessionStore
 
 
 class BackendSessionAssetService:
@@ -25,16 +26,15 @@ class BackendSessionAssetService:
     def __init__(
         self,
         *,
-        session_manager: SessionManager,
+        session_store: BackendSessionStore,
         upload_root: str | Path,
     ) -> None:
-        self.session_manager = session_manager
+        self.session_store = session_store
+        self.session_manager = session_store.session_manager
         self.upload_root = Path(upload_root)
 
     def list_session_assets(self, session_id: str) -> dict[str, Any]:
-        session = self.session_manager.get_session(session_id)
-        if session is None:
-            raise ApiError(f"session not found: {session_id}", status_code=404)
+        session = self.session_store.require_session(session_id)
         return {
             "assets": [_asset_with_url(session_id, row) for row in session.metadata.get("assets", [])],
             "latest_reference_image_generation_check": latest_reference_image_generation_check(session.events),
@@ -49,9 +49,7 @@ class BackendSessionAssetService:
         usage: str = "reference",
         metadata_json: str = "",
     ) -> dict[str, Any]:
-        session = self.session_manager.get_session(session_id)
-        if session is None:
-            raise ApiError(f"session not found: {session_id}", status_code=404)
+        session = self.session_store.require_session(session_id)
         if not files:
             raise ApiError("at least one file is required", status_code=400)
         try:
@@ -73,13 +71,11 @@ class BackendSessionAssetService:
             raise ApiError(f"asset upload failed: {type(exc).__name__}: {exc}", status_code=500) from exc
         session.metadata["assets"] = append_session_assets(session.metadata.get("assets"), rows)
         session.events.append(SessionEvent(event_type="assets_uploaded", payload={"assets": rows}))
-        self.session_manager.save_session(session_id)
+        self.session_store.save_session(session_id)
         return {"assets": [_asset_with_url(session_id, row) for row in rows]}
 
     def get_session_asset_file(self, session_id: str, asset_id: str) -> Path:
-        session = self.session_manager.get_session(session_id)
-        if session is None:
-            raise ApiError(f"session not found: {session_id}", status_code=404)
+        session = self.session_store.require_session(session_id)
         row = next(
             (item for item in session.metadata.get("assets", []) if str(item.get("asset_id") or "") == asset_id),
             None,
@@ -94,10 +90,10 @@ class BackendSessionAssetService:
         return path
 
     def list_sessions(self) -> dict[str, Any]:
-        return {"sessions": [session.to_dict() for session in self.session_manager.sessions.values()]}
+        return {"sessions": [session.to_dict() for session in self.session_store.list_sessions()]}
 
     def create_session(self, request: SessionCreateRequest) -> dict[str, Any]:
-        session = self.session_manager.create_session(
+        session = self.session_store.create_session(
             user_id=request.user_id,
             profile_id=request.profile_id,
             metadata=dict(request.metadata),
@@ -105,39 +101,31 @@ class BackendSessionAssetService:
         return session.to_dict()
 
     def get_session(self, session_id: str) -> dict[str, Any]:
-        session = self.session_manager.get_session(session_id)
-        if session is None:
-            raise ApiError(f"session not found: {session_id}", status_code=404)
+        session = self.session_store.require_session(session_id)
         data = session.to_dict()
         data["latest_reference_image_generation_check"] = latest_reference_image_generation_check(session.events)
         return data
 
     def append_turn(self, session_id: str, request: TurnCreateRequest) -> dict[str, Any]:
-        try:
-            turn = self.session_manager.append_turn(
-                session_id,
-                role=request.role,
-                content=request.content,
-                metadata=dict(request.metadata),
-            )
-        except KeyError as exc:
-            raise ApiError(str(exc).strip("'"), status_code=404) from exc
+        turn = self.session_store.append_turn(
+            session_id,
+            role=request.role,
+            content=request.content,
+            metadata=dict(request.metadata),
+        )
         return turn.to_dict()
 
     def start_task(self, session_id: str, request: TaskCreateRequest) -> dict[str, Any]:
         goal = request.goal.strip()
         if not goal:
             raise ApiError("goal is required", status_code=400)
-        try:
-            task = self.session_manager.start_task(
-                session_id,
-                goal=goal,
-                workflow_name=request.workflow_name,
-                acceptance=list(request.acceptance),
-                metadata=dict(request.metadata),
-            )
-        except KeyError as exc:
-            raise ApiError(str(exc).strip("'"), status_code=404) from exc
+        task = self.session_store.start_task(
+            session_id,
+            goal=goal,
+            workflow_name=request.workflow_name,
+            acceptance=list(request.acceptance),
+            metadata=dict(request.metadata),
+        )
         return task.to_dict()
 
 

@@ -7,6 +7,7 @@ from .content_production_runs import BackendContentProductionRunService
 from .experiment_jobs import BackendExperimentJobService
 from .reference_images import BackendReferenceImageService
 from .session_assets import BackendSessionAssetService
+from .session_store import BackendSessionStore
 
 __all__ = [
     "BackendCatalogService",
@@ -15,4 +16,5 @@ __all__ = [
     "BackendExperimentJobService",
     "BackendReferenceImageService",
     "BackendSessionAssetService",
+    "BackendSessionStore",
 ]

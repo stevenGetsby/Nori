@@ -4,10 +4,11 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from nori.sessions import SessionEvent, SessionManager
+from nori.sessions import SessionEvent
 
 from ..contracts import ApiError, ExperimentJobCancelRequest
 from ..jobs import InProcessExperimentJobStore
+from .session_store import BackendSessionStore
 
 
 class BackendExperimentJobService:
@@ -17,10 +18,11 @@ class BackendExperimentJobService:
         self,
         *,
         job_store: InProcessExperimentJobStore,
-        session_manager: SessionManager,
+        session_store: BackendSessionStore,
     ) -> None:
         self.job_store = job_store
-        self.session_manager = session_manager
+        self.session_store = session_store
+        self.session_manager = session_store.session_manager
 
     def get_experiment_job(self, job_id: str) -> dict[str, Any]:
         job = self.job_store.get(job_id)
@@ -58,10 +60,10 @@ class BackendExperimentJobService:
             task_id = str(metadata.get("task_id") or "").strip()
             if not session_id or not task_id:
                 continue
-            session = self.session_manager.get_session(session_id)
+            session = self.session_store.get_session(session_id)
             if session is None:
                 continue
-            task = next((item for item in session.task_goals if item.task_id == task_id), None)
+            task = self.session_store.find_task(session, task_id)
             if task is None:
                 continue
             if task.status not in {"succeeded", "failed", "cancelled", "interrupted"}:
@@ -83,7 +85,7 @@ class BackendExperimentJobService:
                     )
                 )
             session.updated_at = utc_now_iso()
-            self.session_manager.save_session(session_id)
+            self.session_store.save_session(session_id)
 
     def sync_cancelled_experiment_job(self, job: dict[str, Any]) -> dict[str, Any]:
         metadata = job.get("metadata") if isinstance(job.get("metadata"), dict) else {}
@@ -91,10 +93,10 @@ class BackendExperimentJobService:
         task_id = str(metadata.get("task_id") or "").strip()
         if not session_id or not task_id:
             return {}
-        session = self.session_manager.get_session(session_id)
+        session = self.session_store.get_session(session_id)
         if session is None:
             return {"session_id": session_id, "task_id": task_id, "task_found": False}
-        task = next((item for item in session.task_goals if item.task_id == task_id), None)
+        task = self.session_store.find_task(session, task_id)
         if task is None:
             return {"session_id": session_id, "task_id": task_id, "task_found": False}
 
@@ -130,7 +132,7 @@ class BackendExperimentJobService:
                 )
             )
         session.updated_at = utc_now_iso()
-        self.session_manager.save_session(session_id)
+        self.session_store.save_session(session_id)
         return {
             "session_id": session_id,
             "task_id": task_id,

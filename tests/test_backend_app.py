@@ -256,12 +256,16 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert isinstance(backend.experiment_job_service, services.BackendExperimentJobService)
     assert isinstance(backend.reference_image_service, services.BackendReferenceImageService)
     assert isinstance(backend.session_asset_service, services.BackendSessionAssetService)
+    assert isinstance(backend.session_store, services.BackendSessionStore)
     assert backend.content_production_console.project_root == tmp_path
+    assert backend.session_store.session_manager is backend.session_manager
     assert backend.content_production_run_service.experiment_runner is backend.experiment_runner
     assert backend.content_production_run_service.job_store is backend.job_store
     assert backend.content_production_run_service.session_manager is backend.session_manager
     assert backend.experiment_job_service.job_store is backend.job_store
+    assert backend.experiment_job_service.session_store is backend.session_store
     assert backend.experiment_job_service.session_manager is backend.session_manager
+    assert backend.reference_image_service.session_store is backend.session_store
     assert backend.reference_image_service.session_manager is backend.session_manager
     assert backend.reference_image_service.reference_publisher is backend.reference_publisher
     assert isinstance(
@@ -278,6 +282,7 @@ def test_backend_facade_composes_domain_services(tmp_path):
     )
     assert backend.reference_image_service.publish_diagnostic.reference_publisher is backend.reference_publisher
     assert backend.reference_image_service.asset_publisher.reference_publisher is backend.reference_publisher
+    assert backend.session_asset_service.session_store is backend.session_store
     assert backend.session_asset_service.session_manager is backend.session_manager
     assert backend.session_asset_service.upload_root == tmp_path / "data" / "backend" / "uploads"
 

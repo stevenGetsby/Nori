@@ -49,6 +49,7 @@ from .services import (
     BackendExperimentJobService,
     BackendReferenceImageService,
     BackendSessionAssetService,
+    BackendSessionStore,
 )
 from .workflows import WorkflowCatalog
 
@@ -81,13 +82,14 @@ class NoriBackend:
         project_root = _experiment_project_root(self.experiment_runner)
         self.content_production_console = BackendContentProductionConsoleService(project_root=project_root)
         self.session_manager = session_manager or SessionManager(storage_root=project_root / "data" / "backend" / "sessions")
+        self.session_store = BackendSessionStore(self.session_manager)
         self.upload_root = Path(upload_root or project_root / "data" / "backend" / "uploads")
         self.session_asset_service = BackendSessionAssetService(
-            session_manager=self.session_manager,
+            session_store=self.session_store,
             upload_root=self.upload_root,
         )
         self.reference_image_service = BackendReferenceImageService(
-            session_manager=self.session_manager,
+            session_store=self.session_store,
             reference_publisher=reference_publisher,
         )
         self.reference_publisher = self.reference_image_service.reference_publisher
@@ -96,7 +98,7 @@ class NoriBackend:
         )
         self.experiment_job_service = BackendExperimentJobService(
             job_store=self.job_store,
-            session_manager=self.session_manager,
+            session_store=self.session_store,
         )
         self.content_production_run_service = BackendContentProductionRunService(
             experiment_runner=self.experiment_runner,

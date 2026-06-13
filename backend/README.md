@@ -81,6 +81,10 @@ rerun with the current tunnel URL.
 - `services/content_production_runs.py` owns content-production template, preflight, run, and replay orchestration.
 - `services/content_production_preflight.py` owns content-production readiness gates, preflight summaries, and repair actions.
 - `services/experiment_jobs.py` owns experiment job lookup/cancellation and session task status synchronization.
+- `services/session_store.py` is the backend session persistence port around
+  `nori.sessions.SessionManager`; backend services use it for session lookup,
+  save, task lookup, and 404 normalization instead of reaching into manager
+  internals.
 - `services/session_assets.py` owns backend sessions, uploaded assets, and asset file access.
 - `services/reference_images.py` owns reference publishing, provider-fetchable reference URLs, and image-provider reference checks.
   Internally it composes focused strategy classes for publish diagnostics,
