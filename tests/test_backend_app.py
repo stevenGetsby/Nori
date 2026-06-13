@@ -13,6 +13,8 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
+from nori.sessions import SessionEvent
+
 from backend.experiments import ContentProductionExperimentRunner, ContentProductionRunFailed
 from backend.jobs import InProcessExperimentJobStore
 from backend import NoriBackend, create_app
@@ -21,6 +23,7 @@ from backend import NoriBackend, create_app
 ROOT = Path(__file__).resolve().parents[1]
 APP_MODULE = importlib.import_module("backend.app")
 SESSION_ASSET_MODULE = importlib.import_module("backend.services.session_assets")
+CONTENT_RUN_MODULE = importlib.import_module("backend.services.content_production_runs")
 
 
 def _file_sha256_for_test(path: Path) -> str:
@@ -248,9 +251,13 @@ def test_backend_facade_composes_domain_services(tmp_path):
 
     assert isinstance(backend.catalog_service, services.BackendCatalogService)
     assert isinstance(backend.content_production_console, services.BackendContentProductionConsoleService)
+    assert isinstance(backend.content_production_run_service, services.BackendContentProductionRunService)
     assert isinstance(backend.experiment_job_service, services.BackendExperimentJobService)
     assert isinstance(backend.session_asset_service, services.BackendSessionAssetService)
     assert backend.content_production_console.project_root == tmp_path
+    assert backend.content_production_run_service.experiment_runner is backend.experiment_runner
+    assert backend.content_production_run_service.job_store is backend.job_store
+    assert backend.content_production_run_service.session_manager is backend.session_manager
     assert backend.experiment_job_service.job_store is backend.job_store
     assert backend.experiment_job_service.session_manager is backend.session_manager
     assert backend.session_asset_service.session_manager is backend.session_manager
@@ -649,7 +656,7 @@ def test_fastapi_uploads_session_image_assets(tmp_path):
 
 
 def test_fastapi_content_production_run_template_builds_launch_request(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
 
@@ -753,7 +760,7 @@ def test_fastapi_content_production_run_template_builds_launch_request(monkeypat
 
 
 def test_fastapi_publishes_session_asset_references_and_preflight_reuses_public_url(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
 
     class FakeReferencePublisher:
         def __init__(self):
@@ -1244,7 +1251,7 @@ def test_fastapi_backend_restores_persisted_session_assets_after_restart(tmp_pat
 
 
 def test_fastapi_content_production_run_uses_uploaded_session_assets(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -1356,7 +1363,7 @@ def test_fastapi_backend_restores_completed_run_task_state_after_restart(tmp_pat
 
 
 def test_fastapi_content_production_preflight_reports_reference_not_ready_without_public_url(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1396,7 +1403,7 @@ def test_fastapi_content_production_preflight_reports_reference_not_ready_withou
 
 
 def test_fastapi_content_production_preflight_accepts_public_backend_asset_url(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1441,7 +1448,7 @@ def test_fastapi_content_production_preflight_accepts_public_backend_asset_url(m
 
 
 def test_fastapi_content_production_preflight_rejects_placeholder_backend_asset_url(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1478,7 +1485,7 @@ def test_fastapi_content_production_preflight_rejects_placeholder_backend_asset_
 
 
 def test_fastapi_content_production_preflight_can_verify_reference_url_reachability(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     probe_calls = []
 
     def fake_probe(url, *, timeout):
@@ -1531,7 +1538,7 @@ def test_fastapi_content_production_preflight_can_verify_reference_url_reachabil
 
 
 def test_fastapi_content_production_run_rejects_unreachable_reference_url_before_task(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     monkeypatch.setattr(
         SESSION_ASSET_MODULE,
         "probe_reference_url",
@@ -1588,7 +1595,7 @@ def test_fastapi_content_production_run_rejects_unreachable_reference_url_before
 
 
 def test_fastapi_content_production_preflight_reports_missing_market_evidence(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
     service = NoriBackend(experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1634,7 +1641,7 @@ def test_fastapi_content_production_run_rejects_strict_reference_mode_without_as
 
 
 def test_fastapi_content_production_run_rejects_strict_reference_transfer_before_task(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -1710,7 +1717,7 @@ def test_fastapi_content_production_run_rejects_missing_market_evidence_before_t
 
 
 def test_fastapi_content_production_run_rejects_unready_models_for_real_runner(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_unready_model_readiness())
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_unready_model_readiness())
     service = NoriBackend(experiment_runner=ContentProductionExperimentRunner(project_root=tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1733,7 +1740,7 @@ def test_fastapi_content_production_run_rejects_unready_models_for_real_runner(m
 
 
 def test_fastapi_fake_runner_can_skip_model_readiness_gate(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_unready_model_readiness())
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_unready_model_readiness())
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -1778,7 +1785,7 @@ def test_fastapi_fake_runner_can_skip_model_readiness_gate(monkeypatch, tmp_path
 
 
 def test_fastapi_content_production_run_receives_session_reference_check_evidence(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -1815,7 +1822,7 @@ def test_fastapi_content_production_run_receives_session_reference_check_evidenc
 
     stored_session = service.session_manager.get_session(session["session_id"])
     stored_session.events.append(
-        APP_MODULE.SessionEvent(
+        SessionEvent(
             event_type="reference_image_generation_checked",
             payload={
                 "ready": True,
@@ -1850,7 +1857,7 @@ def test_fastapi_content_production_run_receives_session_reference_check_evidenc
 
 
 def test_fastapi_content_production_run_can_require_reference_generation_check(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -2467,7 +2474,7 @@ def test_fastapi_replays_content_production_run_from_replay_request(tmp_path):
 
 
 def test_fastapi_replay_requires_current_session_reference_generation_check(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     run_dir = tmp_path / "cases" / "source_case" / "runs" / "source_run"
     run_dir.mkdir(parents=True)
     reference_url = "https://cdn.nori.ai/ref.png"
@@ -2517,7 +2524,7 @@ def test_fastapi_replay_requires_current_session_reference_generation_check(monk
 
 
 def test_fastapi_replay_can_reuse_explicit_session_reference_generation_check(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     run_dir = tmp_path / "cases" / "source_case" / "runs" / "source_run"
     run_dir.mkdir(parents=True)
     reference_url = "https://cdn.nori.ai/ref.png"
@@ -2571,7 +2578,7 @@ def test_fastapi_replay_can_reuse_explicit_session_reference_generation_check(mo
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
     stored_session = service.session_manager.get_session(session["session_id"])
     stored_session.events.append(
-        APP_MODULE.SessionEvent(
+        SessionEvent(
             event_type="reference_image_generation_checked",
             payload={
                 "ready": True,

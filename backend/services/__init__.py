@@ -3,12 +3,14 @@ from __future__ import annotations
 
 from .catalogs import BackendCatalogService
 from .content_production_console import BackendContentProductionConsoleService
+from .content_production_runs import BackendContentProductionRunService
 from .experiment_jobs import BackendExperimentJobService
 from .session_assets import BackendSessionAssetService
 
 __all__ = [
     "BackendCatalogService",
     "BackendContentProductionConsoleService",
+    "BackendContentProductionRunService",
     "BackendExperimentJobService",
     "BackendSessionAssetService",
 ]
