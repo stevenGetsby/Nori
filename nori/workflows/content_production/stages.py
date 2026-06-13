@@ -14,6 +14,7 @@ from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, Operatio
 from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
 from nori.context import ContextPackBuilder, ContextResolver
 from nori.core import AssetLibrary, AssetRecord, ClientBrief
+from nori.core.paths import infer_project_root_from_cases_path, repo_relative_path
 
 from .artifacts import with_artifact, write_json
 from .state import ContentProductionState
@@ -306,6 +307,11 @@ def _summary_markdown(
     llm_label: str,
     image_label: str,
 ) -> str:
+    root = infer_project_root_from_cases_path(run_dir)
+    display_run_dir = repo_relative_path(run_dir, root) if root is not None else str(run_dir)
+    display_cover_path = (
+        repo_relative_path(str(package.cover_path), root) if root is not None else str(package.cover_path)
+    )
     review_lines = []
     for review in reviews:
         data = review.to_dict()
@@ -327,7 +333,7 @@ def _summary_markdown(
         [
             "# Holly Live Case Summary",
             "",
-            f"- Run dir: `{run_dir}`",
+            f"- Run dir: `{display_run_dir}`",
             f"- LLM: `{llm_label}`",
             f"- Image: `{image_label}`",
             f"- XHS keywords: {', '.join(top_result.queries)}",
@@ -353,7 +359,7 @@ def _summary_markdown(
             "## Generated Note",
             f"- title: {package.title}",
             f"- tags: {' '.join(package.tags)}",
-            f"- cover: `{package.cover_path}`",
+            f"- cover: `{display_cover_path}`",
             "",
             package.body,
             "",

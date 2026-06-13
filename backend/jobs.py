@@ -10,6 +10,8 @@ from threading import RLock
 from typing import Any, Callable
 from uuid import uuid4
 
+from nori.core.paths import infer_project_root_from_backend_jobs_path, make_portable_paths
+
 
 def _now_iso() -> str:
     return datetime.now().isoformat(timespec="seconds")
@@ -86,6 +88,7 @@ class InProcessExperimentJobStore:
         self._futures: dict[str, Future] = {}
         self._lock = RLock()
         self.storage_root = Path(storage_root) if storage_root is not None else None
+        self.portable_root = _portable_root_for_storage(self.storage_root)
         self._load()
         self._executor = ThreadPoolExecutor(max_workers=max_workers, thread_name_prefix="nori-experiment")
 
@@ -114,7 +117,7 @@ class InProcessExperimentJobStore:
         with self._lock:
             self._jobs[job.job_id] = job
             self._persist_locked(job)
-        return job.to_dict()
+            return self._job_to_dict(job)
 
     def start(self, job_id: str, *, target: Callable[[], dict[str, Any]]) -> None:
         with self._lock:
@@ -129,7 +132,7 @@ class InProcessExperimentJobStore:
     def get(self, job_id: str) -> dict[str, Any] | None:
         with self._lock:
             job = self._jobs.get(job_id)
-            return job.to_dict() if job is not None else None
+            return self._job_to_dict(job) if job is not None else None
 
     def cancel(self, job_id: str, *, reason: str = "") -> dict[str, Any] | None:
         with self._lock:
@@ -160,7 +163,7 @@ class InProcessExperimentJobStore:
                     "error": reason or "cancellation requested; running in-process work may finish before it can stop",
                 }
             self._persist_locked(job)
-            return job.to_dict()
+            return self._job_to_dict(job)
 
     def list_jobs(
         self,
@@ -171,7 +174,7 @@ class InProcessExperimentJobStore:
         job_type: str = "",
     ) -> list[dict[str, Any]]:
         with self._lock:
-            jobs = [job.to_dict() for job in self._jobs.values()]
+            jobs = [self._job_to_dict(job) for job in self._jobs.values()]
         if status:
             jobs = [job for job in jobs if job.get("status") == status]
         if session_id:
@@ -243,7 +246,16 @@ class InProcessExperimentJobStore:
             return
         self.storage_root.mkdir(parents=True, exist_ok=True)
         path = self.storage_root / f"{job.job_id}.json"
-        path.write_text(json.dumps(job.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+        path.write_text(json.dumps(self._job_to_dict(job), ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def _job_to_dict(self, job: ExperimentJob) -> dict[str, Any]:
+        return make_portable_paths(job.to_dict(), self.portable_root)
+
+
+def _portable_root_for_storage(storage_root: Path | None) -> Path | None:
+    if storage_root is None:
+        return None
+    return infer_project_root_from_backend_jobs_path(storage_root) or storage_root.parent
 
 
 def enrich_content_run_result(

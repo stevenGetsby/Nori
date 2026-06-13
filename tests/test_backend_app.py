@@ -110,11 +110,14 @@ def test_backend_does_not_import_agent_implementation_modules():
     allowed_nori_import_roots = {
         "nori.core",
         "nori.core.llms",
+        "nori.core.paths",
         "nori.sessions",
         "nori.storage",
         "nori.workflows.content_production",
     }
-    for path in sorted((ROOT / "backend").glob("*.py")):
+    for path in sorted((ROOT / "backend").rglob("*.py")):
+        if "__pycache__" in path.parts:
+            continue
         tree = ast.parse(path.read_text())
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("nori."):
@@ -197,6 +200,18 @@ def test_fastapi_builtin_docs_and_openapi_are_served():
     assert "/workflows/content-production/runs/{case_id}/{run_id}/replay" in data["paths"]
     assert "/workflows/content-production/runs/{case_id}/{run_id}/export" in data["paths"]
     assert "/workflows/content-production/runs/{case_id}/{run_id}/artifacts/inspect" in data["paths"]
+
+
+def test_fastapi_routes_are_registered_from_routing_module():
+    routing = importlib.import_module("backend.routing")
+
+    assert callable(routing.register_routes)
+    client = TestClient(create_app())
+
+    paths = client.get("/openapi.json").json()["paths"]
+    assert "/health" in paths
+    assert "/sessions/{session_id}/assets" in paths
+    assert "/workflows/content-production/runs" in paths
 
 
 def test_fastapi_content_production_experiment_overview_route(tmp_path):

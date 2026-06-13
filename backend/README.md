@@ -73,6 +73,21 @@ tunnel services may rotate URLs or return non-JSON 5xx pages; the smoke script
 reports those responses with route, status, and body preview so the operator can
 rerun with the current tunnel URL.
 
+## Code Layout
+
+- `app.py` owns app creation, exception handling, and the `NoriBackend` service facade.
+- `routing.py` owns FastAPI route registration and keeps HTTP request/response wiring out of the service facade.
+- `contracts.py` owns API request models and shared response/error shapes.
+- `experiments/runner.py` owns content-production execution and run manifest writing.
+- `experiments/models.py` owns typed case/run identifiers used at storage boundaries.
+- `experiments/repositories.py` owns the current JSON/filesystem experiment repository boundary.
+- `experiments/diagnostics.py` owns model/reference readiness and diagnostic action planning.
+- `experiments/runs.py` owns run listing, run summaries, filters, and run comparisons.
+- `experiments/artifacts.py` owns artifact catalogs, artifact resolution, reference traces, and zip exports.
+- `experiments/cases.py` owns case selection, case reports, workbench state, delivery, comparison, and timelines.
+- `experiments/reviews.py` owns review gates, acceptance checks, evaluation drafts, and evaluation persistence.
+- `jobs.py` owns the current process-local background job store.
+
 ## Routes
 
 | Route | Role |

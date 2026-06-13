@@ -7,15 +7,19 @@ from typing import Any
 
 from .state import ContentProductionState
 from nori.agents.market_analysis.xhs_note_analyzer import skills_output
+from nori.core.paths import infer_project_root_from_cases_path, make_portable_paths, repo_relative_path
 
 
 def write_json(path: Path, data: Any) -> None:
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    root = infer_project_root_from_cases_path(path)
+    payload = make_portable_paths(data, root)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
 
 
 def with_artifact(state: ContentProductionState, stage_name: str, path: Path) -> ContentProductionState:
     refs = dict(state.get("_artifact_refs") or {})
-    refs[stage_name] = str(path)
+    root = infer_project_root_from_cases_path(path)
+    refs[stage_name] = repo_relative_path(path, root) if root is not None else str(path)
     return {**state, "_artifact_refs": refs}
 
 
