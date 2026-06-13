@@ -21,11 +21,11 @@ def build_sessions_router(service: Any) -> APIRouter:
 
     @router.get("/sessions/{session_id}/assets", summary="List uploaded assets for one session")
     def list_session_assets(session_id: str) -> dict[str, Any]:
-        return api_ok(service.list_session_assets(session_id))
+        return api_ok(service.session_asset_service.list_session_assets(session_id))
 
     @router.get("/sessions/{session_id}/assets/{asset_id}/file", summary="Download one uploaded session asset")
     def get_session_asset_file(session_id: str, asset_id: str) -> FileResponse:
-        path = service.get_session_asset_file(session_id, asset_id)
+        path = service.session_asset_service.get_session_asset_file(session_id, asset_id)
         return FileResponse(path, filename=path.name)
 
     @router.post("/sessions/{session_id}/assets", status_code=201, summary="Upload image assets for a session")
@@ -37,7 +37,7 @@ def build_sessions_router(service: Any) -> APIRouter:
         metadata_json: str = Form(""),
     ) -> dict[str, Any]:
         return api_ok(
-            service.upload_session_assets(
+            service.session_asset_service.upload_session_assets(
                 session_id,
                 files,
                 task_id=task_id,
@@ -51,7 +51,7 @@ def build_sessions_router(service: Any) -> APIRouter:
         summary="Publish session assets as model-fetchable references",
     )
     def publish_session_asset_references(session_id: str, request: AssetReferencePublishRequest) -> dict[str, Any]:
-        return api_ok(service.publish_session_asset_references(session_id, request))
+        return api_ok(service.reference_image_service.publish_session_asset_references(session_id, request))
 
     @router.post(
         "/sessions/{session_id}/assets/reference-image-generation-check",
@@ -61,26 +61,26 @@ def build_sessions_router(service: Any) -> APIRouter:
         session_id: str,
         request: SessionReferenceImageGenerationCheckRequest,
     ) -> dict[str, Any]:
-        return api_ok(service.check_session_reference_image_generation(session_id, request))
+        return api_ok(service.reference_image_service.check_session_reference_image_generation(session_id, request))
 
     @router.get("/sessions", summary="List in-process sessions")
     def list_sessions() -> dict[str, Any]:
-        return api_ok(service.list_sessions())
+        return api_ok(service.session_asset_service.list_sessions())
 
     @router.post("/sessions", status_code=201, summary="Create a session")
     def create_session(request: SessionCreateRequest) -> dict[str, Any]:
-        return api_ok(service.create_session(request))
+        return api_ok(service.session_asset_service.create_session(request))
 
     @router.get("/sessions/{session_id}", summary="Inspect one session")
     def get_session(session_id: str) -> dict[str, Any]:
-        return api_ok(service.get_session(session_id))
+        return api_ok(service.session_asset_service.get_session(session_id))
 
     @router.post("/sessions/{session_id}/turns", status_code=201, summary="Append a turn")
     def append_turn(session_id: str, request: TurnCreateRequest) -> dict[str, Any]:
-        return api_ok(service.append_turn(session_id, request))
+        return api_ok(service.session_asset_service.append_turn(session_id, request))
 
     @router.post("/sessions/{session_id}/tasks", status_code=201, summary="Start a task goal")
     def start_task(session_id: str, request: TaskCreateRequest) -> dict[str, Any]:
-        return api_ok(service.start_task(session_id, request))
+        return api_ok(service.session_asset_service.start_task(session_id, request))
 
     return router

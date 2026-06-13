@@ -19,28 +19,28 @@ def build_content_production_admin_router(service: Any) -> APIRouter:
 
     @router.get("/experiments/readiness", summary="Inspect backend experiment readiness")
     def get_experiment_readiness() -> dict[str, Any]:
-        return api_ok(service.experiment_readiness())
+        return api_ok(service.admin_service.experiment_readiness())
 
     @router.get(
         "/experiments/content-production/diagnostics",
         summary="Diagnose content-production backend experiment readiness",
     )
     def get_content_production_diagnostics() -> dict[str, Any]:
-        return api_ok(service.content_production_diagnostics())
+        return api_ok(service.admin_service.content_production_diagnostics())
 
     @router.post(
         "/experiments/content-production/reference-publish-check",
         summary="Verify reference-image publishing with a backend-owned test image",
     )
     def check_reference_publish(request: ReferencePublishCheckRequest) -> dict[str, Any]:
-        return api_ok(service.check_reference_publish(request))
+        return api_ok(service.reference_image_service.check_reference_publish(request))
 
     @router.post(
         "/experiments/content-production/reference-image-generation-check",
         summary="Verify reference-image generation with the active image model",
     )
     def check_reference_image_generation(request: ReferenceImageGenerationCheckRequest) -> dict[str, Any]:
-        return api_ok(service.check_reference_image_generation(request))
+        return api_ok(service.reference_image_service.check_reference_image_generation(request))
 
     @router.get("/experiments/content-production/run-template", summary="Build a content-production run request template")
     def get_content_production_run_template(
@@ -59,7 +59,7 @@ def build_content_production_admin_router(service: Any) -> APIRouter:
         reference_url_probe_timeout: float = 3.0,
     ) -> dict[str, Any]:
         return api_ok(
-            service.content_production_run_template(
+            service.run_service.content_production_run_template(
                 session_id=session_id,
                 task_id=task_id,
                 case_id=case_id,
@@ -83,7 +83,7 @@ def build_content_production_admin_router(service: Any) -> APIRouter:
     def post_content_production_run_template(request: ContentProductionRunTemplateRequest) -> dict[str, Any]:
         data = model_data(request)
         return api_ok(
-            service.content_production_run_template(
+            service.run_service.content_production_run_template(
                 session_id=str(data.get("session_id") or ""),
                 task_id=str(data.get("task_id") or ""),
                 case_id=str(data.get("case_id") or ""),
@@ -108,7 +108,7 @@ def build_content_production_admin_router(service: Any) -> APIRouter:
 
     @router.get("/experiments/content-production/overview", summary="Summarize content-production experiment health")
     def content_production_experiment_overview_route(case_id: str = "", limit: int = 20) -> dict[str, Any]:
-        return api_ok(service.content_production_experiment_overview(case_id=case_id, limit=limit))
+        return api_ok(service.console_service.experiment_overview(case_id=case_id, limit=limit))
 
     @router.get("/experiments/content-production/workbench", summary="Build a content-production experiment workbench snapshot")
     def content_production_experiment_workbench_route(
@@ -117,7 +117,7 @@ def build_content_production_admin_router(service: Any) -> APIRouter:
         include_diagnostics: bool = True,
     ) -> dict[str, Any]:
         return api_ok(
-            service.content_production_experiment_workbench(
+            service.admin_service.content_production_experiment_workbench(
                 case_id=case_id,
                 limit=limit,
                 include_diagnostics=include_diagnostics,
@@ -126,6 +126,6 @@ def build_content_production_admin_router(service: Any) -> APIRouter:
 
     @router.get("/experiments/content-production/report", summary="Build a content-production experiment report")
     def content_production_experiment_report_route(case_id: str = "", limit: int = 50) -> dict[str, Any]:
-        return api_ok(service.content_production_experiment_report(case_id=case_id, limit=limit))
+        return api_ok(service.console_service.experiment_report(case_id=case_id, limit=limit))
 
     return router

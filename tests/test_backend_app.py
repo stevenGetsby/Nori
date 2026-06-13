@@ -213,6 +213,16 @@ def test_fastapi_routes_are_registered_from_routing_module():
 
     assert callable(routing.register_routes)
     assert callable(route_package.register_route_modules)
+    assert [name for name, _builder in route_package.ROUTE_MODULES] == [
+        "system",
+        "workflows",
+        "content_production_admin",
+        "experiment_jobs",
+        "content_generation",
+        "sessions",
+        "content_production_runs",
+        "content_production_cases",
+    ]
     builder_modules = {builder.__module__ for builder in route_package.ROUTE_BUILDERS}
     assert {
         "backend.routes.system",
@@ -234,6 +244,9 @@ def test_fastapi_routes_are_registered_from_routing_module():
         and node.func.attr in {"delete", "get", "patch", "post", "put"}
     ]
     assert route_decorator_calls == []
+    routing_source = (ROOT / "backend" / "routes" / "__init__.py").read_text(encoding="utf-8")
+    assert 'getattr(service, "routes", service)' in routing_source
+    assert "ROUTE_MODULES" in routing_source
 
     client = TestClient(create_app())
 
@@ -251,6 +264,20 @@ def test_backend_facade_composes_domain_services(tmp_path):
     )
 
     assert isinstance(backend.service_bundle, services.BackendServiceBundle)
+    assert backend.routes.system.catalog_service is backend.catalog_service
+    assert backend.routes.workflows.catalog_service is backend.catalog_service
+    assert backend.routes.content_generation.catalog_service is backend.catalog_service
+    assert backend.routes.content_production_admin.admin_service is backend.content_production_admin
+    assert backend.routes.content_production_admin.console_service is backend.content_production_console
+    assert backend.routes.content_production_admin.reference_image_service is backend.reference_image_service
+    assert backend.routes.content_production_admin.run_service is backend.content_production_run_service
+    assert backend.routes.experiment_jobs.job_service is backend.experiment_job_service
+    assert backend.routes.sessions.session_asset_service is backend.session_asset_service
+    assert backend.routes.sessions.reference_image_service is backend.reference_image_service
+    assert backend.routes.content_production_runs.run_service is backend.content_production_run_service
+    assert backend.routes.content_production_runs.console_service is backend.content_production_console
+    assert backend.routes.content_production_cases.run_service is backend.content_production_run_service
+    assert backend.routes.content_production_cases.console_service is backend.content_production_console
     assert backend.service_bundle.project_root == tmp_path
     assert isinstance(backend.catalog_service, services.BackendCatalogService)
     assert isinstance(backend.content_production_admin, services.BackendContentProductionAdminService)
@@ -293,6 +320,7 @@ def test_backend_facade_composes_domain_services(tmp_path):
 
     app_source = (ROOT / "backend" / "app.py").read_text(encoding="utf-8")
     facade_source = (ROOT / "backend" / "facade.py").read_text(encoding="utf-8")
+    route_services_source = (ROOT / "backend" / "route_services.py").read_text(encoding="utf-8")
     app_tree = ast.parse(app_source)
     experiment_imports = [
         alias.name
@@ -303,6 +331,13 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert "class NoriBackend" not in app_source
     assert "class NoriBackend" in facade_source
     assert "BackendServiceBundle.create" in facade_source
+    assert "BackendRouteServices.from_bundle" in facade_source
+    assert "class ContentProductionRunRouteService" in route_services_source
+    assert "class SessionRouteService" in route_services_source
+    assert "def list_content_production_runs" not in facade_source
+    assert "def upload_session_assets" not in facade_source
+    assert "def list_content_production_runs" not in route_services_source
+    assert "def upload_session_assets" not in route_services_source
     assert "BackendCatalogService" not in app_source
     assert "BackendCatalogService" not in facade_source
     assert "content_production_diagnostics" not in experiment_imports

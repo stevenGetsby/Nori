@@ -17,6 +17,6 @@ def build_system_router(service: Any) -> APIRouter:
 
     @router.get("/capabilities", summary="List product capability groups")
     def list_capabilities() -> dict[str, Any]:
-        return api_ok(service.list_capabilities())
+        return api_ok(service.catalog_service.list_capabilities())
 
     return router

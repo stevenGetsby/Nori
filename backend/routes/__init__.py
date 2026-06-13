@@ -15,21 +15,26 @@ from .system import build_system_router
 from .workflows import build_workflows_router
 
 RouteBuilder = Callable[[Any], APIRouter]
+RouteModule = tuple[str, RouteBuilder]
 
-ROUTE_BUILDERS: tuple[RouteBuilder, ...] = (
-    build_system_router,
-    build_workflows_router,
-    build_content_production_admin_router,
-    build_experiment_jobs_router,
-    build_content_generation_router,
-    build_sessions_router,
-    build_content_production_runs_router,
-    build_content_production_cases_router,
+ROUTE_MODULES: tuple[RouteModule, ...] = (
+    ("system", build_system_router),
+    ("workflows", build_workflows_router),
+    ("content_production_admin", build_content_production_admin_router),
+    ("experiment_jobs", build_experiment_jobs_router),
+    ("content_generation", build_content_generation_router),
+    ("sessions", build_sessions_router),
+    ("content_production_runs", build_content_production_runs_router),
+    ("content_production_cases", build_content_production_cases_router),
 )
+
+ROUTE_BUILDERS: tuple[RouteBuilder, ...] = tuple(build_router for _name, build_router in ROUTE_MODULES)
 
 
 def register_route_modules(app: FastAPI, service: Any) -> None:
     """Attach all route modules to the FastAPI application."""
 
-    for build_router in ROUTE_BUILDERS:
-        app.include_router(build_router(service))
+    route_services = getattr(service, "routes", service)
+    for service_name, build_router in ROUTE_MODULES:
+        route_service = getattr(route_services, service_name, service)
+        app.include_router(build_router(route_service))
