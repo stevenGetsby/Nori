@@ -29,10 +29,6 @@ def cluster_hot_notes(
     llm_labels = label_notes(hot_notes)
     if not llm_labels:
         raise RuntimeError("LLM 标签结果为空，停止生成 skill")
-    missing_ids = [note.note_id for note in hot_notes if note.note_id not in llm_labels]
-    if missing_ids:
-        raise RuntimeError(f"LLM 标签缺失 {len(missing_ids)} 篇笔记，停止生成 skill: {missing_ids[:5]}")
-
     final_labels: dict[str, tuple[str, str]] = {}
     for note in hot_notes:
         info = llm_labels.get(note.note_id) or {}

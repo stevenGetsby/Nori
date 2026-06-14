@@ -132,7 +132,7 @@ api_config.yaml
 每轮 prompt：
 
 ```text
-Use the Nori Project Operator skill if available. In /Users/headmasterx/Documents/Nori, run one bounded Nori project iteration:
+Use the Nori Project Operator skill if available. In <NORI_REPO>, run one bounded Nori project iteration:
 1. Inspect current status and read the roadmap.
 2. Pick the smallest highest-impact unfinished task.
 3. Implement it with focused tests, avoiding live LLM/crawler/image calls unless explicitly required.
@@ -214,8 +214,8 @@ python -m pytest tests -q
 - 状态脚本现在可接收 repo 路径参数，并报告 `ops_models` / `ops_agents` 是否已落地。
 
 测试:
-- `python /Users/headmasterx/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/headmasterx/.codex/skills/nori-project-operator` 通过。
-- `python /Users/headmasterx/.codex/skills/nori-project-operator/scripts/nori_status.py /Users/headmasterx/Documents/Nori` 通过。
+- `python ~/.codex/skills/.system/skill-creator/scripts/quick_validate.py ~/.codex/skills/nori-project-operator` 通过。
+- `python ~/.codex/skills/nori-project-operator/scripts/nori_status.py <NORI_REPO>` 通过。
 - `python -m pytest tests -q` 通过，63 passed。
 
 风险/阻塞:
@@ -311,7 +311,7 @@ python -m pytest tests -q
 测试:
 - `python -m pytest tests/test_ops_models.py -q` 通过，4 passed。
 - `python -m pytest tests -q` 通过，77 passed。
-- `python /Users/headmasterx/.codex/skills/nori-project-operator/scripts/nori_status.py /Users/headmasterx/Documents/Nori` 通过，`ops_models=true`。
+- `python ~/.codex/skills/nori-project-operator/scripts/nori_status.py <NORI_REPO>` 通过，`ops_models=true`。
 
 风险/阻塞:
 - 本轮只定义模型合同，尚未创建 `nori/ops_agents`，也未接入真实 LLM 或内容生成链路。
@@ -360,7 +360,7 @@ python -m pytest tests -q
 测试:
 - `python -m pytest tests/test_llms_call_json.py tests/test_gen_agents_intaker.py tests/test_ana_agents_xhs_note_analyzer.py -q` 通过，29 passed。
 - `python -m pytest tests -q` 通过，77 passed。
-- `python /Users/headmasterx/.codex/skills/nori-project-operator/scripts/nori_status.py /Users/headmasterx/Documents/Nori` 通过，`ops_models=true`、`ops_agents=false`。
+- `python ~/.codex/skills/nori-project-operator/scripts/nori_status.py <NORI_REPO>` 通过，`ops_models=true`、`ops_agents=false`。
 
 风险/阻塞:
 - `llms.intent_extractor` / `llms.target_selector` 仍保留自己的容错 JSON 解析器；它们是独立工具函数，本轮未改。
@@ -383,7 +383,7 @@ python -m pytest tests -q
 测试:
 - `python -m pytest tests/test_llms_call_json.py tests/test_gen_agents_note_maker.py -q` 通过，18 passed。
 - `python -m pytest tests -q` 通过，77 passed。
-- `python /Users/headmasterx/.codex/skills/nori-project-operator/scripts/nori_status.py /Users/headmasterx/Documents/Nori` 通过，`ops_models=true`、`ops_agents=false`。
+- `python ~/.codex/skills/nori-project-operator/scripts/nori_status.py <NORI_REPO>` 通过，`ops_models=true`、`ops_agents=false`。
 
 风险/阻塞:
 - 主业务 JSON 调用已基本接入 `llms.chat_json`；`llms.intent_extractor` / `llms.target_selector` 仍保留独立容错解析器。
@@ -407,7 +407,7 @@ python -m pytest tests -q
 测试:
 - `python -m pytest tests/test_ops_models.py -q` 通过，4 passed。
 - `python -m pytest tests -q` 通过，77 passed。
-- `python /Users/headmasterx/Documents/Nori/文档/codex-skills/nori-project-operator/scripts/nori_status.py /Users/headmasterx/Documents/Nori` 通过，`ops_models=true`。
+- `python <NORI_REPO>/文档/codex-skills/nori-project-operator/scripts/nori_status.py <NORI_REPO>` 通过，`ops_models=true`。
 
 风险/阻塞:
 - `nori/ops_agents` 仍未创建，账号代运营链路还停留在数据合同层。
@@ -434,7 +434,7 @@ python -m pytest tests -q
 - `python -m pytest tests/test_ops_agents_operation_planner.py tests/test_ops_models.py -q` 通过，8 passed。
 - `python -m pytest tests -q` 通过，81 passed。
 - `python -m py_compile nori/ops_models/account_ops.py nori/ops_models/__init__.py nori/ops_agents/operation_planner.py tests/test_ops_models.py tests/test_ops_agents_operation_planner.py` 通过。
-- `python /Users/headmasterx/.codex/skills/nori-project-operator/scripts/nori_status.py /Users/headmasterx/Documents/Nori` 通过，`ops_models=true`、`ops_agents=true`。
+- `python ~/.codex/skills/nori-project-operator/scripts/nori_status.py <NORI_REPO>` 通过，`ops_models=true`、`ops_agents=true`。
 
 风险/阻塞:
 - `KPIPlan` 目前只是由 `OperationPlan` 派生，尚未有独立 KPIPlanner。
@@ -462,7 +462,7 @@ python -m pytest tests -q
 - `python -m py_compile nori/ops_agents/kpi_planner.py tests/test_ops_agents_kpi_planner.py nori/ops_models/account_ops.py nori/ops_models/__init__.py` 通过。
 - `python -m pytest tests/test_ops_agents_kpi_planner.py tests/test_ops_models.py -q` 通过，9 passed。
 - `python -m pytest tests -q` 通过，86 passed。
-- `python /Users/headmasterx/Documents/Nori/文档/codex-skills/nori-project-operator/scripts/nori_status.py` 通过，`ops_models=true`、`ops_agents=true`。
+- `python <NORI_REPO>/文档/codex-skills/nori-project-operator/scripts/nori_status.py` 通过，`ops_models=true`、`ops_agents=true`。
 
 风险/阻塞:
 - KPI 仍以人工核验和平台后台读取为默认假设，未接自动 metrics ingestion。

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from ..assets import select_assets
-from ..experiments import experiment_readiness
+from ..experiments import experiment_readiness as _experiment_readiness
 from .content_production_preflight_actions import _content_production_template_actions
 from .content_production_preflight_checks import _content_production_template_checks
 from .content_production_preflight_summaries import (
@@ -32,10 +32,14 @@ class ContentProductionRunTemplateBuilder:
         experiment_runner: Any,
         session_store: BackendSessionStore,
         enforce_model_readiness: bool,
+        readiness_provider: Any | None = None,
     ) -> None:
         self.experiment_runner = experiment_runner
         self.session_store = session_store
         self.enforce_model_readiness = bool(enforce_model_readiness)
+        self.readiness_provider = readiness_provider or (
+            lambda: _experiment_readiness(project_root=self.experiment_runner.project_root)
+        )
 
     def build(
         self,
@@ -141,7 +145,7 @@ class ContentProductionRunTemplateBuilder:
                 latest_reference_check,
                 selected_assets,
             )
-        readiness = experiment_readiness(project_root=self.experiment_runner.project_root)
+        readiness = self.readiness_provider()
         checks = _content_production_template_checks(
             request_payload,
             session_exists=session is not None,

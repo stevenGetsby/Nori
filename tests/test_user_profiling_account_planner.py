@@ -8,14 +8,14 @@ from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput,
 
 
 planner_module = importlib.import_module("nori.agents.user_profiling.account_planner.account_planner")
+HOLLY_FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures" / "holly_showcase"
 
 
 def _holly_input(enable_search=False):
-    holly_dir = Path("cases/Holly/showcase")
-    text = (holly_dir / "brief.md").read_text(encoding="utf-8")
+    text = (HOLLY_FIXTURE_DIR / "brief.md").read_text(encoding="utf-8")
     images = sorted(
         str(path)
-        for path in (holly_dir / "assets").iterdir()
+        for path in (HOLLY_FIXTURE_DIR / "assets").iterdir()
         if path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}
     )
     return AccountPlannerInput(text=text, images=images, platform="xhs", enable_search=enable_search)
@@ -80,11 +80,10 @@ def test_account_planner_no_llm_does_not_infer_holly_keywords():
 
 
 def test_account_planner_consumes_intaker_result_without_rule_inference():
-    holly_dir = Path("cases/Holly/showcase")
-    text = (holly_dir / "brief.md").read_text(encoding="utf-8")
+    text = (HOLLY_FIXTURE_DIR / "brief.md").read_text(encoding="utf-8")
     images = sorted(
         str(path)
-        for path in (holly_dir / "assets").iterdir()
+        for path in (HOLLY_FIXTURE_DIR / "assets").iterdir()
         if path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}
     )
     intaker_result = IntakeAgent(use_llm=False).run(UserInput(text=text, images=images))

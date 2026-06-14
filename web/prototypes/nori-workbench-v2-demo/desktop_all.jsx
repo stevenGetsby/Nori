@@ -226,7 +226,7 @@ const PlatformLogo = ({ kind, size = 20 }) => {
     return (
       <span style={{ ...base, background: '#111', padding: 0 }}>
         <img
-          src="/Users/holly/Downloads/vecteezy_tiktok-png-icon_16716450.png"
+          src="/static/vendor/douyin-icon.png"
           alt="Douyin"
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />

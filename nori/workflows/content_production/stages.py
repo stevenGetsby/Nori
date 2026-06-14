@@ -8,15 +8,19 @@ from nori.agents.content_generation import ArtifactGenerationAgent, ContentSpecA
 from nori.agents.learning_loop import ReviewGateAgent
 from nori.agents.market_analysis import XHSNoteAnalyzer
 from nori.agents.market_analysis.xhs_note_analyzer import skills_output
+from nori.agents.market_analysis.xhs_note_analyzer.visual_style import enrich_hot_note_visual_styles
 from nori.agents.planning import CalendarPlannerAgent, KPIPlannerAgent, OperationPlannerAgent
 from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
 from nori.context import ContextPackBuilder, ContextResolver
+from nori.core import IntentContract
 
 from .artifacts import with_artifact, write_json
 from .stage_support import (
     asset_library_from_user_assets,
     build_client_brief,
     build_market_report,
+    build_xhs_search_query_plan,
+    call_top_notes_collector,
     content_strategy,
     render_summary_markdown,
     select_task,
@@ -33,8 +37,40 @@ class ContentProductionStages:
     def __init__(self, config: Any) -> None:
         self.config = config
 
+    def intake(self, state: ContentProductionState) -> ContentProductionState:
+        intake = IntakeAgent(use_llm=True, use_vision=True, llm_factory=state["llm_factory"]).run(
+            UserInput(text=state["brief_text"], images=[str(path) for path in state["asset_paths"]])
+        )
+        path = state["run_dir"] / "intake_result.json"
+        write_json(path, intake.to_dict())
+        state = {**state, "intake": intake}
+        return with_artifact(state, "intake", path)
+
+    def search_query_plan(self, state: ContentProductionState) -> ContentProductionState:
+        plan = build_xhs_search_query_plan(
+            brief_text=state["brief_text"],
+            intake=state["intake"],
+            config=self.config,
+            llm_factory=state["llm_factory"],
+        )
+        path = state["run_dir"] / "search_query_plan.json"
+        write_json(path, plan)
+        state = {**state, "search_query_plan": plan}
+        return with_artifact(state, "search_query_plan", path)
+
     def xhs_top_notes(self, state: ContentProductionState) -> ContentProductionState:
-        top_result = state["top_notes_collector"](state["market_dir"])
+        top_result = call_top_notes_collector(
+            state["top_notes_collector"],
+            state["market_dir"],
+            search_context={
+                "query_plan": state["search_query_plan"],
+                "keywords": list(state["search_query_plan"].get("flattened_keywords") or []),
+                "top_k_per_keyword": int(state["search_query_plan"].get("top_k_per_keyword") or self.config.top_k_per_keyword),
+            },
+        )
+        llm_factory = state.get("llm_factory")
+        if self.config.download_media and top_result.hot_notes and llm_factory:
+            enrich_hot_note_visual_styles(top_result.hot_notes, llm_factory=llm_factory)
         path = state["run_dir"] / "xhs_top_notes_result.json"
         write_json(path, top_result.to_dict())
         state = {**state, "top_result": top_result}
@@ -54,15 +90,6 @@ class ContentProductionStages:
         write_json(guides_path, skills_output(market_report))
         state = {**state, "market_report": market_report}
         return with_artifact(state, "market_skill_report", report_path)
-
-    def intake(self, state: ContentProductionState) -> ContentProductionState:
-        intake = IntakeAgent(use_llm=True, use_vision=True, llm_factory=state["llm_factory"]).run(
-            UserInput(text=state["brief_text"], images=[str(path) for path in state["asset_paths"]])
-        )
-        path = state["run_dir"] / "intake_result.json"
-        write_json(path, intake.to_dict())
-        state = {**state, "intake": intake}
-        return with_artifact(state, "intake", path)
 
     def account_plan(self, state: ContentProductionState) -> ContentProductionState:
         account_plan = AccountPlannerAgent(use_llm=True, llm_factory=state["llm_factory"]).run(
@@ -132,6 +159,17 @@ class ContentProductionStages:
         state = {**state, "task": task}
         return with_artifact(state, "selected_task", path)
 
+    def intent_contract(self, state: ContentProductionState) -> ContentProductionState:
+        contract = IntentContract.from_brief_and_task(
+            state["client_brief"],
+            state["task"],
+            contract_id=f"intent_{state['run_dir'].name}_{state['task'].task_id or 'task'}",
+        )
+        path = state["run_dir"] / "intent_contract.json"
+        write_json(path, contract.to_dict())
+        state = {**state, "intent_contract": contract}
+        return with_artifact(state, "intent_contract", path)
+
     def content_context(self, state: ContentProductionState) -> ContentProductionState:
         context_pack = ContextPackBuilder().build_from_project(
             state["project"],
@@ -150,6 +188,7 @@ class ContentProductionStages:
     def content_design_spec(self, state: ContentProductionState) -> ContentProductionState:
         content_spec = ContentSpecAgent(llm_factory=state["llm_factory"]).run(
             context_view=state["content_context_view"],
+            intent_contract=state["intent_contract"],
         )
         path = state["run_dir"] / "content_design_spec.json"
         write_json(path, content_spec.to_dict())
@@ -170,6 +209,7 @@ class ContentProductionStages:
                 "run_id": state["run_dir"].name,
                 "reference_public_urls_by_path": dict(state.get("reference_public_urls_by_path") or {}),
             },
+            intent_contract=state["intent_contract"],
             use_cover=True,
         )
         path = state["run_dir"] / "content_package.json"
@@ -182,6 +222,7 @@ class ContentProductionStages:
             state["package"],
             task=state["task"],
             client_brief=state["client_brief"],
+            intent_contract=state["intent_contract"],
             project=state["project"],
         )
         path = state["run_dir"] / "reviews.json"

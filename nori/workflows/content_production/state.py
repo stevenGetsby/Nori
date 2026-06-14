@@ -9,7 +9,7 @@ from data_collect.adapter import TopNotesResult
 from nori.core import LLMFactory
 
 
-TopNotesCollector = Callable[[Path], TopNotesResult]
+TopNotesCollector = Callable[..., TopNotesResult]
 
 
 class ContentProductionState(TypedDict, total=False):
@@ -25,6 +25,7 @@ class ContentProductionState(TypedDict, total=False):
     top_notes_collector: TopNotesCollector
     _artifact_refs: dict[str, str]
 
+    search_query_plan: dict[str, Any]
     top_result: TopNotesResult
     market_report: Any
     intake: Any
@@ -34,6 +35,7 @@ class ContentProductionState(TypedDict, total=False):
     kpi_plan: Any
     calendar: Any
     task: Any
+    intent_contract: Any
     content_context_pack: Any
     content_context_view: Any
     content_spec: Any

@@ -146,6 +146,8 @@ class XHSPlatformAdapter:
                     ))
                 except Exception:
                     paths = []
+                if not paths:
+                    paths = _download_search_row_media(row, poster_dir, rule)
                 _organize_poster_assets(note, poster_dir, paths)
             _write_note_json(poster_dir / "note.json", note)
 
@@ -198,6 +200,69 @@ def _save_assets(detail: dict, save_dir: Path, rule: DownloadRule) -> List[str]:
             except Exception:
                 continue
     return saved
+
+
+def _download_search_row_media(row: dict, save_dir: Path, rule: DownloadRule) -> List[str]:
+    """Fallback media download from search result CDN URLs.
+
+    The XHS detail downloader can fail when the detail API asks for a fresh
+    login challenge. Search rows still carry CDN image URLs; those are enough
+    for market visual-style learning and avoid blocking the whole workflow.
+    """
+    urls: list[tuple[str, str]] = []
+    if rule.include_cover:
+        cover_url = str(row.get("cover_url") or row.get("cover") or "").strip()
+        if cover_url:
+            urls.append((cover_url, "cover"))
+    if rule.include_images:
+        for index, url in enumerate(_row_image_urls(row)):
+            urls.append((url, f"image_{index}"))
+    if not urls:
+        return []
+
+    save_dir.mkdir(parents=True, exist_ok=True)
+    content_id = str(row.get("note_id") or row.get("id") or "asset")
+    saved: List[str] = []
+    with httpx.Client(timeout=120, follow_redirects=True) as client:
+        for url, label in urls:
+            try:
+                with client.stream("GET", url) as resp:
+                    resp.raise_for_status()
+                    ext = Path(url.split("?", 1)[0]).suffix or _extension_for_content_type(resp.headers.get("content-type", ""))
+                    if ext == ".bin" and "webp" in url:
+                        ext = ".webp"
+                    file_path = save_dir / f"{rule.platform}_{content_id}_{label}{ext}"
+                    with open(file_path, "wb") as file:
+                        for chunk in resp.iter_bytes():
+                            file.write(chunk)
+                saved.append(str(file_path))
+            except Exception:
+                continue
+    return saved
+
+
+def _row_image_urls(row: dict) -> list[str]:
+    value = row.get("image_list") or row.get("image_urls") or ""
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    text = str(value or "").strip()
+    if not text:
+        return []
+    try:
+        parsed = json.loads(text)
+    except Exception:
+        parsed = None
+    if isinstance(parsed, list):
+        urls: list[str] = []
+        for item in parsed:
+            if isinstance(item, str):
+                urls.append(item.strip())
+            elif isinstance(item, dict):
+                url = str(item.get("url") or item.get("trace_id") or "").strip()
+                if url.startswith(("http://", "https://")):
+                    urls.append(url)
+        return [url for url in urls if url]
+    return [item.strip() for item in text.split(",") if item.strip().startswith(("http://", "https://"))]
 
 
 def _organize_poster_assets(note: HotNote, poster_dir: Path, paths: list[str]) -> None:

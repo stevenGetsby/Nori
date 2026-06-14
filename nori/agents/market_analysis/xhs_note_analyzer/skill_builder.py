@@ -39,7 +39,7 @@ def build_note_skill(cluster: dict[str, Any], context: dict[str, Any] | None = N
     opening_rule_rows = merge_rules([xhs_note_rules.opening_rules(xhs_note_rules.content_lines(note.desc)) for note in notes], limit=5)
     body_rule_rows = merge_rules([body_steps_hot(note) for note in notes], limit=6)
     interaction_rule_rows = merge_rules([interaction_rules_hot(note) for note in notes], limit=4)
-    visual_rule_rows = merge_rules([visual_rules_hot(note) for note in notes], limit=4)
+    visual_rule_rows = merge_rules([visual_rules_hot(note) for note in notes], limit=6)
     cover_rule_rows = cover_rules_for_cluster(notes, goal, tone)
     avoid_rule_rows = dedupe([rule for note in notes for rule in avoid_rules_hot(note)])[:6]
 
@@ -152,6 +152,34 @@ def visual_rules_hot(note: Any) -> list[dict[str, str]]:
     rules: list[dict[str, str]] = [
         {"name": "封面先承担点击", "rule": "封面必须先表达主题、情绪或问题，不只是放素材。", "evidence": cover_evidence}
     ]
+    visual_style = getattr(note, "visual_style", {}) if isinstance(getattr(note, "visual_style", {}), dict) else {}
+    if visual_style.get("status") == "ok":
+        style_evidence = "; ".join(
+            item
+            for item in [
+                str(visual_style.get("composition") or "").strip(),
+                str(visual_style.get("lighting") or "").strip(),
+                str(visual_style.get("palette") or "").strip(),
+            ]
+            if item
+        )
+        reusable = [str(item).strip() for item in (visual_style.get("reusable_rules") or []) if str(item).strip()]
+        if reusable:
+            rules.append(
+                {
+                    "name": "借鉴热帖视觉范式",
+                    "rule": "学习热帖的构图、光线、色彩和文字层级，但只迁移风格方法，不复制原图主体、logo、水印或具体作品。",
+                    "evidence": reusable[0],
+                }
+            )
+        if style_evidence:
+            rules.append(
+                {
+                    "name": "视觉风格证据",
+                    "rule": "封面 prompt 必须显式吸收热帖图片的视觉风格证据，再结合用户自己的产品参考图生成新画面。",
+                    "evidence": style_evidence[:160],
+                }
+            )
     if note.image_count >= 3:
         rules.append({"name": "多图递进", "rule": "图集应承担信息递进：封面吸引，后续图补充细节。", "evidence": f"image_count={note.image_count}"})
     elif note.image_count > 0:
@@ -194,12 +222,57 @@ def cover_rules_for_cluster(notes: list[Any], goal: str, tone: str) -> list[dict
             "evidence": title[:80] or cover_evidence,
         },
     ]
+    visual_rules = _cluster_visual_style_rules(notes)
+    if visual_rules:
+        rules.extend(visual_rules)
     if max_image_count >= 3:
         rules.append(
             {
                 "name": "多图封面分工",
                 "rule": "封面只负责点击和主题判断，后续图片再拆步骤、细节、清单或案例；不要把所有卖点塞进第一张。",
                 "evidence": f"image_count={max_image_count}",
+            }
+        )
+    return rules
+
+
+def _cluster_visual_style_rules(notes: list[Any]) -> list[dict[str, str]]:
+    styles = [
+        getattr(note, "visual_style", {})
+        for note in notes
+        if isinstance(getattr(note, "visual_style", {}), dict)
+        and getattr(note, "visual_style", {}).get("status") == "ok"
+    ]
+    if not styles:
+        return []
+
+    reusable = []
+    for style in styles:
+        reusable.extend(str(item).strip() for item in (style.get("reusable_rules") or []) if str(item).strip())
+    first_style = styles[0]
+    evidence = "; ".join(
+        item
+        for item in [
+            str(first_style.get("composition") or "").strip(),
+            str(first_style.get("lighting") or "").strip(),
+            str(first_style.get("palette") or "").strip(),
+        ]
+        if item
+    )
+    rules = [
+        {
+            "name": "热帖图片风格迁移",
+            "rule": "生成封面时学习热帖图片的构图、光线、材质、文字层级和信息密度；只迁移视觉方法，不复刻原热帖素材。",
+            "evidence": (reusable[0] if reusable else evidence)[:160],
+        }
+    ]
+    hook = str(first_style.get("hook_text_strategy") or "").strip()
+    if hook:
+        rules.append(
+            {
+                "name": "热帖封面钩子",
+                "rule": "封面文字按热帖的一句话点击逻辑压缩为 6-14 字，并与主体画面形成强关联。",
+                "evidence": hook[:160],
             }
         )
     return rules

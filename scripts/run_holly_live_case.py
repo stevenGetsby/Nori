@@ -33,7 +33,7 @@ MATERIAL_DIR = CASE.raw_assets_dir / "brand_materials"
 CRAWLER_PYTHON = ROOT / "data_collect" / "crawler" / ".venv" / "bin" / "python"
 
 KEYWORDS = ["怪趣文创", "反焦虑文创"]
-TOP_K_PER_KEYWORD = 1
+TOP_K_PER_KEYWORD = 3
 ASSET_NAMES = [
     "微信图片_20250617195920.jpg",
     "资源 49@2x.png",
@@ -197,10 +197,16 @@ def _selected_assets() -> list[Path]:
     return paths
 
 
-def _collect_xhs_notes(market_dir: Path) -> TopNotesResult:
+def _collect_xhs_notes(market_dir: Path, search_context: dict[str, Any] | None = None) -> TopNotesResult:
     if not CRAWLER_PYTHON.exists():
         raise FileNotFoundError(f"crawler python not found: {CRAWLER_PYTHON}")
     output_path = market_dir / "xhs_top_notes_result.json"
+    planned_keywords = [
+        str(item).strip()
+        for item in ((search_context or {}).get("keywords") or KEYWORDS)
+        if str(item).strip()
+    ]
+    planned_top_k = int((search_context or {}).get("top_k_per_keyword") or TOP_K_PER_KEYWORD)
     child_code = f"""
 import json
 from pathlib import Path
@@ -211,8 +217,8 @@ out = Path({str(market_dir)!r})
 dc = DataCollector(project_root=root, python_bin={str(CRAWLER_PYTHON)!r})
 rule = TopNotesRule(
     platform='xhs',
-    keywords={KEYWORDS!r},
-    top_k_per_keyword={TOP_K_PER_KEYWORD},
+    keywords={planned_keywords!r},
+    top_k_per_keyword={planned_top_k!r},
     download_media=False,
     data_dir=str(out),
 )

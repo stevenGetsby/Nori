@@ -62,6 +62,7 @@ class BackendContentProductionRunService:
             experiment_runner=experiment_runner,
             session_store=session_store,
             enforce_model_readiness=self.enforce_model_readiness,
+            readiness_provider=self.experiment_readiness,
         )
 
     def experiment_readiness(self) -> dict[str, Any]:

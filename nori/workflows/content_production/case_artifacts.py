@@ -7,7 +7,8 @@ from nori.core import CaseWorkspace
 
 
 CONTENT_PRODUCTION_ARTIFACTS = [
-    ("xhs_top_notes_result.json", "xhs_top_notes", "DataCollector", []),
+    ("search_query_plan.json", "search_query_plan", "ContentProductionWorkflow", ["original_brief", "intake_result"]),
+    ("xhs_top_notes_result.json", "xhs_top_notes", "DataCollector", ["search_query_plan"]),
     ("market_session_skill_report.json", "market_skill_report", "XHSNoteAnalyzer", ["xhs_top_notes"]),
     ("note_skill_guides.json", "note_skill_guides", "XHSNoteAnalyzer", ["market_skill_report"]),
     ("intake_result.json", "intake_result", "IntakeAgent", ["original_brief"]),
@@ -17,10 +18,11 @@ CONTENT_PRODUCTION_ARTIFACTS = [
     ("kpi_plan.json", "kpi_plan", "KPIPlannerAgent", ["operation_project"]),
     ("content_calendar.json", "content_calendar", "CalendarPlannerAgent", ["operation_project", "kpi_plan"]),
     ("selected_task.json", "selected_task", "ContentProductionWorkflow", ["content_calendar"]),
-    ("content_context_pack.json", "content_context_pack", "ContextPackBuilder", ["operation_project", "selected_task"]),
-    ("content_design_spec.json", "content_design_spec", "ContentSpecAgent", ["content_context_pack"]),
-    ("content_package.json", "content_package", "ArtifactGenerationAgent", ["content_design_spec"]),
-    ("reviews.json", "reviews", "ReviewGateAgent", ["content_package"]),
+    ("intent_contract.json", "intent_contract", "ContentProductionWorkflow", ["client_brief", "selected_task"]),
+    ("content_context_pack.json", "content_context_pack", "ContextPackBuilder", ["operation_project", "selected_task", "intent_contract"]),
+    ("content_design_spec.json", "content_design_spec", "ContentSpecAgent", ["content_context_pack", "intent_contract"]),
+    ("content_package.json", "content_package", "ArtifactGenerationAgent", ["content_design_spec", "intent_contract"]),
+    ("reviews.json", "reviews", "ReviewGateAgent", ["content_package", "intent_contract"]),
     ("summary.md", "summary", "ContentProductionWorkflow", ["reviews", "content_package"]),
     ("session.json", "session", "RuntimeRunRecorder", []),
     ("context_bundle.json", "context_bundle", "RuntimeRunRecorder", ["session"]),
