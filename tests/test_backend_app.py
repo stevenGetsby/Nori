@@ -468,6 +468,24 @@ def test_reference_acceptance_checks_are_split_from_acceptance_reports():
     assert "from .reference_acceptance import content_production_summary_reference_transfer" in presenters_source
 
 
+def test_auto_review_gate_is_split_from_evaluation_persistence():
+    reviews_source = (ROOT / "backend" / "experiments" / "reviews.py").read_text(encoding="utf-8")
+    auto_reviews_source = (ROOT / "backend" / "experiments" / "auto_reviews.py").read_text(encoding="utf-8")
+
+    assert "from .auto_reviews import auto_evaluation_draft" in reviews_source
+    assert "def _auto_evaluation_draft" not in reviews_source
+    assert "def _run_health_review" not in reviews_source
+    assert "def _evaluation_draft_from_reviews" not in reviews_source
+    assert "visual_reference_review_for_evaluation" not in reviews_source
+    assert "def auto_evaluation_draft" in auto_reviews_source
+    assert "def _run_health_review" in auto_reviews_source
+    assert "def _evaluation_draft_from_reviews" in auto_reviews_source
+    assert "visual_reference_review_for_evaluation" in auto_reviews_source
+    assert "def record_content_production_run_evaluation" in reviews_source
+    assert "def evaluation_summary" in reviews_source
+    assert "def _refresh_experiment_manifest_evaluations" in reviews_source
+
+
 def test_reference_image_service_is_split_by_strategy_and_result_payloads():
     service_source = (ROOT / "backend" / "services" / "reference_images.py").read_text(encoding="utf-8")
     publishers_source = (ROOT / "backend" / "services" / "reference_image_publishers.py").read_text(encoding="utf-8")
