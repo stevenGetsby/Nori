@@ -163,7 +163,9 @@ rerun with the current tunnel URL.
 - `experiments/action_builders.py` owns action payload/link builders for first
   runs, selections, promotions, reviews, repairs, and reruns.
 - `experiments/delivery.py` owns case-level delivery readiness, handoff payloads,
-  and review evidence for delivery/export bundles.
+  and gate composition.
+- `experiments/delivery_payloads.py` owns delivery handoff payload projection
+  and review-evidence projection reused by delivery/export bundles.
 - `experiments/timelines.py` owns read-only case timeline assembly for runs,
   evaluations, and selections.
 - `experiments/visual_reviews.py` owns visual-reference review panels and their

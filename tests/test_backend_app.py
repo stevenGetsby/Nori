@@ -493,6 +493,25 @@ def test_experiment_artifact_exports_are_split_from_artifact_catalogs():
     assert "def resolve_content_production_artifact_path" in artifacts_source
 
 
+def test_delivery_payloads_are_split_from_delivery_gate_and_exports():
+    delivery_source = (ROOT / "backend" / "experiments" / "delivery.py").read_text(encoding="utf-8")
+    payload_source = (ROOT / "backend" / "experiments" / "delivery_payloads.py").read_text(encoding="utf-8")
+    exports_source = (ROOT / "backend" / "experiments" / "artifact_exports.py").read_text(encoding="utf-8")
+
+    assert "def content_production_case_delivery" in delivery_source
+    assert "def _case_delivery_status" in delivery_source
+    assert "def case_delivery_payload" not in delivery_source
+    assert "def delivery_review_evidence" not in delivery_source
+    assert "def run_review_evidence" not in delivery_source
+    assert "from .delivery_payloads import case_delivery_payload" in delivery_source
+    assert "def case_delivery_payload" in payload_source
+    assert "def delivery_review_evidence" in payload_source
+    assert "def run_review_evidence" in payload_source
+    assert "from .delivery import _delivery_review_evidence" not in exports_source
+    assert "from .delivery import _run_review_evidence" not in exports_source
+    assert "from .delivery_payloads import delivery_review_evidence, run_review_evidence" in exports_source
+
+
 def test_image_reference_projections_are_split_from_artifact_catalogs():
     package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
     artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")

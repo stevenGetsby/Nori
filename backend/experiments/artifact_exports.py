@@ -17,6 +17,7 @@ from .common import (
     zipfile,
 )
 from .artifacts import _artifact_media_type, _run_export_url, inspect_content_production_run_artifacts
+from .delivery_payloads import delivery_review_evidence, run_review_evidence
 
 
 def build_content_production_run_export(
@@ -28,7 +29,6 @@ def build_content_production_run_export(
 ) -> dict[str, Any]:
     """Build a zip bundle for one recorded content-production run."""
 
-    from .delivery import _run_review_evidence
     from .runs import summarize_content_production_run
 
     run_dir = _content_run_dir(project_root=project_root, case_id=case_id, run_id=run_id)
@@ -38,7 +38,7 @@ def build_content_production_run_export(
         case_id=case_id,
         run_id=run_id,
     )
-    review_evidence = _run_review_evidence(summary=summary, inspection=artifact_inspection)
+    review_evidence = run_review_evidence(summary=summary, inspection=artifact_inspection)
     json_entries: dict[str, Any] = {
         "artifact_inspection.json": artifact_inspection,
         "review_evidence.json": review_evidence,
@@ -157,7 +157,7 @@ def build_content_production_case_delivery_export(
 ) -> dict[str, Any]:
     """Build a delivery bundle for the run selected by the case delivery gate."""
 
-    from .delivery import _delivery_review_evidence, content_production_case_delivery
+    from .delivery import content_production_case_delivery
     from .runs import summarize_content_production_run
 
     delivery = content_production_case_delivery(
@@ -176,7 +176,7 @@ def build_content_production_case_delivery_export(
     run_dir = _content_run_dir(project_root=project_root, case_id=normalized_case_id, run_id=run_id)
     summary = summarize_content_production_run(project_root=project_root, case_id=normalized_case_id, run_id=run_id)
     artifact_inspection = dict(delivery.get("artifact_inspection") or {})
-    review_evidence = _delivery_review_evidence(delivery=delivery, summary=summary)
+    review_evidence = delivery_review_evidence(delivery=delivery, summary=summary)
     json_entries: dict[str, Any] = {
         "delivery.json": delivery,
         "artifact_inspection.json": artifact_inspection,
