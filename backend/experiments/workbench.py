@@ -162,18 +162,9 @@ def _workbench_case(row: dict[str, Any], *, project_root: str | Path) -> dict[st
 
 
 def _empty_workbench_case(case_id: str) -> dict[str, Any]:
-    from .actions import _case_next_actions
+    from .action_builders import first_run_action
 
-    actions = _case_next_actions(
-        case_id=case_id,
-        status="needs_first_run",
-        selection={},
-        selected_missing=False,
-        selected_run={},
-        best_run={},
-        target_run={},
-        report={},
-    )
+    actions = [first_run_action(case_id=case_id)]
     return {
         "case_id": case_id,
         "run_count": 0,

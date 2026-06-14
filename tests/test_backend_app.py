@@ -456,6 +456,26 @@ def test_experiment_case_comparisons_are_split_from_case_reports():
     assert "from .comparisons import content_production_case_compare" in delivery_source
 
 
+def test_experiment_case_action_builders_are_split_from_action_orchestration():
+    actions_source = (ROOT / "backend" / "experiments" / "actions.py").read_text(encoding="utf-8")
+    builders_source = (ROOT / "backend" / "experiments" / "action_builders.py").read_text(encoding="utf-8")
+    workbench_source = (ROOT / "backend" / "experiments" / "workbench.py").read_text(encoding="utf-8")
+
+    assert "def content_production_case_next_actions" in actions_source
+    assert "def _case_next_action_status" in actions_source
+    assert "def _case_next_actions" in actions_source
+    assert "from .action_builders import" in actions_source
+    assert "def _reference_repair_payload" not in actions_source
+    assert "def rerun_action" not in actions_source
+    assert "def case_repair_actions" not in actions_source
+    assert "def first_run_action" in builders_source
+    assert "def case_review_actions" in builders_source
+    assert "def case_repair_actions" in builders_source
+    assert "def rerun_action" in builders_source
+    assert "from .action_builders import first_run_action" in workbench_source
+    assert "from .actions import _case_next_actions" not in workbench_source
+
+
 def test_experiment_artifact_exports_are_split_from_artifact_catalogs():
     package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
     artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")

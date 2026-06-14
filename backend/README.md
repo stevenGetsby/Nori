@@ -158,8 +158,10 @@ rerun with the current tunnel URL.
   combines diagnostics, overview, comparison, delivery, and active artifacts.
 - `experiments/selections.py` owns case selection state, selection history,
   and run promotion decisions.
-- `experiments/actions.py` owns case-level next-action planning, repair
-  actions, review actions, and rerun prompts.
+- `experiments/actions.py` owns case-level next-action orchestration and status
+  planning from report and selection state.
+- `experiments/action_builders.py` owns action payload/link builders for first
+  runs, selections, promotions, reviews, repairs, and reruns.
 - `experiments/delivery.py` owns case-level delivery readiness, handoff payloads,
   and review evidence for delivery/export bundles.
 - `experiments/timelines.py` owns read-only case timeline assembly for runs,
