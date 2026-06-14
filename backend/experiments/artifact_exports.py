@@ -95,10 +95,8 @@ def build_content_production_case_export(
 ) -> dict[str, Any]:
     """Build a zip bundle for one recorded content-production case."""
 
-    from .cases import (
-        content_production_experiment_report,
-        list_content_production_cases,
-    )
+    from .case_reports import content_production_experiment_report
+    from .cases import list_content_production_cases
     from .runs import list_content_production_runs
     from .selections import get_content_production_case_selection
 

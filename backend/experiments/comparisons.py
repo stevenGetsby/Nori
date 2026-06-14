@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from .common import Any, PROJECT_ROOT, Path, _content_case_dir_or_none, datetime
 from .actions import content_production_case_next_actions
-from .cases import content_production_experiment_report
+from .case_reports import content_production_experiment_report
 from .run_rows import content_production_comparison_run
 from .runs import (
     compare_content_production_runs,

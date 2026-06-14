@@ -148,8 +148,10 @@ rerun with the current tunnel URL.
   projections for run manifests and reports.
 - `experiments/run_rows.py` owns reusable run-row projections, candidate
   readiness, run counts, and structured diff helpers.
-- `experiments/cases.py` owns case overview, reports, selected-run resolution,
-  and case listing.
+- `experiments/case_reports.py` owns case-level experiment reports, best-run
+  selection, report summaries, and report recommendations.
+- `experiments/cases.py` owns case overview, selected-run resolution, and case
+  listing.
 - `experiments/comparisons.py` owns case-centered run comparison snapshots and
   comparison candidates for decision UIs.
 - `experiments/workbench.py` owns the product-console workbench snapshot that

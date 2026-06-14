@@ -72,9 +72,11 @@ def test_backend_experiments_is_split_into_capability_modules():
             "build_content_production_case_export",
             "build_content_production_case_delivery_export",
         ],
+        "case_reports": [
+            "content_production_experiment_report",
+        ],
         "cases": [
             "content_production_experiment_overview",
-            "content_production_experiment_report",
             "get_content_production_case_selected_run",
             "list_content_production_cases",
         ],

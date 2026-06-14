@@ -25,7 +25,7 @@ def get_content_production_case_selection(
     project_root: str | Path = PROJECT_ROOT,
     case_id: str,
 ) -> dict[str, Any]:
-    from .cases import content_production_experiment_report
+    from .case_reports import content_production_experiment_report
 
     repository = ContentProductionExperimentRepository(project_root)
     case_ref = ContentCaseRef(case_id=case_id)
@@ -41,7 +41,7 @@ def record_content_production_case_selection(
     case_id: str,
     selection: dict[str, Any],
 ) -> dict[str, Any]:
-    from .cases import content_production_experiment_report
+    from .case_reports import content_production_experiment_report
 
     repository = ContentProductionExperimentRepository(project_root)
     case_ref = ContentCaseRef(case_id=case_id)
@@ -88,7 +88,7 @@ def promote_content_production_case_run(
 ) -> dict[str, Any]:
     """Promote an accepted run into the current case decision."""
 
-    from .cases import content_production_experiment_report
+    from .case_reports import content_production_experiment_report
 
     normalized_case_id = str(case_id or "").strip()
     if not normalized_case_id:
