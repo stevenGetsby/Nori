@@ -1,0 +1,74 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "schema_version": 1,
+    "case_id": "Holly",
+    "run_id": "mock_run_needs_review",
+    "generated_at": "2026-06-13T22:18:00",
+    "status": "succeeded",
+    "workflow_name": "content_production",
+    "ready_for_review": false,
+    "proof": {
+      "status": "needs_review",
+      "ready_for_review": false,
+      "failed_checks": [],
+      "warning_checks": ["visual_reference_review"]
+    },
+    "acceptance": {
+      "status": "needs_review"
+    },
+    "evaluations": {
+      "summary": {
+        "count": 1,
+        "status": "pending",
+        "score": 82
+      }
+    },
+    "image_reference": {
+      "status": "sent",
+      "sent": true
+    },
+    "content_package": {
+      "available": true,
+      "artifact_name": "content_package.json",
+      "json_summary": {
+        "keys": ["cover", "posts", "revision_notes"],
+        "field_count": 3
+      }
+    },
+    "markdown": [
+      {
+        "available": true,
+        "artifact_name": "summary.md",
+        "text": "Mock run needs visual reference review before delivery."
+      }
+    ],
+    "covers": [
+      {
+        "available": true,
+        "artifact_name": "covers/cover_01.png",
+        "url": "/assets/onion-burst-real.png",
+        "preview": {
+          "kind": "image",
+          "available": true,
+          "url": "/assets/onion-burst-real.png"
+        }
+      }
+    ],
+    "artifact_counts": {
+      "total": 6,
+      "json": 3,
+      "markdown": 2,
+      "covers": 1
+    },
+    "missing_core_artifacts": ["visual_reference_review"],
+    "links": {
+      "run": "/workflows/content-production/runs/Holly/mock_run_needs_review",
+      "export": "/workflows/content-production/runs/Holly/mock_run_needs_review/export",
+      "replay": "/workflows/content-production/runs/Holly/mock_run_needs_review/replay",
+      "evaluations": "/workflows/content-production/runs/Holly/mock_run_needs_review/evaluations",
+      "evaluation_draft": "/workflows/content-production/runs/Holly/mock_run_needs_review/evaluations/draft"
+    }
+  }
+}

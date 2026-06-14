@@ -1,0 +1,106 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "source": "mock",
+    "schema_version": 1,
+    "scope": "all_cases",
+    "generated_at": "2026-06-13T23:46:00",
+    "ready": false,
+    "status": "needs_attention",
+    "diagnostics": {
+      "mode": "local-demo",
+      "status": "needs_configuration"
+    },
+    "overview": {
+      "active_account": "巷口暖胃小馆",
+      "run_count": 4,
+      "case_count": 2,
+      "summary": {
+        "ready_count": 2,
+        "blocked_count": 2
+      }
+    },
+    "context_layer": {
+      "context_pack_id": "ctx_holly_xhs_mock",
+      "status": "ready",
+      "active_case_id": "Holly",
+      "active_run_id": "mock_run_ready",
+      "summary": "Design Spec input ready",
+      "slices": [
+        {
+          "kind": "platform_strategy",
+          "title": "Platform strategy",
+          "summary": "XHS first-screen conclusion with evidence-backed copy and collection-oriented framing.",
+          "signal": "XHS"
+        },
+        {
+          "kind": "market_hotspots",
+          "title": "Market hotspots",
+          "summary": "第一次怎么点、社区饭店复吃、下班晚饭 are the current positioning hooks.",
+          "signal": "3 hooks"
+        },
+        {
+          "kind": "content_strategy",
+          "title": "Content strategy",
+          "summary": "Turn account memory into a reusable content promise before generation.",
+          "signal": "Spec first"
+        },
+        {
+          "kind": "asset_context",
+          "title": "Asset context",
+          "summary": "Uploaded references and market evidence must stay traceable through the run template.",
+          "signal": "refs gated"
+        }
+      ],
+      "source_refs": [
+        "content_context_pack.json",
+        "market/xhs_top_notes_result.json",
+        "run_template.content_design_spec"
+      ]
+    },
+    "cases": [
+      {
+        "case_id": "Holly",
+        "run_count": 3,
+        "latest_run_id": "mock_run_ready",
+        "action_status": "blocked",
+        "primary_action": {
+          "action_id": "fix_reference_transfer",
+          "label": "Fix references",
+          "severity": "blocking",
+          "message": "Selected uploads must be provider-fetchable before image generation.",
+          "href": "/experiments/content-production/cases/Holly/next-actions"
+        }
+      },
+      {
+        "case_id": "HollyBackendAPI",
+        "run_count": 1,
+        "latest_run_id": "mock_run_needs_review",
+        "action_status": "needs_review",
+        "primary_action": {
+          "action_id": "draft_evaluation",
+          "label": "Draft evaluation",
+          "severity": "review",
+          "message": "Generate a deterministic backend evaluation draft for the target run.",
+          "href": "/experiments/content-production/cases/HollyBackendAPI/evaluations/draft"
+        }
+      }
+    ],
+    "primary_actions": [
+      {
+        "case_id": "Holly",
+        "action_id": "fix_reference_transfer",
+        "label": "Fix references",
+        "severity": "blocking",
+        "message": "Selected uploads must be provider-fetchable before image generation.",
+        "href": "/experiments/content-production/cases/Holly/next-actions"
+      }
+    ],
+    "links": {
+      "backend_workbench": "/api/experiments/content-production/workbench",
+      "overview": "/api/experiments/content-production/overview",
+      "run_template": "/api/experiments/content-production/run-template"
+    }
+  }
+}

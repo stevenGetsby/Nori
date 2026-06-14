@@ -1,0 +1,20 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "capability_id": "content_generation",
+    "selected_action_id": "workflow.content_production",
+    "selected_route": "/workflows/content-production/runs",
+    "workflow_id": "content-production",
+    "requires_workflow_id": true,
+    "normalized_options": {
+      "platform": "xhs",
+      "artifact_type": "image_text_post",
+      "image_source": "uploaded_assets",
+      "cover_strategy": "auto",
+      "human_gate_mode": "skip",
+      "entry_mode": "workflow"
+    },
+    "rationale": "Use the workflow when the product needs end-to-end orchestration across market evidence, spec, package, review, and artifacts."
+  }
+}

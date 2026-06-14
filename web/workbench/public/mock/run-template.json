@@ -1,0 +1,86 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "schema_version": 1,
+    "ready_for_preflight": true,
+    "ready_for_run": true,
+    "missing_fields": [],
+    "checks": [
+      {
+        "name": "session",
+        "status": "passed",
+        "message": "Create a session before preflight."
+      },
+      {
+        "name": "market_evidence",
+        "status": "passed",
+        "message": "Attach platform evidence before preflight."
+      }
+    ],
+    "request": {
+      "session_id": "mock_session",
+      "case_id": "Holly",
+      "brief_text": "给巷口暖胃小馆生成一篇小红书图文：主题是第一次去怎么点，语气真实，封面要有明确结论，必须引用门店和菜品素材。",
+      "platform": "xhs",
+      "require_image_references": true,
+      "market_evidence": {
+        "platform": "xhs",
+        "queries": ["上海小饭店", "第一次怎么点"],
+        "hot_notes": []
+      }
+    },
+    "content_design_spec": {
+      "spec_id": "spec_holly_xhs_mock",
+      "task_id": "mock_task",
+      "platform": "xhs",
+      "artifact_type": "image_text_post",
+      "content_type": "image_text_post",
+      "goal": "让第一次到店的人能快速知道怎么点，并产生收藏意愿。",
+      "audience": ["附近上班族", "第一次来店用户"],
+      "creative_angle": "第一次到店点单避坑，用真实菜单和招牌菜建立收藏理由。",
+      "selected_skill_refs": [
+        {
+          "skill_id": "xhs_hotspot_image_post",
+          "label": "热点小红书图文生成"
+        }
+      ],
+      "structure": [
+        {
+          "slot": "cover",
+          "purpose": "首图给出明确点单结论"
+        },
+        {
+          "slot": "body",
+          "purpose": "三段式解释适合谁、怎么点、为什么值得收藏"
+        }
+      ],
+      "media_plan": {
+        "cover": {
+          "required": true,
+          "reference_policy": "uploaded_assets"
+        }
+      },
+      "constraints": ["必须使用真实门店/菜品素材", "不要虚构价格或排队信息"],
+      "acceptance_checks": ["封面必须有结论", "正文必须引用门店素材", "至少给出一个收藏理由"]
+    },
+    "actions": [
+      {
+        "action_id": "run_preflight",
+        "label": "Run preflight",
+        "method": "POST",
+        "href": "/workflows/content-production/runs/preflight"
+      },
+      {
+        "action_id": "run_experiment",
+        "label": "Run experiment",
+        "method": "POST",
+        "href": "/workflows/content-production/runs"
+      }
+    ],
+    "links": {
+      "preflight": "/workflows/content-production/runs/preflight",
+      "run": "/workflows/content-production/runs"
+    }
+  }
+}

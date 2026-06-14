@@ -1,0 +1,50 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "ready": false,
+    "checks": [
+      {
+        "name": "reference_transfer",
+        "status": "failed",
+        "message": "Selected reference assets need provider-fetchable public URLs."
+      },
+      {
+        "name": "market_evidence",
+        "status": "passed",
+        "message": "Market evidence is attached."
+      }
+    ],
+    "session": {
+      "session_id": "mock_session",
+      "task_id": "",
+      "will_create_task": true
+    },
+    "run_options": {
+      "case_id": "Holly",
+      "execution_mode": "sync",
+      "human_gate_mode": "skip",
+      "require_image_references": true
+    },
+    "actions": [
+      {
+        "action_id": "publish_reference_assets",
+        "label": "Publish references",
+        "severity": "blocking",
+        "method": "POST",
+        "href": "/sessions/mock_session/assets/publish-references"
+      },
+      {
+        "action_id": "set_backend_public_base_url",
+        "label": "Set backend public URL",
+        "severity": "blocking",
+        "method": "POST",
+        "href": "/experiments/content-production/run-template"
+      }
+    ],
+    "links": {
+      "run_template": "/experiments/content-production/run-template",
+      "run": "/workflows/content-production/runs"
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "schema_version": 1,
+    "case_id": "Holly",
+    "run_id": "mock_run_ready",
+    "generated_at": "2026-06-14T01:45:00",
+    "status": "succeeded",
+    "workflow_name": "content_production",
+    "ready_for_review": true,
+    "proof": {
+      "status": "ready",
+      "ready_for_review": true,
+      "failed_checks": [],
+      "warning_checks": []
+    },
+    "acceptance": {
+      "status": "accepted"
+    },
+    "evaluations": {
+      "summary": {
+        "count": 1,
+        "status": "passed",
+        "score": 95
+      }
+    },
+    "image_reference": {
+      "status": "sent",
+      "sent": true
+    },
+    "visual_reference_review": {
+      "status": "passed"
+    },
+    "content_package": {
+      "available": true,
+      "artifact_name": "content_package.json",
+      "json_summary": {
+        "keys": ["cover", "posts", "publish_checklist"],
+        "field_count": 3
+      }
+    },
+    "manifests": {
+      "input_manifest": {
+        "available": true,
+        "artifact_name": "input_manifest.json"
+      },
+      "experiment_manifest": {
+        "available": true,
+        "artifact_name": "experiment_manifest.json"
+      },
+      "replay_request": {
+        "available": true,
+        "artifact_name": "replay_request.json"
+      }
+    },
+    "markdown": [
+      {
+        "available": true,
+        "artifact_name": "summary.md",
+        "text": "Mock summary for the production workbench review package."
+      }
+    ],
+    "covers": [
+      {
+        "available": true,
+        "artifact_name": "covers/cover_01.png",
+        "url": "/assets/onion-burst-collage.png",
+        "preview": {
+          "kind": "image",
+          "available": true,
+          "url": "/assets/onion-burst-collage.png"
+        }
+      }
+    ],
+    "artifact_counts": {
+      "total": 5,
+      "json": 3,
+      "markdown": 1,
+      "covers": 1
+    },
+    "missing_core_artifacts": [],
+    "links": {
+      "run": "/workflows/content-production/runs/Holly/mock_run_ready",
+      "export": "/workflows/content-production/runs/Holly/mock_run_ready/export",
+      "replay": "/workflows/content-production/runs/Holly/mock_run_ready/replay",
+      "evaluations": "/workflows/content-production/runs/Holly/mock_run_ready/evaluations",
+      "evaluation_draft": "/workflows/content-production/runs/Holly/mock_run_ready/evaluations/draft"
+    }
+  }
+}

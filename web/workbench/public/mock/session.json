@@ -1,0 +1,11 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "session_id": "mock_session_holly",
+    "profile_id": "Holly",
+    "metadata": {
+      "source": "workbench"
+    }
+  }
+}
