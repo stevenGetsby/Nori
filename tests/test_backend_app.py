@@ -428,7 +428,7 @@ def test_image_reference_projections_are_split_from_artifact_catalogs():
     artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")
     reference_source = (ROOT / "backend" / "experiments" / "reference_images.py").read_text(encoding="utf-8")
     runs_source = (ROOT / "backend" / "experiments" / "runs.py").read_text(encoding="utf-8")
-    runner_source = (ROOT / "backend" / "experiments" / "runner.py").read_text(encoding="utf-8")
+    runner_manifest_source = (ROOT / "backend" / "experiments" / "runner_manifests.py").read_text(encoding="utf-8")
 
     assert "from .reference_images import image_reference_from_package, image_reference_summary" in package_source
     assert "def image_reference_summary" not in artifacts_source
@@ -441,7 +441,28 @@ def test_image_reference_projections_are_split_from_artifact_catalogs():
     assert "def _image_reference_trace_from_cover_result" in reference_source
     assert "def _enrich_image_reference_trace" in reference_source
     assert "from .reference_images import _enrich_image_reference_trace, image_reference_from_package" in runs_source
-    assert "from .reference_images import _enrich_image_reference_trace, image_reference_summary" in runner_source
+    assert "from .reference_images import _enrich_image_reference_trace, image_reference_summary" in runner_manifest_source
+
+
+def test_experiment_runner_delegates_manifest_builders():
+    runner_source = (ROOT / "backend" / "experiments" / "runner.py").read_text(encoding="utf-8")
+    manifest_source = (ROOT / "backend" / "experiments" / "runner_manifests.py").read_text(encoding="utf-8")
+
+    assert "from .runner_manifests import" in runner_source
+    assert "def _run_response" not in runner_source
+    assert "def _write_experiment_manifest" not in runner_source
+    assert "def _experiment_manifest" not in runner_source
+    assert "def _input_manifest" not in runner_source
+    assert "def _replay_request" not in runner_source
+    assert "def _manifest_asset" not in runner_source
+    assert "def _reference_public_urls_by_path" not in runner_source
+    assert "def _run_response" in manifest_source
+    assert "def _write_experiment_manifest" in manifest_source
+    assert "def _experiment_manifest" in manifest_source
+    assert "def _input_manifest" in manifest_source
+    assert "def _replay_request" in manifest_source
+    assert "def _manifest_asset" in manifest_source
+    assert "def _reference_public_urls_by_path" in manifest_source
 
 
 def test_reference_acceptance_checks_are_split_from_acceptance_reports():

@@ -127,7 +127,9 @@ rerun with the current tunnel URL.
 - `routes/content_production_cases.py` owns case selection, replay, evaluation, delivery, timeline, and export endpoints.
 - `routes/content_production_runs.py` owns run execution, preflight, listing, comparison, replay, evaluation, artifact, and export endpoints.
 - `contracts.py` owns API request models and shared response/error shapes.
-- `experiments/runner.py` owns content-production execution and run manifest writing.
+- `experiments/runner.py` owns content-production execution and workflow invocation.
+- `experiments/runner_manifests.py` owns runner input manifests, experiment
+  manifests, replay snapshots, and run-response projection.
 - `experiments/models.py` owns typed case/run identifiers used at storage boundaries.
 - `experiments/repositories.py` owns the current JSON/filesystem experiment repository boundary.
 - `experiments/diagnostics.py` owns model/reference readiness and diagnostic action planning.
