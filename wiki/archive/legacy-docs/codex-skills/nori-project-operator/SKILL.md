@@ -1,6 +1,6 @@
 ---
 name: nori-project-operator
-description: Operate the Nori codebase through bounded software-engineering iterations that move it from Xiaohongshu content generation toward an account-operations SOP workflow system. Use when Codex is asked to advance Nori, implement the next roadmap item, harden LLM/API calls, refine workflow modules, update the Nori automation plan, run Nori project maintenance, or continue recurring automation work for /Users/geminilight/projects/product/Nori.
+description: Operate the Nori codebase through bounded software-engineering iterations that move it from Xiaohongshu content generation toward an account-operations SOP workflow system. Use when Codex is asked to advance Nori, implement the next roadmap item, harden LLM/API calls, refine workflow modules, update the Nori automation plan, run Nori project maintenance, or continue recurring automation work for <NORI_REPO>.
 ---
 
 # Nori Project Operator
@@ -11,7 +11,7 @@ Run one small, verifiable Nori project iteration at a time. Favor backend contra
 
 ## Start Every Iteration
 
-1. Work from `/Users/geminilight/projects/product/Nori` unless the user names another checkout.
+1. Work from `<NORI_REPO>` unless the user names another checkout.
 2. Read these first:
    - `README.md`
    - `wiki/01-project-roadmap.md`
@@ -28,7 +28,7 @@ python 文档/codex-skills/nori-project-operator/scripts/nori_status.py
 If the installed skill copy has newer scripts, prefer:
 
 ```bash
-python ~/.codex/skills/nori-project-operator/scripts/nori_status.py /Users/geminilight/projects/product/Nori
+python ~/.codex/skills/nori-project-operator/scripts/nori_status.py <NORI_REPO>
 ```
 
 ## Select One Task

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import ast
 import json
 from dataclasses import replace
 from pathlib import Path
 
 from data_collect.adapter import TopNotesResult
 from nori.core import ClientBrief, ContentTask, LLMFactory
-from nori.workflows.content_production.artifacts import persist_final_state_artifacts
 from nori.workflows.content_production import ContentProductionConfig, ContentProductionWorkflow
+from nori.workflows.content_production.artifacts import persist_final_state_artifacts
 from nori.workflows.content_production.stages import ContentProductionStages
 
 
@@ -90,6 +91,45 @@ def test_content_production_workflow_initial_state_keeps_io_and_infra_injected(t
     assert state["llm_factory"] is factory
     assert state["top_notes_collector"] is collect
     assert state["_artifact_refs"] == {}
+
+
+def test_content_production_stage_support_owns_pure_builders():
+    root = Path(__file__).resolve().parents[1]
+    stages_path = root / "nori" / "workflows" / "content_production" / "stages.py"
+    support_path = root / "nori" / "workflows" / "content_production" / "stage_support.py"
+    stages_source = stages_path.read_text(encoding="utf-8")
+    support_source = support_path.read_text(encoding="utf-8")
+    stages_tree = ast.parse(stages_source)
+    support_tree = ast.parse(support_source)
+
+    support_functions = {
+        "build_market_report",
+        "build_client_brief",
+        "build_xhs_search_query_plan",
+        "call_top_notes_collector",
+        "select_task",
+        "content_strategy",
+        "asset_library_from_user_assets",
+        "render_summary_markdown",
+    }
+    assert support_path.is_file()
+    assert all(function_name in support_source for function_name in support_functions)
+    assert "build_xhs_search_query_plan(" in stages_source
+    assert "render_summary_markdown(" in stages_source
+    assert "build_market_report(" in stages_source
+
+    stage_function_names = {
+        node.name
+        for node in ast.walk(stages_tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    support_function_names = {
+        node.name
+        for node in ast.walk(support_tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    assert not support_functions & stage_function_names
+    assert support_functions <= support_function_names
 
 
 class _Dictable:

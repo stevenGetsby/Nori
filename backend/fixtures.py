@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from nori.core.paths import repo_relative_path
+
 from .experiments import PROJECT_ROOT
 
 
@@ -36,7 +38,7 @@ def holly_content_production_fixture(
     if missing_assets:
         raise FileNotFoundError(f"missing Holly fixture assets: {missing_assets}")
 
-    market_evidence = _latest_holly_market_evidence(case_dir)
+    market_evidence = _latest_holly_market_evidence(case_dir, root=root)
     return {
         "case_id": "Holly",
         "case_title": "Holly Shit开心拉屎",
@@ -79,14 +81,14 @@ def holly_content_production_fixture(
         },
         "metadata": {
             "source": "backend.fixture.holly_content_production",
-            "brief_path": str(brief_path),
+            "brief_path": repo_relative_path(brief_path, root),
             "asset_names": selected_names,
-            "market_evidence_source": str(market_evidence.get("_source_path") or ""),
+            "market_evidence_source": repo_relative_path(str(market_evidence.get("_source_path") or ""), root),
         },
     }
 
 
-def _latest_holly_market_evidence(case_dir: Path) -> dict[str, Any]:
+def _latest_holly_market_evidence(case_dir: Path, *, root: Path) -> dict[str, Any]:
     candidates = [
         *(case_dir / "runs").glob("*/market/xhs_top_notes_result.json"),
         *(case_dir / "runs").glob("*/xhs_top_notes_result.json"),
@@ -97,7 +99,7 @@ def _latest_holly_market_evidence(case_dir: Path) -> dict[str, Any]:
         except Exception:
             continue
         if isinstance(data, dict) and (data.get("hot_notes") or data.get("queries")):
-            return {**data, "_source_path": str(path)}
+            return {**data, "_source_path": repo_relative_path(path, root)}
     raise FileNotFoundError(f"no cached Holly market evidence found under {case_dir / 'runs'}")
 
 

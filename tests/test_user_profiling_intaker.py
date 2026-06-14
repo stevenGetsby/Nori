@@ -8,6 +8,7 @@ from nori.agents.user_profiling import IntakeAgent, UserInput
 
 
 intaker_module = importlib.import_module("nori.agents.user_profiling.intaker.intaker")
+HOLLY_FIXTURE_DIR = Path(__file__).resolve().parent / "fixtures" / "holly_showcase"
 
 
 def test_intaker_text_goal_format_and_tone():
@@ -38,11 +39,10 @@ def test_intaker_text_with_images_as_context():
 
 
 def test_intaker_holly_showcase_materials():
-    holly_dir = Path("cases/Holly/showcase")
-    text = (holly_dir / "brief.md").read_text(encoding="utf-8")
+    text = (HOLLY_FIXTURE_DIR / "brief.md").read_text(encoding="utf-8")
     images = sorted(
         str(path)
-        for path in (holly_dir / "assets").iterdir()
+        for path in (HOLLY_FIXTURE_DIR / "assets").iterdir()
         if path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}
     )
 

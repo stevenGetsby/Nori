@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import importlib
 import json
 import zipfile
 from pathlib import Path
@@ -36,6 +37,112 @@ from nori.core import LLMFactory
 from nori.workflows.schemas import WorkflowRun
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_backend_experiments_is_split_into_capability_modules():
+    experiments_package = importlib.import_module("backend.experiments")
+
+    assert hasattr(experiments_package, "__path__")
+    assert not (ROOT / "backend" / "experiments.py").exists()
+    expected_modules = {
+        "runner": ["ContentProductionExperimentRunner", "ContentProductionRunFailed"],
+        "diagnostics": ["experiment_readiness", "content_production_diagnostics"],
+        "runs": [
+            "list_content_production_runs",
+            "summarize_content_production_run",
+            "compare_content_production_runs",
+        ],
+        "run_rows": [
+            "content_production_comparison_run",
+            "content_production_count_by",
+            "content_production_count_values",
+        ],
+        "presenters": [
+            "content_production_report_run",
+            "content_production_report_run_score",
+        ],
+        "artifacts": [
+            "artifact_catalog_for_run",
+            "resolve_content_production_artifact_path",
+            "inspect_content_production_run_artifacts",
+        ],
+        "artifact_exports": [
+            "build_content_production_run_export",
+            "build_content_production_case_export",
+            "build_content_production_case_delivery_export",
+        ],
+        "case_reports": [
+            "content_production_experiment_report",
+        ],
+        "cases": [
+            "content_production_experiment_overview",
+            "get_content_production_case_selected_run",
+            "list_content_production_cases",
+        ],
+        "comparisons": [
+            "content_production_case_compare",
+        ],
+        "actions": [
+            "content_production_case_next_actions",
+        ],
+        "selections": [
+            "get_content_production_case_selection",
+            "promote_content_production_case_run",
+            "record_content_production_case_selection",
+        ],
+        "delivery": [
+            "content_production_case_delivery",
+        ],
+        "timelines": ["content_production_case_timeline"],
+        "reviews": [
+            "build_content_production_evaluation_draft",
+            "evaluation_summary",
+        ],
+        "acceptance": [
+            "content_production_run_acceptance_report",
+        ],
+        "proofs": [
+            "content_production_run_proof",
+        ],
+        "reference_acceptance": [
+            "content_production_summary_reference_transfer",
+        ],
+        "run_health": ["run_health_review"],
+        "visual_reviews": ["visual_reference_review"],
+        "models": ["ContentRunRef", "ContentCaseRef"],
+        "repositories": ["ContentProductionExperimentRepository"],
+    }
+    for module_name, public_names in expected_modules.items():
+        module = importlib.import_module(f"backend.experiments.{module_name}")
+        assert len(Path(module.__file__).read_text(encoding="utf-8").splitlines()) < 2000
+        for public_name in public_names:
+            assert getattr(experiments_package, public_name) is getattr(module, public_name)
+    for path in (ROOT / "backend" / "experiments").glob("*.py"):
+        text = path.read_text(encoding="utf-8")
+        assert "_wire_split_module_namespace" not in text
+        assert "import *" not in text
+
+
+def test_content_production_experiment_repository_owns_evaluations_and_selection_io(tmp_path):
+    from backend.experiments import ContentCaseRef, ContentProductionExperimentRepository, ContentRunRef
+
+    case_dir = tmp_path / "cases" / "case1"
+    run_dir = case_dir / "runs" / "run1"
+    run_dir.mkdir(parents=True)
+    repo = ContentProductionExperimentRepository(tmp_path)
+    run_ref = ContentRunRef(case_id="case1", run_id="run1")
+    case_ref = ContentCaseRef(case_id="case1")
+
+    repo.write_evaluations(run_ref, [{"evaluation_id": "eval_1", "status": "passed"}])
+    repo.write_case_selection(case_ref, {"schema_version": 1, "case_id": "case1", "current": {"run_id": "run1"}})
+
+    assert repo.run_dir(run_ref) == run_dir.resolve()
+    assert repo.case_dir(case_ref) == case_dir.resolve()
+    assert repo.read_evaluations(run_ref)[0]["evaluation_id"] == "eval_1"
+    assert repo.read_case_selection(case_ref)["current"]["run_id"] == "run1"
+
+
 def test_holly_content_production_fixture_builds_backend_request_from_case_files(tmp_path):
     case_dir = tmp_path / "cases" / "Holly"
     assets_dir = case_dir / "assets" / "raw" / "brand_materials"
@@ -62,6 +169,10 @@ def test_holly_content_production_fixture_builds_backend_request_from_case_files
     assert fixture["market_evidence"]["queries"] == ["怪趣文创"]
     assert fixture["config"]["brand_name"] == "Holly Shit开心拉屎"
     assert fixture["metadata"]["source"] == "backend.fixture.holly_content_production"
+    assert fixture["metadata"]["brief_path"] == "cases/Holly/brief/original.md"
+    assert fixture["metadata"]["market_evidence_source"] == (
+        "cases/Holly/runs/20260601_holly_live/market/xhs_top_notes_result.json"
+    )
 
 
 def test_content_production_experiment_runner_passes_assets_into_workflow_initial_state(tmp_path):
@@ -195,7 +306,7 @@ def test_content_production_experiment_runner_passes_assets_into_workflow_initia
     assert replay_request["session_id"] == "session_1"
     assert replay_request["task_id"] == "task_1"
     assert replay_request["brief_text"] == "参考图片做内容"
-    assert replay_request["asset_paths"] == [str(asset_path)]
+    assert replay_request["asset_paths"] == ["asset.png"]
     assert replay_request["asset_ids"] == ["asset_1"]
     assert replay_request["market_evidence"]["queries"] == ["怪趣文创"]
     assert replay_request["execution_mode"] == "background"
@@ -1764,7 +1875,9 @@ def test_record_content_production_run_evaluation_persists_and_updates_manifest(
     assert listed["evaluations"][0]["issues"][0]["code"] == "cover_reference"
     assert (run_dir / "experiment_evaluations.json").is_file()
     assert manifest["evaluations"]["summary"]["status"] == "needs_revision"
-    assert manifest["artifacts"]["paths"]["experiment_evaluations.json"] == str(run_dir / "experiment_evaluations.json")
+    assert manifest["artifacts"]["paths"]["experiment_evaluations.json"] == (
+        "cases/case1/runs/run1/experiment_evaluations.json"
+    )
     assert comparison["summary"]["evaluation_status_counts"] == {"needs_revision": 1, "passed": 1}
     assert comparison["summary"]["ready_run_ids"] == ["run2"]
     run1 = next(row for row in comparison["runs"] if row["run_id"] == "run1")

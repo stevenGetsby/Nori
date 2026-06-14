@@ -73,6 +73,132 @@ tunnel services may rotate URLs or return non-JSON 5xx pages; the smoke script
 reports those responses with route, status, and body preview so the operator can
 rerun with the current tunnel URL.
 
+## Code Layout
+
+- `app.py` owns FastAPI app creation, exception handling, and route registration.
+- `facade.py` owns the `NoriBackend` composition root and keeps direct access to
+  the constructed service graph for tests and compatibility.
+- `route_services.py` owns route-facing service facets grouped by product
+  surface, so route modules depend on focused objects instead of one large
+  backend facade.
+- `services/runtime.py` owns backend service composition and dependency wiring
+  through `BackendServiceBundle`; `facade.py` creates the route facets from that
+  bundle without constructing each domain service directly.
+- `services/content_production_admin.py` owns content-production readiness,
+  diagnostics, and workbench service methods used by admin routes.
+- `services/catalogs.py` owns workflow, content-generation, and capability catalogs used by the facade.
+- `services/content_production_console.py` is the route-compatible facade over
+  split case/run console services.
+- `services/content_production_console_cases.py` owns content-production case
+  reporting, selection, next-action, delivery, timeline, and case export
+  operations.
+- `services/content_production_console_runs.py` owns content-production run
+  listing, comparison, evaluation, artifact, and run export operations.
+- `services/service_errors.py` owns shared domain/storage exception to API
+  error mapping for route-facing backend services.
+- `services/content_production_runs.py` owns content-production preflight,
+  run, and replay orchestration.
+- `services/content_production_run_preparation.py` owns session/task
+  resolution, asset selection, reference-image check evidence, and run gate
+  enforcement.
+- `services/content_production_run_templates.py` owns UI-ready content-production
+  launch template construction from session/task/asset context.
+- `services/content_production_run_payloads.py` owns request/replay payload
+  normalization helpers shared by run and template services.
+- `services/content_production_preflight.py` is a compatibility export surface
+  for preflight helpers used by older imports.
+- `services/content_production_preflight_checks.py` owns content-production
+  readiness gates and deterministic run rejection.
+- `services/content_production_preflight_actions.py` owns repair/next-step
+  actions and preflight links returned to the UI.
+- `services/content_production_preflight_summaries.py` owns asset, market, and
+  reference-image preflight summaries.
+- `services/experiment_jobs.py` owns experiment job lookup/cancellation and session task status synchronization.
+- `services/session_store.py` is the backend session persistence port around
+  `nori.sessions.SessionManager`; backend services use it for session lookup,
+  save, task lookup, and 404 normalization instead of reaching into manager
+  internals. Session assets, reference-image checks, experiment job sync, and
+  content-production run orchestration all share this port.
+- `services/session_assets.py` owns backend sessions, uploaded assets, and asset file access.
+- `services/reference_images.py` coordinates session state for reference
+  publishing and image-provider reference checks.
+- `services/reference_image_publishers.py` owns publish diagnostics and
+  session-asset URL publishing strategies.
+- `services/reference_image_generation.py` owns live image-provider reference
+  checks.
+- `services/reference_image_results.py` owns reference-image result payloads,
+  event payloads, and next-action builders.
+- `routing.py` is the route composition root; it includes the focused routers in `routes/`.
+- `routes/service_contracts.py` owns structural protocols for the route-facing
+  service facets; route modules consume these contracts and do not import
+  concrete backend service implementations.
+- `routes/system.py` owns health and capability endpoints.
+- `routes/workflows.py` owns workflow catalog and workflow resolution endpoints.
+- `routes/content_generation.py` owns content-generation option/action planning endpoints.
+- `routes/sessions.py` owns session, task, upload, and reference-asset endpoints.
+- `routes/experiment_jobs.py` owns background experiment job endpoints.
+- `routes/content_production_admin.py` owns content-production readiness, diagnostics, run-template, overview, workbench, and report endpoints.
+- `routes/content_production_cases.py` owns case selection, replay, evaluation, delivery, timeline, and export endpoints.
+- `routes/content_production_runs.py` owns run execution, preflight, listing, comparison, replay, evaluation, artifact, and export endpoints.
+- `contracts.py` owns API request models and shared response/error shapes.
+- `experiments/runner.py` owns content-production execution and workflow invocation.
+- `experiments/runner_manifests.py` owns runner input manifests, experiment
+  manifests, replay snapshots, and run-response projection.
+- `experiments/models.py` owns typed case/run identifiers used at storage boundaries.
+- `experiments/repositories.py` owns the current JSON/filesystem experiment repository boundary.
+- `experiments/diagnostics.py` owns model/reference readiness and diagnostic action planning.
+- `experiments/runs.py` owns run listing, run summaries, filters, and run
+  comparison row projection plus shared count helpers for experiment summaries.
+- `experiments/presenters.py` owns shared product-facing report projections
+  such as run report rows and best-run scoring.
+- `experiments/artifacts.py` owns artifact catalogs, artifact inspection,
+  artifact URLs, and artifact resolution.
+- `experiments/artifact_exports.py` owns run, case, and delivery zip export
+  bundles.
+- `experiments/reference_images.py` owns image-reference summary and trace
+  projections for run manifests and reports.
+- `experiments/run_rows.py` owns reusable run-row projections, candidate
+  readiness, run counts, and structured diff helpers.
+- `experiments/case_reports.py` owns case-level experiment reports, best-run
+  selection, report summaries, and report recommendations.
+- `experiments/cases.py` owns case overview, selected-run resolution, and case
+  listing.
+- `experiments/comparisons.py` owns case-centered run comparison snapshots and
+  comparison candidates for decision UIs.
+- `experiments/workbench.py` owns the product-console workbench snapshot that
+  combines diagnostics, overview, comparison, delivery, and active artifacts.
+- `experiments/selections.py` owns case selection state, selection payload
+  projection, selection history, and run promotion decisions.
+- `experiments/actions.py` owns case-level next-action orchestration and status
+  planning from report and selection state.
+- `experiments/action_builders.py` owns action payload/link builders for first
+  runs, selections, promotions, reviews, repairs, and reruns.
+- `experiments/delivery.py` owns case-level delivery readiness, handoff payloads,
+  and gate composition.
+- `experiments/delivery_payloads.py` owns delivery handoff payload projection
+  and review-evidence projection reused by delivery/export bundles.
+- `experiments/timelines.py` owns read-only case timeline assembly for runs,
+  evaluations, and selections.
+- `experiments/visual_reviews.py` owns visual-reference review panels and their
+  rule-based evaluation-review adapter.
+- `experiments/proofs.py` owns run proof assembly, input fingerprint checks,
+  and local artifact hash verification.
+- `experiments/acceptance.py` owns operator acceptance report assembly from
+  proof, evaluation, artifact, and reference evidence.
+- `experiments/reference_acceptance.py` owns reference-transfer snapshots,
+  strict-reference proof checks, and provider reference-image acceptance checks.
+- `experiments/run_health.py` owns rule-based run-health review scoring,
+  severity mapping, evidence projection, and repair suggestions.
+- `experiments/auto_reviews.py` owns automatic review-gate assembly and
+  evaluation draft projection from content, run-health, and visual-review
+  signals.
+- `experiments/reviews.py` owns evaluation draft entrypoints, evaluation
+  summaries, persistence, and manifest refresh.
+- `jobs.py` owns the current process-local background job model, store,
+  execution state, and JSON persistence.
+- `job_presenters.py` owns background job/run links, actions, and
+  content-production run result enrichment returned to API clients.
+
 ## Routes
 
 | Route | Role |

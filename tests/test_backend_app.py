@@ -13,6 +13,8 @@ from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
+from nori.sessions import SessionEvent
+
 from backend.experiments import ContentProductionExperimentRunner, ContentProductionRunFailed
 from backend.jobs import InProcessExperimentJobStore
 from backend import NoriBackend, create_app
@@ -20,6 +22,9 @@ from backend import NoriBackend, create_app
 
 ROOT = Path(__file__).resolve().parents[1]
 APP_MODULE = importlib.import_module("backend.app")
+SESSION_ASSET_MODULE = importlib.import_module("backend.services.session_assets")
+REFERENCE_IMAGE_MODULE = importlib.import_module("backend.services.reference_images")
+CONTENT_RUN_MODULE = importlib.import_module("backend.services.content_production_runs")
 
 
 def _file_sha256_for_test(path: Path) -> str:
@@ -110,11 +115,14 @@ def test_backend_does_not_import_agent_implementation_modules():
     allowed_nori_import_roots = {
         "nori.core",
         "nori.core.llms",
+        "nori.core.paths",
         "nori.sessions",
         "nori.storage",
         "nori.workflows.content_production",
     }
-    for path in sorted((ROOT / "backend").glob("*.py")):
+    for path in sorted((ROOT / "backend").rglob("*.py")):
+        if "__pycache__" in path.parts:
+            continue
         tree = ast.parse(path.read_text())
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("nori."):
@@ -197,6 +205,540 @@ def test_fastapi_builtin_docs_and_openapi_are_served():
     assert "/workflows/content-production/runs/{case_id}/{run_id}/replay" in data["paths"]
     assert "/workflows/content-production/runs/{case_id}/{run_id}/export" in data["paths"]
     assert "/workflows/content-production/runs/{case_id}/{run_id}/artifacts/inspect" in data["paths"]
+
+
+def test_fastapi_routes_are_registered_from_routing_module():
+    routing = importlib.import_module("backend.routing")
+    route_package = importlib.import_module("backend.routes")
+
+    assert callable(routing.register_routes)
+    assert callable(route_package.register_route_modules)
+    assert [name for name, _builder in route_package.ROUTE_MODULES] == [
+        "system",
+        "workflows",
+        "content_production_admin",
+        "experiment_jobs",
+        "content_generation",
+        "sessions",
+        "content_production_runs",
+        "content_production_cases",
+    ]
+    builder_modules = {builder.__module__ for builder in route_package.ROUTE_BUILDERS}
+    assert {
+        "backend.routes.system",
+        "backend.routes.workflows",
+        "backend.routes.content_generation",
+        "backend.routes.sessions",
+        "backend.routes.experiment_jobs",
+        "backend.routes.content_production_admin",
+        "backend.routes.content_production_cases",
+        "backend.routes.content_production_runs",
+    } <= builder_modules
+
+    routing_tree = ast.parse((ROOT / "backend" / "routing.py").read_text())
+    route_decorator_calls = [
+        node
+        for node in ast.walk(routing_tree)
+        if isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr in {"delete", "get", "patch", "post", "put"}
+    ]
+    assert route_decorator_calls == []
+    routing_source = (ROOT / "backend" / "routes" / "__init__.py").read_text(encoding="utf-8")
+    contracts_source = (ROOT / "backend" / "routes" / "service_contracts.py").read_text(encoding="utf-8")
+    assert "RouteServiceRegistryProtocol" in routing_source
+    assert 'getattr(service, "routes", service)' not in routing_source
+    assert "Protocol" in contracts_source
+    assert "from ..services" not in contracts_source
+    assert "ROUTE_MODULES" in routing_source
+
+    client = TestClient(create_app())
+
+    paths = client.get("/openapi.json").json()["paths"]
+    assert "/health" in paths
+    assert "/sessions/{session_id}/assets" in paths
+    assert "/workflows/content-production/runs" in paths
+
+
+def test_fastapi_route_modules_depend_on_route_contracts_not_backend_services():
+    route_dir = ROOT / "backend" / "routes"
+    for route_path in route_dir.glob("*.py"):
+        if route_path.name in {"__init__.py", "service_contracts.py", "shared.py"}:
+            continue
+        source = route_path.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        assert "service: Any" not in source, route_path.name
+        assert "service_contracts" in source, route_path.name
+        forbidden_imports = [
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom)
+            and node.module
+            and (node.module.startswith("..services") or node.module.startswith("backend.services"))
+        ]
+        assert forbidden_imports == [], route_path.name
+
+
+def test_backend_facade_composes_domain_services(tmp_path):
+    services = importlib.import_module("backend.services")
+    backend = NoriBackend(
+        experiment_runner=_project_runner(tmp_path),
+        reference_publisher=SimpleNamespace(),
+    )
+
+    assert isinstance(backend.service_bundle, services.BackendServiceBundle)
+    assert backend.routes.system.catalog_service is backend.catalog_service
+    assert backend.routes.workflows.catalog_service is backend.catalog_service
+    assert backend.routes.content_generation.catalog_service is backend.catalog_service
+    assert backend.routes.content_production_admin.admin_service is backend.content_production_admin
+    assert backend.routes.content_production_admin.console_service is backend.content_production_console
+    assert backend.routes.content_production_admin.reference_image_service is backend.reference_image_service
+    assert backend.routes.content_production_admin.run_service is backend.content_production_run_service
+    assert backend.routes.experiment_jobs.job_service is backend.experiment_job_service
+    assert backend.routes.sessions.session_asset_service is backend.session_asset_service
+    assert backend.routes.sessions.reference_image_service is backend.reference_image_service
+    assert backend.routes.content_production_runs.run_service is backend.content_production_run_service
+    assert backend.routes.content_production_runs.console_service is backend.content_production_console
+    assert backend.routes.content_production_cases.run_service is backend.content_production_run_service
+    assert backend.routes.content_production_cases.console_service is backend.content_production_console
+    assert backend.service_bundle.project_root == tmp_path
+    assert isinstance(backend.catalog_service, services.BackendCatalogService)
+    assert isinstance(backend.content_production_admin, services.BackendContentProductionAdminService)
+    assert isinstance(backend.content_production_console, services.BackendContentProductionConsoleService)
+    assert isinstance(
+        backend.content_production_console.case_console,
+        services.BackendContentProductionCaseConsoleService,
+    )
+    assert isinstance(
+        backend.content_production_console.run_console,
+        services.BackendContentProductionRunConsoleService,
+    )
+    assert isinstance(backend.content_production_run_service, services.BackendContentProductionRunService)
+    assert isinstance(backend.experiment_job_service, services.BackendExperimentJobService)
+    assert isinstance(backend.reference_image_service, services.BackendReferenceImageService)
+    assert isinstance(backend.session_asset_service, services.BackendSessionAssetService)
+    assert isinstance(backend.session_store, services.BackendSessionStore)
+    assert backend.content_production_admin.project_root == tmp_path
+    assert backend.content_production_console.project_root == tmp_path
+    assert backend.content_production_console.case_console.project_root == tmp_path
+    assert backend.content_production_console.run_console.project_root == tmp_path
+    assert backend.session_store.session_manager is backend.session_manager
+    assert backend.content_production_run_service.experiment_runner is backend.experiment_runner
+    assert backend.content_production_run_service.job_store is backend.job_store
+    assert backend.content_production_run_service.session_store is backend.session_store
+    assert backend.content_production_run_service.session_manager is backend.session_manager
+    assert backend.experiment_job_service.job_store is backend.job_store
+    assert backend.experiment_job_service.session_store is backend.session_store
+    assert backend.experiment_job_service.session_manager is backend.session_manager
+    assert backend.reference_image_service.session_store is backend.session_store
+    assert backend.reference_image_service.session_manager is backend.session_manager
+    assert backend.reference_image_service.reference_publisher is backend.reference_publisher
+    assert isinstance(
+        backend.reference_image_service.publish_diagnostic,
+        REFERENCE_IMAGE_MODULE.ReferencePublishDiagnostic,
+    )
+    assert isinstance(
+        backend.reference_image_service.asset_publisher,
+        REFERENCE_IMAGE_MODULE.SessionReferenceAssetPublisher,
+    )
+    assert isinstance(
+        backend.reference_image_service.generation_checker,
+        REFERENCE_IMAGE_MODULE.ReferenceImageGenerationChecker,
+    )
+    assert backend.reference_image_service.publish_diagnostic.reference_publisher is backend.reference_publisher
+    assert backend.reference_image_service.asset_publisher.reference_publisher is backend.reference_publisher
+    assert backend.session_asset_service.session_store is backend.session_store
+    assert backend.session_asset_service.session_manager is backend.session_manager
+    assert backend.session_asset_service.upload_root == tmp_path / "data" / "backend" / "uploads"
+
+    app_source = (ROOT / "backend" / "app.py").read_text(encoding="utf-8")
+    facade_source = (ROOT / "backend" / "facade.py").read_text(encoding="utf-8")
+    route_services_source = (ROOT / "backend" / "route_services.py").read_text(encoding="utf-8")
+    app_tree = ast.parse(app_source)
+    experiment_imports = [
+        alias.name
+        for node in ast.walk(app_tree)
+        if isinstance(node, ast.ImportFrom) and node.module == "experiments"
+        for alias in node.names
+    ]
+    assert "class NoriBackend" not in app_source
+    assert "class NoriBackend" in facade_source
+    assert "BackendServiceBundle.create" in facade_source
+    assert "BackendRouteServices.from_bundle" in facade_source
+    assert "class ContentProductionRunRouteService" in route_services_source
+    assert "class SessionRouteService" in route_services_source
+    assert "def list_content_production_runs" not in facade_source
+    assert "def upload_session_assets" not in facade_source
+    assert "def list_content_production_runs" not in route_services_source
+    assert "def upload_session_assets" not in route_services_source
+    assert "BackendCatalogService" not in app_source
+    assert "BackendCatalogService" not in facade_source
+    assert "content_production_diagnostics" not in experiment_imports
+    assert "content_production_experiment_workbench" not in experiment_imports
+    assert "experiment_readiness" not in experiment_imports
+    assert "BackendContentProductionRunService" not in app_source
+    assert "BackendContentProductionRunService" not in facade_source
+    assert "BackendReferenceImageService" not in app_source
+    assert "BackendReferenceImageService" not in facade_source
+
+    capability_ids = {row["capability_id"] for row in backend.list_capabilities()["capabilities"]}
+    assert {"content_generation", "workflow_orchestration"} <= capability_ids
+
+
+def test_content_production_preflight_policy_is_split_by_responsibility():
+    run_source = (ROOT / "backend" / "services" / "content_production_runs.py").read_text(encoding="utf-8")
+    compat_source = (ROOT / "backend" / "services" / "content_production_preflight.py").read_text(encoding="utf-8")
+    checks_source = (ROOT / "backend" / "services" / "content_production_preflight_checks.py").read_text(encoding="utf-8")
+    actions_source = (ROOT / "backend" / "services" / "content_production_preflight_actions.py").read_text(encoding="utf-8")
+    summaries_source = (ROOT / "backend" / "services" / "content_production_preflight_summaries.py").read_text(encoding="utf-8")
+
+    assert "from .content_production_preflight import" not in run_source
+    assert "from .content_production_preflight_checks import" in run_source
+    assert "from .content_production_preflight_actions import" in run_source
+    assert "from .content_production_preflight_summaries import" in run_source
+    assert "def _assert_content_production_run_gates" not in compat_source
+    assert "def _content_production_preflight_actions" not in compat_source
+    assert "def _asset_preflight_summary" not in compat_source
+    assert "def _assert_content_production_run_gates" in checks_source
+    assert "def _content_production_preflight_actions" in actions_source
+    assert "def _asset_preflight_summary" in summaries_source
+
+
+def test_content_production_run_service_delegates_template_payload_and_preparation_helpers():
+    run_source = (ROOT / "backend" / "services" / "content_production_runs.py").read_text(encoding="utf-8")
+    preparation_source = (
+        ROOT / "backend" / "services" / "content_production_run_preparation.py"
+    ).read_text(encoding="utf-8")
+    template_source = (ROOT / "backend" / "services" / "content_production_run_templates.py").read_text(encoding="utf-8")
+    payload_source = (ROOT / "backend" / "services" / "content_production_run_payloads.py").read_text(encoding="utf-8")
+
+    assert "ContentProductionRunPreparer" in run_source
+    assert "self.run_preparer.prepare" in run_source
+    assert "def _prepare_content_production_run" not in run_source
+    assert "select_assets" not in run_source
+    assert "def prepare" in preparation_source
+    assert "select_assets" in preparation_source
+    assert "_assert_content_production_run_gates" in preparation_source
+    assert "ContentProductionRunTemplateBuilder" in run_source
+    assert "self.template_builder.build" in run_source
+    assert "def content_production_run_template" in run_source
+    assert "backend.content_production_run_template" not in run_source
+    assert "def _model_data" not in run_source
+    assert "def _replay_payload_with_overrides" not in run_source
+    assert "class ContentProductionRunTemplateBuilder" in template_source
+    assert "backend.content_production_run_template" in template_source
+    assert "def _model_data" in payload_source
+    assert "def _replay_payload_with_overrides" in payload_source
+
+
+def test_content_production_console_uses_shared_service_error_boundary():
+    console_source = (ROOT / "backend" / "services" / "content_production_console.py").read_text(encoding="utf-8")
+    case_source = (ROOT / "backend" / "services" / "content_production_console_cases.py").read_text(encoding="utf-8")
+    run_source = (ROOT / "backend" / "services" / "content_production_console_runs.py").read_text(encoding="utf-8")
+    errors_source = (ROOT / "backend" / "services" / "service_errors.py").read_text(encoding="utf-8")
+
+    assert "def map_service_errors" in errors_source
+    assert "except FileNotFoundError as exc" in errors_source
+    assert "except ValueError as exc" in errors_source
+    assert "from .content_production_console_cases import BackendContentProductionCaseConsoleService" in console_source
+    assert "from .content_production_console_runs import BackendContentProductionRunConsoleService" in console_source
+    assert "from .service_errors import map_service_errors" in case_source
+    assert "from .service_errors import map_service_errors" in run_source
+    assert "except FileNotFoundError as exc" not in console_source
+    assert "except ValueError as exc" not in console_source
+    assert "except FileNotFoundError as exc" not in case_source
+    assert "except ValueError as exc" not in case_source
+    assert "except FileNotFoundError as exc" not in run_source
+    assert "except ValueError as exc" not in run_source
+    assert case_source.count("with map_service_errors():") >= 10
+    assert run_source.count("with map_service_errors():") >= 8
+
+
+def test_content_production_console_facade_delegates_case_and_run_surfaces():
+    console_source = (ROOT / "backend" / "services" / "content_production_console.py").read_text(encoding="utf-8")
+    case_source = (ROOT / "backend" / "services" / "content_production_console_cases.py").read_text(encoding="utf-8")
+    run_source = (ROOT / "backend" / "services" / "content_production_console_runs.py").read_text(encoding="utf-8")
+
+    assert "from ..experiments import" not in console_source
+    assert "self.case_console = case_console or BackendContentProductionCaseConsoleService" in console_source
+    assert "self.run_console = run_console or BackendContentProductionRunConsoleService" in console_source
+    assert "def case_delivery" in case_source
+    assert "def get_case_delivery_export" in case_source
+    assert "def build_case_evaluation_draft" in case_source
+    assert "def _resolve_case_run_id" in case_source
+    assert "def list_runs" in run_source
+    assert "def get_run_export" in run_source
+    assert "def inspect_run_artifacts" in run_source
+    assert "def record_run_evaluation" in run_source
+
+
+def test_experiment_job_store_delegates_presenter_helpers():
+    jobs_source = (ROOT / "backend" / "jobs.py").read_text(encoding="utf-8")
+    presenters_source = (ROOT / "backend" / "job_presenters.py").read_text(encoding="utf-8")
+    run_service_source = (ROOT / "backend" / "services" / "content_production_runs.py").read_text(encoding="utf-8")
+
+    assert "from .job_presenters import" in jobs_source
+    assert "def enrich_content_run_result" not in jobs_source
+    assert "def content_run_links" not in jobs_source
+    assert "def _content_run_actions" not in jobs_source
+    assert "def job_actions" not in jobs_source
+    assert "def enrich_content_run_result" in presenters_source
+    assert "def content_run_links" in presenters_source
+    assert "def job_actions" in presenters_source
+    assert "from ..job_presenters import enrich_content_run_result" in run_service_source
+    assert "from ..jobs import InProcessExperimentJobStore" in run_service_source
+
+
+def test_experiment_workbench_is_split_from_case_reports():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    cases_source = (ROOT / "backend" / "experiments" / "cases.py").read_text(encoding="utf-8")
+    workbench_source = (ROOT / "backend" / "experiments" / "workbench.py").read_text(encoding="utf-8")
+
+    assert "from .workbench import content_production_experiment_workbench" in package_source
+    assert "def content_production_experiment_workbench" not in cases_source
+    assert "def _workbench_active_run_id" not in cases_source
+    assert "def _workbench_case" not in cases_source
+    assert "def _empty_workbench_case" not in cases_source
+    assert "def _workbench_status" not in cases_source
+    assert "def content_production_experiment_workbench" in workbench_source
+    assert "content_production_diagnostics" in workbench_source
+    assert "inspect_content_production_run_artifacts" in workbench_source
+    assert "content_production_case_compare" in workbench_source
+    assert "content_production_experiment_overview" in workbench_source
+
+
+def test_experiment_case_comparisons_are_split_from_case_reports():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    cases_source = (ROOT / "backend" / "experiments" / "cases.py").read_text(encoding="utf-8")
+    report_source = (ROOT / "backend" / "experiments" / "case_reports.py").read_text(encoding="utf-8")
+    comparison_source = (ROOT / "backend" / "experiments" / "comparisons.py").read_text(encoding="utf-8")
+    workbench_source = (ROOT / "backend" / "experiments" / "workbench.py").read_text(encoding="utf-8")
+    delivery_source = (ROOT / "backend" / "experiments" / "delivery.py").read_text(encoding="utf-8")
+
+    assert "from .case_reports import content_production_experiment_report" in package_source
+    assert "def content_production_experiment_report" not in cases_source
+    assert "def _report_recommendations" not in cases_source
+    assert "def content_production_experiment_report" in report_source
+    assert "def _report_recommendations" in report_source
+    assert "from .comparisons import content_production_case_compare" in package_source
+    assert "def content_production_case_compare" not in cases_source
+    assert "def _case_compare_candidate" not in cases_source
+    assert "def content_production_case_compare" in comparison_source
+    assert "def _case_compare_candidate" in comparison_source
+    assert "from .case_reports import content_production_experiment_report" in comparison_source
+    assert "from .comparisons import content_production_case_compare" in workbench_source
+    assert "from .comparisons import content_production_case_compare" in delivery_source
+
+
+def test_experiment_case_action_builders_are_split_from_action_orchestration():
+    actions_source = (ROOT / "backend" / "experiments" / "actions.py").read_text(encoding="utf-8")
+    builders_source = (ROOT / "backend" / "experiments" / "action_builders.py").read_text(encoding="utf-8")
+    workbench_source = (ROOT / "backend" / "experiments" / "workbench.py").read_text(encoding="utf-8")
+
+    assert "def content_production_case_next_actions" in actions_source
+    assert "def _case_next_action_status" in actions_source
+    assert "def _case_next_actions" in actions_source
+    assert "from .action_builders import" in actions_source
+    assert "def _reference_repair_payload" not in actions_source
+    assert "def rerun_action" not in actions_source
+    assert "def case_repair_actions" not in actions_source
+    assert "def first_run_action" in builders_source
+    assert "def case_review_actions" in builders_source
+    assert "def case_repair_actions" in builders_source
+    assert "def rerun_action" in builders_source
+    assert "from .action_builders import first_run_action" in workbench_source
+    assert "from .actions import _case_next_actions" not in workbench_source
+
+
+def test_case_selection_payload_is_a_stable_selection_module_api():
+    selection_source = (ROOT / "backend" / "experiments" / "selections.py").read_text(encoding="utf-8")
+    dependent_modules = [
+        "actions.py",
+        "case_reports.py",
+        "cases.py",
+        "comparisons.py",
+        "delivery.py",
+    ]
+
+    assert "def case_selection_payload" in selection_source
+    assert "def _case_selection_payload" not in selection_source
+    for module_name in dependent_modules:
+        source = (ROOT / "backend" / "experiments" / module_name).read_text(encoding="utf-8")
+        assert "from .selections import case_selection_payload" in source
+        assert "_case_selection_payload" not in source
+
+
+def test_experiment_artifact_exports_are_split_from_artifact_catalogs():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")
+    exports_source = (ROOT / "backend" / "experiments" / "artifact_exports.py").read_text(encoding="utf-8")
+
+    assert "from .artifact_exports import" in package_source
+    assert "def build_content_production_run_export" not in artifacts_source
+    assert "def build_content_production_case_export" not in artifacts_source
+    assert "def build_content_production_case_delivery_export" not in artifacts_source
+    assert "def build_content_production_run_export" in exports_source
+    assert "def build_content_production_case_export" in exports_source
+    assert "def build_content_production_case_delivery_export" in exports_source
+    assert "def artifact_catalog_for_run" in artifacts_source
+    assert "def inspect_content_production_run_artifacts" in artifacts_source
+    assert "def resolve_content_production_artifact_path" in artifacts_source
+
+
+def test_delivery_payloads_are_split_from_delivery_gate_and_exports():
+    delivery_source = (ROOT / "backend" / "experiments" / "delivery.py").read_text(encoding="utf-8")
+    payload_source = (ROOT / "backend" / "experiments" / "delivery_payloads.py").read_text(encoding="utf-8")
+    exports_source = (ROOT / "backend" / "experiments" / "artifact_exports.py").read_text(encoding="utf-8")
+
+    assert "def content_production_case_delivery" in delivery_source
+    assert "def _case_delivery_status" in delivery_source
+    assert "def case_delivery_payload" not in delivery_source
+    assert "def delivery_review_evidence" not in delivery_source
+    assert "def run_review_evidence" not in delivery_source
+    assert "from .delivery_payloads import case_delivery_payload" in delivery_source
+    assert "def case_delivery_payload" in payload_source
+    assert "def delivery_review_evidence" in payload_source
+    assert "def run_review_evidence" in payload_source
+    assert "from .delivery import _delivery_review_evidence" not in exports_source
+    assert "from .delivery import _run_review_evidence" not in exports_source
+    assert "from .delivery_payloads import delivery_review_evidence, run_review_evidence" in exports_source
+
+
+def test_image_reference_projections_are_split_from_artifact_catalogs():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")
+    reference_source = (ROOT / "backend" / "experiments" / "reference_images.py").read_text(encoding="utf-8")
+    runs_source = (ROOT / "backend" / "experiments" / "runs.py").read_text(encoding="utf-8")
+    runner_manifest_source = (ROOT / "backend" / "experiments" / "runner_manifests.py").read_text(encoding="utf-8")
+
+    assert "from .reference_images import image_reference_from_package, image_reference_summary" in package_source
+    assert "def image_reference_summary" not in artifacts_source
+    assert "def image_reference_from_package" not in artifacts_source
+    assert "def _image_reference_trace_from_cover_result" not in artifacts_source
+    assert "def _enrich_image_reference_trace" not in artifacts_source
+    assert "from .reference_images import" in artifacts_source
+    assert "def image_reference_summary" in reference_source
+    assert "def image_reference_from_package" in reference_source
+    assert "def _image_reference_trace_from_cover_result" in reference_source
+    assert "def _enrich_image_reference_trace" in reference_source
+    assert "from .reference_images import _enrich_image_reference_trace, image_reference_from_package" in runs_source
+    assert "from .reference_images import _enrich_image_reference_trace, image_reference_summary" in runner_manifest_source
+
+
+def test_experiment_runner_delegates_manifest_builders():
+    runner_source = (ROOT / "backend" / "experiments" / "runner.py").read_text(encoding="utf-8")
+    manifest_source = (ROOT / "backend" / "experiments" / "runner_manifests.py").read_text(encoding="utf-8")
+
+    assert "from .runner_manifests import" in runner_source
+    assert "def _run_response" not in runner_source
+    assert "def _write_experiment_manifest" not in runner_source
+    assert "def _experiment_manifest" not in runner_source
+    assert "def _input_manifest" not in runner_source
+    assert "def _replay_request" not in runner_source
+    assert "def _manifest_asset" not in runner_source
+    assert "def _reference_public_urls_by_path" not in runner_source
+    assert "def _run_response" in manifest_source
+    assert "def _write_experiment_manifest" in manifest_source
+    assert "def _experiment_manifest" in manifest_source
+    assert "def _input_manifest" in manifest_source
+    assert "def _replay_request" in manifest_source
+    assert "def _manifest_asset" in manifest_source
+    assert "def _reference_public_urls_by_path" in manifest_source
+
+
+def test_reference_acceptance_checks_are_split_from_acceptance_reports():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    acceptance_source = (ROOT / "backend" / "experiments" / "acceptance.py").read_text(encoding="utf-8")
+    proof_source = (ROOT / "backend" / "experiments" / "proofs.py").read_text(encoding="utf-8")
+    reference_source = (ROOT / "backend" / "experiments" / "reference_acceptance.py").read_text(encoding="utf-8")
+    runs_source = (ROOT / "backend" / "experiments" / "runs.py").read_text(encoding="utf-8")
+    presenters_source = (ROOT / "backend" / "experiments" / "presenters.py").read_text(encoding="utf-8")
+
+    assert "from .reference_acceptance import content_production_summary_reference_transfer" in package_source
+    assert "def content_production_summary_reference_transfer" not in acceptance_source
+    assert "from .proofs import content_production_run_proof" in package_source
+    assert "def content_production_run_proof" not in acceptance_source
+    assert "def _input_integrity_check" not in acceptance_source
+    assert "_file_sha256" not in acceptance_source
+    assert "def _acceptance_reference_check" not in acceptance_source
+    assert "def _acceptance_reference_generation_check" not in acceptance_source
+    assert "def _reference_transfer_check" not in acceptance_source
+    assert "def _reference_generation_check_proof_check" not in acceptance_source
+    assert "def _image_reference_check" not in acceptance_source
+    assert "from .reference_acceptance import" in acceptance_source
+    assert "def content_production_run_proof" in proof_source
+    assert "def _input_integrity_check" in proof_source
+    assert "from .reference_acceptance import" in proof_source
+    assert "def content_production_summary_reference_transfer" in reference_source
+    assert "def reference_transfer_proof_check" in reference_source
+    assert "def reference_images_sent_proof_check" in reference_source
+    assert "def acceptance_reference_check" in reference_source
+    assert "def acceptance_reference_generation_check" in reference_source
+    assert "from .proofs import content_production_run_proof" in runs_source
+    assert "from .reference_acceptance import content_production_summary_reference_transfer" in runs_source
+    assert "from .reference_acceptance import content_production_summary_reference_transfer" in presenters_source
+
+
+def test_run_row_projection_is_split_from_run_summary_io():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    runs_source = (ROOT / "backend" / "experiments" / "runs.py").read_text(encoding="utf-8")
+    row_source = (ROOT / "backend" / "experiments" / "run_rows.py").read_text(encoding="utf-8")
+    cases_source = (ROOT / "backend" / "experiments" / "cases.py").read_text(encoding="utf-8")
+    presenters_source = (ROOT / "backend" / "experiments" / "presenters.py").read_text(encoding="utf-8")
+
+    assert "from .run_rows import content_production_count_by" in package_source
+    assert "def summarize_content_production_run" in runs_source
+    assert "def content_production_comparison_run" not in runs_source
+    assert "def _candidate_status" not in runs_source
+    assert "def _asset_fingerprints" not in runs_source
+    assert "def content_production_comparison_run" in row_source
+    assert "def _candidate_status" in row_source
+    assert "def content_production_value_diff" in row_source
+    assert "from .run_rows import" in cases_source
+    assert "from .run_rows import content_production_comparison_run" in presenters_source
+
+
+def test_auto_review_gate_is_split_from_evaluation_persistence():
+    reviews_source = (ROOT / "backend" / "experiments" / "reviews.py").read_text(encoding="utf-8")
+    auto_reviews_source = (ROOT / "backend" / "experiments" / "auto_reviews.py").read_text(encoding="utf-8")
+    run_health_source = (ROOT / "backend" / "experiments" / "run_health.py").read_text(encoding="utf-8")
+
+    assert "from .auto_reviews import auto_evaluation_draft" in reviews_source
+    assert "def _auto_evaluation_draft" not in reviews_source
+    assert "def _run_health_review" not in reviews_source
+    assert "def _evaluation_draft_from_reviews" not in reviews_source
+    assert "visual_reference_review_for_evaluation" not in reviews_source
+    assert "def auto_evaluation_draft" in auto_reviews_source
+    assert "from .run_health import run_health_review" in auto_reviews_source
+    assert "def _run_health_review" not in auto_reviews_source
+    assert "def run_health_review" not in auto_reviews_source
+    assert "def _evaluation_draft_from_reviews" in auto_reviews_source
+    assert "visual_reference_review_for_evaluation" in auto_reviews_source
+    assert "def run_health_review" in run_health_source
+    assert "def _run_health_score" in run_health_source
+    assert "def _run_health_suggestions" in run_health_source
+    assert "def record_content_production_run_evaluation" in reviews_source
+    assert "def evaluation_summary" in reviews_source
+    assert "def _refresh_experiment_manifest_evaluations" in reviews_source
+
+
+def test_reference_image_service_is_split_by_strategy_and_result_payloads():
+    service_source = (ROOT / "backend" / "services" / "reference_images.py").read_text(encoding="utf-8")
+    publishers_source = (ROOT / "backend" / "services" / "reference_image_publishers.py").read_text(encoding="utf-8")
+    generation_source = (ROOT / "backend" / "services" / "reference_image_generation.py").read_text(encoding="utf-8")
+    results_source = (ROOT / "backend" / "services" / "reference_image_results.py").read_text(encoding="utf-8")
+
+    assert "class BackendReferenceImageService" in service_source
+    assert "class ReferencePublishDiagnostic" not in service_source
+    assert "class SessionReferenceAssetPublisher" not in service_source
+    assert "class ReferenceImageGenerationChecker" not in service_source
+    assert "def _reference_publish_check_result" not in service_source
+    assert "def _session_reference_image_generation_check_result" not in service_source
+    assert "class ReferencePublishDiagnostic" in publishers_source
+    assert "class SessionReferenceAssetPublisher" in publishers_source
+    assert "class ReferenceImageGenerationChecker" in generation_source
+    assert "def _reference_publish_check_result" in results_source
+    assert "def _session_reference_image_generation_check_result" in results_source
 
 
 def test_fastapi_content_production_experiment_overview_route(tmp_path):
@@ -588,7 +1130,7 @@ def test_fastapi_uploads_session_image_assets(tmp_path):
 
 
 def test_fastapi_content_production_run_template_builds_launch_request(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
 
@@ -692,7 +1234,7 @@ def test_fastapi_content_production_run_template_builds_launch_request(monkeypat
 
 
 def test_fastapi_publishes_session_asset_references_and_preflight_reuses_public_url(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
 
     class FakeReferencePublisher:
         def __init__(self):
@@ -812,7 +1354,7 @@ def test_fastapi_reference_image_generation_check_calls_image_model(monkeypatch,
         calls.append({"prompt": prompt, "usage": usage, "size": size, "reference_images": list(reference_images or [])})
         return ["data:image/png;base64,AAAA"]
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(REFERENCE_IMAGE_MODULE.llms, "image", fake_image)
     service = NoriBackend(experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
 
@@ -848,7 +1390,7 @@ def test_fastapi_reference_image_generation_check_rejects_invalid_reference_url(
     def fake_image(*_args, **_kwargs):
         raise AssertionError("invalid reference URLs should not call the image model")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(REFERENCE_IMAGE_MODULE.llms, "image", fake_image)
     service = NoriBackend(experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
 
@@ -869,7 +1411,7 @@ def test_fastapi_reference_image_generation_check_reports_provider_error(monkeyp
     def fake_image(*_args, **_kwargs):
         raise RuntimeError("provider rejected reference_images")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(REFERENCE_IMAGE_MODULE.llms, "image", fake_image)
     service = NoriBackend(experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
 
@@ -898,7 +1440,7 @@ def test_fastapi_session_reference_image_generation_check_publishes_and_calls_im
         def publish_path(self, path, *, project="", session="", public_url_map=None):
             raise AssertionError("backend public URL publishing should not call the object store")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(REFERENCE_IMAGE_MODULE.llms, "image", fake_image)
     service = NoriBackend(
         upload_root=tmp_path / "uploads",
         experiment_runner=_project_runner(tmp_path),
@@ -983,7 +1525,7 @@ def test_fastapi_session_reference_image_generation_check_requires_fetchable_url
         def publish_path(self, path, *, project="", session="", public_url_map=None):
             return SimpleNamespace(public_url="", url="", key="", uploaded=False, reason="local_bytes")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(REFERENCE_IMAGE_MODULE.llms, "image", fake_image)
     service = NoriBackend(
         upload_root=tmp_path / "uploads",
         experiment_runner=_project_runner(tmp_path),
@@ -1038,8 +1580,8 @@ def test_fastapi_session_reference_image_generation_check_probes_urls_before_ima
         def publish_path(self, path, *, project="", session="", public_url_map=None):
             raise AssertionError("backend public URL publishing should not call the object store")
 
-    monkeypatch.setattr(APP_MODULE.llms, "image", fake_image)
-    monkeypatch.setattr(APP_MODULE, "probe_reference_url", fake_probe)
+    monkeypatch.setattr(REFERENCE_IMAGE_MODULE.llms, "image", fake_image)
+    monkeypatch.setattr(SESSION_ASSET_MODULE, "probe_reference_url", fake_probe)
     service = NoriBackend(
         upload_root=tmp_path / "uploads",
         experiment_runner=_project_runner(tmp_path),
@@ -1183,7 +1725,7 @@ def test_fastapi_backend_restores_persisted_session_assets_after_restart(tmp_pat
 
 
 def test_fastapi_content_production_run_uses_uploaded_session_assets(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -1295,7 +1837,7 @@ def test_fastapi_backend_restores_completed_run_task_state_after_restart(tmp_pat
 
 
 def test_fastapi_content_production_preflight_reports_reference_not_ready_without_public_url(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1335,7 +1877,7 @@ def test_fastapi_content_production_preflight_reports_reference_not_ready_withou
 
 
 def test_fastapi_content_production_preflight_accepts_public_backend_asset_url(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1380,7 +1922,7 @@ def test_fastapi_content_production_preflight_accepts_public_backend_asset_url(m
 
 
 def test_fastapi_content_production_preflight_rejects_placeholder_backend_asset_url(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1417,7 +1959,7 @@ def test_fastapi_content_production_preflight_rejects_placeholder_backend_asset_
 
 
 def test_fastapi_content_production_preflight_can_verify_reference_url_reachability(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     probe_calls = []
 
     def fake_probe(url, *, timeout):
@@ -1431,7 +1973,7 @@ def test_fastapi_content_production_preflight_can_verify_reference_url_reachabil
             "error": "",
         }
 
-    monkeypatch.setattr(APP_MODULE, "probe_reference_url", fake_probe)
+    monkeypatch.setattr(SESSION_ASSET_MODULE, "probe_reference_url", fake_probe)
     service = NoriBackend(upload_root=tmp_path / "uploads", experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1470,9 +2012,9 @@ def test_fastapi_content_production_preflight_can_verify_reference_url_reachabil
 
 
 def test_fastapi_content_production_run_rejects_unreachable_reference_url_before_task(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     monkeypatch.setattr(
-        APP_MODULE,
+        SESSION_ASSET_MODULE,
         "probe_reference_url",
         lambda url, *, timeout: {
             "url": url,
@@ -1527,7 +2069,7 @@ def test_fastapi_content_production_run_rejects_unreachable_reference_url_before
 
 
 def test_fastapi_content_production_preflight_reports_missing_market_evidence(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
     service = NoriBackend(experiment_runner=_project_runner(tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1573,7 +2115,7 @@ def test_fastapi_content_production_run_rejects_strict_reference_mode_without_as
 
 
 def test_fastapi_content_production_run_rejects_strict_reference_transfer_before_task(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -1649,7 +2191,7 @@ def test_fastapi_content_production_run_rejects_missing_market_evidence_before_t
 
 
 def test_fastapi_content_production_run_rejects_unready_models_for_real_runner(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_unready_model_readiness())
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_unready_model_readiness())
     service = NoriBackend(experiment_runner=ContentProductionExperimentRunner(project_root=tmp_path))
     client = TestClient(create_app(backend=service))
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
@@ -1672,7 +2214,7 @@ def test_fastapi_content_production_run_rejects_unready_models_for_real_runner(m
 
 
 def test_fastapi_fake_runner_can_skip_model_readiness_gate(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_unready_model_readiness())
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_unready_model_readiness())
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -1717,7 +2259,7 @@ def test_fastapi_fake_runner_can_skip_model_readiness_gate(monkeypatch, tmp_path
 
 
 def test_fastapi_content_production_run_receives_session_reference_check_evidence(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -1754,7 +2296,7 @@ def test_fastapi_content_production_run_receives_session_reference_check_evidenc
 
     stored_session = service.session_manager.get_session(session["session_id"])
     stored_session.events.append(
-        APP_MODULE.SessionEvent(
+        SessionEvent(
             event_type="reference_image_generation_checked",
             payload={
                 "ready": True,
@@ -1789,7 +2331,7 @@ def test_fastapi_content_production_run_receives_session_reference_check_evidenc
 
 
 def test_fastapi_content_production_run_can_require_reference_generation_check(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=True))
 
     class FakeExperimentRunner:
         project_root = tmp_path
@@ -2406,7 +2948,7 @@ def test_fastapi_replays_content_production_run_from_replay_request(tmp_path):
 
 
 def test_fastapi_replay_requires_current_session_reference_generation_check(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     run_dir = tmp_path / "cases" / "source_case" / "runs" / "source_run"
     run_dir.mkdir(parents=True)
     reference_url = "https://cdn.nori.ai/ref.png"
@@ -2456,7 +2998,7 @@ def test_fastapi_replay_requires_current_session_reference_generation_check(monk
 
 
 def test_fastapi_replay_can_reuse_explicit_session_reference_generation_check(monkeypatch, tmp_path):
-    monkeypatch.setattr(APP_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
+    monkeypatch.setattr(CONTENT_RUN_MODULE, "experiment_readiness", lambda **_kwargs: _fake_reference_readiness(oss_configured=False))
     run_dir = tmp_path / "cases" / "source_case" / "runs" / "source_run"
     run_dir.mkdir(parents=True)
     reference_url = "https://cdn.nori.ai/ref.png"
@@ -2510,7 +3052,7 @@ def test_fastapi_replay_can_reuse_explicit_session_reference_generation_check(mo
     session = client.post("/sessions", json={"user_id": "u1"}).json()["data"]
     stored_session = service.session_manager.get_session(session["session_id"])
     stored_session.events.append(
-        APP_MODULE.SessionEvent(
+        SessionEvent(
             event_type="reference_image_generation_checked",
             payload={
                 "ready": True,

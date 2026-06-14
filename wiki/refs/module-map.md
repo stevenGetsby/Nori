@@ -54,7 +54,7 @@ Stage-local `schema.py` re-export files should not exist either.
 | `nori/core/agent.py` | Shared agent base and input/prompt builder patterns. |
 | `nori/core/workflow.py` | Backend-free workflow abstraction for agents and capability facades. |
 | `nori/workflows/adapters.py` | Bridges `WorkflowBase` into runtime `WorkflowSpec` for LangGraph-backed execution and run recording. |
-| `nori/workflows/content_production/` | Product-level content production workflow. It owns the ordered agent stages, content production state, artifact refs, and Human Gate before final package generation. |
+| `nori/workflows/content_production/` | Product-level content production workflow. `stages.py` owns ordered agent-stage orchestration and artifact checkpoints; `stage_support.py` owns pure market/context/summary builders; the package also owns content production state, artifact refs, and the Human Gate before final package generation. |
 | `nori/context/compiler.py` | Compiles profile, task, market, skill, strategy, asset, and constraint slices into `ContextPack`. |
 | `nori/context/resolver.py` | Builds runtime `ContextBundle` rows and projects task `ContextPack` into agent-specific `ContextView`. |
 | `nori/context/adapters.py` | Bridges business `ContextPack` into the runtime `ContextBundle` used for one agent call. |
