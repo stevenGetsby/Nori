@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 from dataclasses import replace
 from pathlib import Path
 
@@ -85,6 +86,50 @@ def test_content_production_workflow_initial_state_keeps_io_and_infra_injected(t
     assert state["llm_factory"] is factory
     assert state["top_notes_collector"] is collect
     assert state["_artifact_refs"] == {}
+
+
+def test_content_production_stage_support_owns_pure_builders():
+    root = Path(__file__).resolve().parents[1]
+    stages_path = root / "nori" / "workflows" / "content_production" / "stages.py"
+    support_path = root / "nori" / "workflows" / "content_production" / "stage_support.py"
+    stages_source = stages_path.read_text(encoding="utf-8")
+    support_source = support_path.read_text(encoding="utf-8")
+    stages_tree = ast.parse(stages_source)
+    support_tree = ast.parse(support_source)
+
+    assert support_path.is_file()
+    assert "render_summary_markdown" in support_source
+    assert "build_market_report" in support_source
+    assert "asset_library_from_user_assets" in support_source
+    assert "render_summary_markdown(" in stages_source
+    assert "build_market_report(" in stages_source
+
+    stage_function_names = {
+        node.name
+        for node in ast.walk(stages_tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    support_function_names = {
+        node.name
+        for node in ast.walk(support_tree)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+    }
+    assert not {
+        "build_market_report",
+        "build_client_brief",
+        "select_task",
+        "content_strategy",
+        "asset_library_from_user_assets",
+        "render_summary_markdown",
+    } & stage_function_names
+    assert {
+        "build_market_report",
+        "build_client_brief",
+        "select_task",
+        "content_strategy",
+        "asset_library_from_user_assets",
+        "render_summary_markdown",
+    } <= support_function_names
 
 
 class _Dictable:

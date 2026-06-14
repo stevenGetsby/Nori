@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 from .case_artifacts import record_content_production_artifacts
+from .stage_support import top_notes_result_from_dict
 from .state import ContentProductionState, TopNotesCollector
-from .stages import top_notes_result_from_dict
 from .workflow import ContentProductionConfig, ContentProductionWorkflow
 
 __all__ = [
