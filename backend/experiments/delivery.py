@@ -10,7 +10,7 @@ from .presenters import content_production_report_run
 from .case_reports import content_production_experiment_report
 from .comparisons import content_production_case_compare
 from .runs import summarize_content_production_run
-from .selections import _case_selection_payload
+from .selections import case_selection_payload
 
 
 def content_production_case_delivery(
@@ -26,7 +26,7 @@ def content_production_case_delivery(
         raise ValueError("case_id is required")
 
     case_dir = _content_case_dir_or_none(project_root=project_root, case_id=normalized_case_id)
-    selection_payload = _case_selection_payload(case_dir, include_history=True)
+    selection_payload = case_selection_payload(case_dir, include_history=True)
     selection = dict(selection_payload.get("current") or {})
     report = content_production_experiment_report(
         project_root=project_root,

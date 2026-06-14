@@ -30,7 +30,7 @@ def get_content_production_case_selection(
     repository = ContentProductionExperimentRepository(project_root)
     case_ref = ContentCaseRef(case_id=case_id)
     case_dir = repository.case_dir(case_ref)
-    payload = _case_selection_payload(case_dir, include_history=True)
+    payload = case_selection_payload(case_dir, include_history=True)
     payload["report"] = content_production_experiment_report(project_root=project_root, case_id=case_id)
     return payload
 
@@ -53,7 +53,7 @@ def record_content_production_case_selection(
     if not summary:
         raise FileNotFoundError(f"content-production run not found: {case_id}/{run_id}")
 
-    existing = _case_selection_payload(case_dir, include_history=True)
+    existing = case_selection_payload(case_dir, include_history=True)
     report = content_production_experiment_report(project_root=project_root, case_id=case_id)
     normalized = _normalize_case_selection(
         selection,
@@ -94,7 +94,7 @@ def promote_content_production_case_run(
     if not normalized_case_id:
         raise ValueError("case_id is required")
     case_dir = _content_case_dir(project_root=project_root, case_id=normalized_case_id)
-    selection_payload = _case_selection_payload(case_dir, include_history=True)
+    selection_payload = case_selection_payload(case_dir, include_history=True)
     selection = dict(selection_payload.get("current") or {})
     report = content_production_experiment_report(project_root=project_root, case_id=normalized_case_id, limit=500)
     best_run = report.get("best_run") if isinstance(report.get("best_run"), dict) else {}
@@ -159,7 +159,9 @@ def promote_content_production_case_run(
     }
 
 
-def _case_selection_payload(case_dir: Path | None, *, include_history: bool) -> dict[str, Any]:
+def case_selection_payload(case_dir: Path | None, *, include_history: bool) -> dict[str, Any]:
+    """Read the persisted case selection payload without attaching report data."""
+
     if case_dir is None:
         return {"schema_version": 1, "case_id": "", "current": {}, "history": [] if include_history else []}
     data = _read_json(case_dir / EXPERIMENT_SELECTION_NAME)

@@ -14,7 +14,7 @@ from .action_builders import (
     stale_selection_repair_action,
 )
 from .case_reports import content_production_experiment_report
-from .selections import _case_selection_payload
+from .selections import case_selection_payload
 
 
 def content_production_case_next_actions(
@@ -27,7 +27,7 @@ def content_production_case_next_actions(
 
     case_dir = _content_case_dir_or_none(project_root=project_root, case_id=case_id)
     report = content_production_experiment_report(project_root=project_root, case_id=case_id, limit=limit)
-    selection_payload = _case_selection_payload(case_dir, include_history=True)
+    selection_payload = case_selection_payload(case_dir, include_history=True)
     selection = dict(selection_payload.get("current") or {})
     rows = [row for row in report.get("runs") or [] if isinstance(row, dict)]
     selected_run_id = str(selection.get("run_id") or "")

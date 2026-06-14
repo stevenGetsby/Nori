@@ -156,8 +156,8 @@ rerun with the current tunnel URL.
   comparison candidates for decision UIs.
 - `experiments/workbench.py` owns the product-console workbench snapshot that
   combines diagnostics, overview, comparison, delivery, and active artifacts.
-- `experiments/selections.py` owns case selection state, selection history,
-  and run promotion decisions.
+- `experiments/selections.py` owns case selection state, selection payload
+  projection, selection history, and run promotion decisions.
 - `experiments/actions.py` owns case-level next-action orchestration and status
   planning from report and selection state.
 - `experiments/action_builders.py` owns action payload/link builders for first

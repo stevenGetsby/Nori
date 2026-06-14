@@ -18,7 +18,7 @@ from .runs import (
     list_content_production_runs,
     summarize_content_production_run,
 )
-from .selections import _case_selection_payload
+from .selections import case_selection_payload
 
 
 def content_production_experiment_overview(
@@ -75,7 +75,7 @@ def get_content_production_case_selected_run(
     """Resolve the current selected run for a case, optionally falling back to best_run."""
 
     case_dir = _content_case_dir(project_root=project_root, case_id=case_id)
-    selection_payload = _case_selection_payload(case_dir, include_history=True)
+    selection_payload = case_selection_payload(case_dir, include_history=True)
     selection = dict(selection_payload.get("current") or {})
     report = content_production_experiment_report(project_root=project_root, case_id=case_id, limit=500)
     source = "selection" if selection.get("run_id") else ""
@@ -174,7 +174,7 @@ def _overview_case(rows: list[dict[str, Any]], *, project_root: str | Path = PRO
     case_id = str(latest.get("case_id") or "")
     latest_run_id = str(latest.get("run_id") or "")
     latest_base = f"/workflows/content-production/runs/{case_id}/{latest_run_id}" if case_id and latest_run_id else ""
-    selection = _case_selection_payload(
+    selection = case_selection_payload(
         _content_case_dir_or_none(project_root=project_root, case_id=case_id),
         include_history=False,
     ).get("current") or {}

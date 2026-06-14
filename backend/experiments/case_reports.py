@@ -5,7 +5,7 @@ from .common import Any, PROJECT_ROOT, Path, _content_case_dir_or_none, datetime
 from .presenters import content_production_report_run, content_production_report_run_score
 from .run_rows import content_production_count_by, content_production_count_values
 from .runs import list_content_production_runs
-from .selections import _case_selection_payload
+from .selections import case_selection_payload
 
 
 def content_production_experiment_report(
@@ -29,7 +29,7 @@ def content_production_experiment_report(
     needs_review = [row["run_id"] for row in rows if row["acceptance_status"] == "needs_review"]
     rejected = [row["run_id"] for row in rows if row["acceptance_status"] == "rejected"]
     summary = _report_summary(rows)
-    selection = _case_selection_payload(
+    selection = case_selection_payload(
         _content_case_dir_or_none(project_root=project_root, case_id=case_id),
         include_history=False,
     )

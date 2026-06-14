@@ -9,7 +9,7 @@ from .runs import (
     compare_content_production_runs,
     list_content_production_runs,
 )
-from .selections import _case_selection_payload
+from .selections import case_selection_payload
 
 
 def content_production_case_compare(
@@ -38,7 +38,7 @@ def content_production_case_compare(
         ).get("runs", [])
         if isinstance(row, dict)
     ]
-    selection_payload = _case_selection_payload(
+    selection_payload = case_selection_payload(
         _content_case_dir_or_none(project_root=project_root, case_id=normalized_case_id),
         include_history=True,
     )

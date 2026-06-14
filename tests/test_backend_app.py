@@ -476,6 +476,24 @@ def test_experiment_case_action_builders_are_split_from_action_orchestration():
     assert "from .actions import _case_next_actions" not in workbench_source
 
 
+def test_case_selection_payload_is_a_stable_selection_module_api():
+    selection_source = (ROOT / "backend" / "experiments" / "selections.py").read_text(encoding="utf-8")
+    dependent_modules = [
+        "actions.py",
+        "case_reports.py",
+        "cases.py",
+        "comparisons.py",
+        "delivery.py",
+    ]
+
+    assert "def case_selection_payload" in selection_source
+    assert "def _case_selection_payload" not in selection_source
+    for module_name in dependent_modules:
+        source = (ROOT / "backend" / "experiments" / module_name).read_text(encoding="utf-8")
+        assert "from .selections import case_selection_payload" in source
+        assert "_case_selection_payload" not in source
+
+
 def test_experiment_artifact_exports_are_split_from_artifact_catalogs():
     package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
     artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")
