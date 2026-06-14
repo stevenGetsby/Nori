@@ -398,6 +398,19 @@ def test_content_production_run_service_delegates_template_payload_and_preparati
     assert "def _replay_payload_with_overrides" in payload_source
 
 
+def test_content_production_console_uses_shared_service_error_boundary():
+    console_source = (ROOT / "backend" / "services" / "content_production_console.py").read_text(encoding="utf-8")
+    errors_source = (ROOT / "backend" / "services" / "service_errors.py").read_text(encoding="utf-8")
+
+    assert "def map_service_errors" in errors_source
+    assert "except FileNotFoundError as exc" in errors_source
+    assert "except ValueError as exc" in errors_source
+    assert "from .service_errors import map_service_errors" in console_source
+    assert "except FileNotFoundError as exc" not in console_source
+    assert "except ValueError as exc" not in console_source
+    assert console_source.count("with map_service_errors():") >= 15
+
+
 def test_experiment_job_store_delegates_presenter_helpers():
     jobs_source = (ROOT / "backend" / "jobs.py").read_text(encoding="utf-8")
     presenters_source = (ROOT / "backend" / "job_presenters.py").read_text(encoding="utf-8")
