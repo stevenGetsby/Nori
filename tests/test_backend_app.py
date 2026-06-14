@@ -371,11 +371,21 @@ def test_content_production_preflight_policy_is_split_by_responsibility():
     assert "def _asset_preflight_summary" in summaries_source
 
 
-def test_content_production_run_service_delegates_template_and_payload_helpers():
+def test_content_production_run_service_delegates_template_payload_and_preparation_helpers():
     run_source = (ROOT / "backend" / "services" / "content_production_runs.py").read_text(encoding="utf-8")
+    preparation_source = (
+        ROOT / "backend" / "services" / "content_production_run_preparation.py"
+    ).read_text(encoding="utf-8")
     template_source = (ROOT / "backend" / "services" / "content_production_run_templates.py").read_text(encoding="utf-8")
     payload_source = (ROOT / "backend" / "services" / "content_production_run_payloads.py").read_text(encoding="utf-8")
 
+    assert "ContentProductionRunPreparer" in run_source
+    assert "self.run_preparer.prepare" in run_source
+    assert "def _prepare_content_production_run" not in run_source
+    assert "select_assets" not in run_source
+    assert "def prepare" in preparation_source
+    assert "select_assets" in preparation_source
+    assert "_assert_content_production_run_gates" in preparation_source
     assert "ContentProductionRunTemplateBuilder" in run_source
     assert "self.template_builder.build" in run_source
     assert "def content_production_run_template" in run_source

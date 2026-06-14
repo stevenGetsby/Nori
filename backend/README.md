@@ -90,6 +90,9 @@ rerun with the current tunnel URL.
 - `services/content_production_console.py` owns content-production case/run reporting, review, artifact, and export operations.
 - `services/content_production_runs.py` owns content-production preflight,
   run, and replay orchestration.
+- `services/content_production_run_preparation.py` owns session/task
+  resolution, asset selection, reference-image check evidence, and run gate
+  enforcement.
 - `services/content_production_run_templates.py` owns UI-ready content-production
   launch template construction from session/task/asset context.
 - `services/content_production_run_payloads.py` owns request/replay payload
