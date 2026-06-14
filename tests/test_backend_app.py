@@ -388,6 +388,23 @@ def test_content_production_run_service_delegates_template_and_payload_helpers()
     assert "def _replay_payload_with_overrides" in payload_source
 
 
+def test_experiment_job_store_delegates_presenter_helpers():
+    jobs_source = (ROOT / "backend" / "jobs.py").read_text(encoding="utf-8")
+    presenters_source = (ROOT / "backend" / "job_presenters.py").read_text(encoding="utf-8")
+    run_service_source = (ROOT / "backend" / "services" / "content_production_runs.py").read_text(encoding="utf-8")
+
+    assert "from .job_presenters import" in jobs_source
+    assert "def enrich_content_run_result" not in jobs_source
+    assert "def content_run_links" not in jobs_source
+    assert "def _content_run_actions" not in jobs_source
+    assert "def job_actions" not in jobs_source
+    assert "def enrich_content_run_result" in presenters_source
+    assert "def content_run_links" in presenters_source
+    assert "def job_actions" in presenters_source
+    assert "from ..job_presenters import enrich_content_run_result" in run_service_source
+    assert "from ..jobs import InProcessExperimentJobStore" in run_service_source
+
+
 def test_reference_image_service_is_split_by_strategy_and_result_payloads():
     service_source = (ROOT / "backend" / "services" / "reference_images.py").read_text(encoding="utf-8")
     publishers_source = (ROOT / "backend" / "services" / "reference_image_publishers.py").read_text(encoding="utf-8")

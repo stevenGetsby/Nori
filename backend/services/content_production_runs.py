@@ -15,7 +15,8 @@ from ..experiments import (
     get_content_production_case_selected_run,
     resolve_content_production_artifact_path,
 )
-from ..jobs import InProcessExperimentJobStore, enrich_content_run_result
+from ..job_presenters import enrich_content_run_result
+from ..jobs import InProcessExperimentJobStore
 from .content_production_preflight_actions import (
     _content_production_preflight_actions,
     _content_production_preflight_links,

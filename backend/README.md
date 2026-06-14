@@ -151,7 +151,10 @@ rerun with the current tunnel URL.
   operator acceptance reports, and run-summary reference-transfer snapshots.
 - `experiments/reviews.py` owns evaluation drafts, evaluation summaries, and
   evaluation persistence.
-- `jobs.py` owns the current process-local background job store.
+- `jobs.py` owns the current process-local background job model, store,
+  execution state, and JSON persistence.
+- `job_presenters.py` owns background job/run links, actions, and
+  content-production run result enrichment returned to API clients.
 
 ## Routes
 
