@@ -96,7 +96,11 @@ def test_backend_experiments_is_split_into_capability_modules():
         ],
         "acceptance": [
             "content_production_run_acceptance_report",
+        ],
+        "proofs": [
             "content_production_run_proof",
+        ],
+        "reference_acceptance": [
             "content_production_summary_reference_transfer",
         ],
         "visual_reviews": ["visual_reference_review"],

@@ -162,8 +162,10 @@ rerun with the current tunnel URL.
   evaluations, and selections.
 - `experiments/visual_reviews.py` owns visual-reference review panels and their
   rule-based evaluation-review adapter.
-- `experiments/acceptance.py` owns run proof and operator acceptance report
-  assembly.
+- `experiments/proofs.py` owns run proof assembly, input fingerprint checks,
+  and local artifact hash verification.
+- `experiments/acceptance.py` owns operator acceptance report assembly from
+  proof, evaluation, artifact, and reference evidence.
 - `experiments/reference_acceptance.py` owns reference-transfer snapshots,
   strict-reference proof checks, and provider reference-image acceptance checks.
 - `experiments/auto_reviews.py` owns automatic review-gate assembly, run-health

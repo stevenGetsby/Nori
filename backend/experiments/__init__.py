@@ -13,10 +13,8 @@ from .common import (
     _read_json,
     llms,
 )
-from .acceptance import (
-    content_production_run_acceptance_report,
-    content_production_run_proof,
-)
+from .acceptance import content_production_run_acceptance_report
+from .proofs import content_production_run_proof
 from .reference_acceptance import content_production_summary_reference_transfer
 from .diagnostics import content_production_diagnostics, experiment_readiness
 from .models import ContentCaseRef, ContentRunRef

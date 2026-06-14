@@ -512,23 +512,32 @@ def test_experiment_runner_delegates_manifest_builders():
 def test_reference_acceptance_checks_are_split_from_acceptance_reports():
     package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
     acceptance_source = (ROOT / "backend" / "experiments" / "acceptance.py").read_text(encoding="utf-8")
+    proof_source = (ROOT / "backend" / "experiments" / "proofs.py").read_text(encoding="utf-8")
     reference_source = (ROOT / "backend" / "experiments" / "reference_acceptance.py").read_text(encoding="utf-8")
     runs_source = (ROOT / "backend" / "experiments" / "runs.py").read_text(encoding="utf-8")
     presenters_source = (ROOT / "backend" / "experiments" / "presenters.py").read_text(encoding="utf-8")
 
     assert "from .reference_acceptance import content_production_summary_reference_transfer" in package_source
     assert "def content_production_summary_reference_transfer" not in acceptance_source
+    assert "from .proofs import content_production_run_proof" in package_source
+    assert "def content_production_run_proof" not in acceptance_source
+    assert "def _input_integrity_check" not in acceptance_source
+    assert "_file_sha256" not in acceptance_source
     assert "def _acceptance_reference_check" not in acceptance_source
     assert "def _acceptance_reference_generation_check" not in acceptance_source
     assert "def _reference_transfer_check" not in acceptance_source
     assert "def _reference_generation_check_proof_check" not in acceptance_source
     assert "def _image_reference_check" not in acceptance_source
     assert "from .reference_acceptance import" in acceptance_source
+    assert "def content_production_run_proof" in proof_source
+    assert "def _input_integrity_check" in proof_source
+    assert "from .reference_acceptance import" in proof_source
     assert "def content_production_summary_reference_transfer" in reference_source
     assert "def reference_transfer_proof_check" in reference_source
     assert "def reference_images_sent_proof_check" in reference_source
     assert "def acceptance_reference_check" in reference_source
     assert "def acceptance_reference_generation_check" in reference_source
+    assert "from .proofs import content_production_run_proof" in runs_source
     assert "from .reference_acceptance import content_production_summary_reference_transfer" in runs_source
     assert "from .reference_acceptance import content_production_summary_reference_transfer" in presenters_source
 
