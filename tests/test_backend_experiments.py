@@ -51,6 +51,9 @@ def test_backend_experiments_is_split_into_capability_modules():
         "runs": [
             "list_content_production_runs",
             "summarize_content_production_run",
+            "compare_content_production_runs",
+        ],
+        "run_rows": [
             "content_production_comparison_run",
             "content_production_count_by",
             "content_production_count_values",

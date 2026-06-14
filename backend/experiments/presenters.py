@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from .common import Any
 from .reference_acceptance import content_production_summary_reference_transfer
-from .runs import content_production_comparison_run
+from .run_rows import content_production_comparison_run
 
 
 def content_production_report_run(summary: dict[str, Any]) -> dict[str, Any]:

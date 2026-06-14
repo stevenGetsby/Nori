@@ -542,6 +542,25 @@ def test_reference_acceptance_checks_are_split_from_acceptance_reports():
     assert "from .reference_acceptance import content_production_summary_reference_transfer" in presenters_source
 
 
+def test_run_row_projection_is_split_from_run_summary_io():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    runs_source = (ROOT / "backend" / "experiments" / "runs.py").read_text(encoding="utf-8")
+    row_source = (ROOT / "backend" / "experiments" / "run_rows.py").read_text(encoding="utf-8")
+    cases_source = (ROOT / "backend" / "experiments" / "cases.py").read_text(encoding="utf-8")
+    presenters_source = (ROOT / "backend" / "experiments" / "presenters.py").read_text(encoding="utf-8")
+
+    assert "from .run_rows import content_production_count_by" in package_source
+    assert "def summarize_content_production_run" in runs_source
+    assert "def content_production_comparison_run" not in runs_source
+    assert "def _candidate_status" not in runs_source
+    assert "def _asset_fingerprints" not in runs_source
+    assert "def content_production_comparison_run" in row_source
+    assert "def _candidate_status" in row_source
+    assert "def content_production_value_diff" in row_source
+    assert "from .run_rows import" in cases_source
+    assert "from .run_rows import content_production_comparison_run" in presenters_source
+
+
 def test_auto_review_gate_is_split_from_evaluation_persistence():
     reviews_source = (ROOT / "backend" / "experiments" / "reviews.py").read_text(encoding="utf-8")
     auto_reviews_source = (ROOT / "backend" / "experiments" / "auto_reviews.py").read_text(encoding="utf-8")

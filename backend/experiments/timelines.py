@@ -9,7 +9,8 @@ from .common import (
 )
 from .models import ContentCaseRef
 from .repositories import ContentProductionExperimentRepository
-from .runs import content_production_comparison_run, content_production_count_by, list_content_production_runs
+from .run_rows import content_production_comparison_run, content_production_count_by
+from .runs import list_content_production_runs
 
 
 def content_production_case_timeline(

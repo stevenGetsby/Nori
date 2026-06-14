@@ -12,7 +12,7 @@ from .reference_acceptance import (
 def content_production_run_acceptance_report(summary: dict[str, Any]) -> dict[str, Any]:
     """Build the operator/product acceptance report for one experiment run."""
 
-    from .runs import content_production_comparison_run
+    from .run_rows import content_production_comparison_run
 
     row = content_production_comparison_run(summary)
     proof = summary.get("proof") if isinstance(summary.get("proof"), dict) else {}

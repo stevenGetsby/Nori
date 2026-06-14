@@ -146,6 +146,8 @@ rerun with the current tunnel URL.
   bundles.
 - `experiments/reference_images.py` owns image-reference summary and trace
   projections for run manifests and reports.
+- `experiments/run_rows.py` owns reusable run-row projections, candidate
+  readiness, run counts, and structured diff helpers.
 - `experiments/cases.py` owns case overview, reports, selected-run resolution,
   and case listing.
 - `experiments/comparisons.py` owns case-centered run comparison snapshots and

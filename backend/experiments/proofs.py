@@ -22,7 +22,7 @@ from .reference_acceptance import (
 def content_production_run_proof(summary: dict[str, Any]) -> dict[str, Any]:
     """Build a product-facing proof summary for one recorded experiment run."""
 
-    from .runs import content_production_comparison_run
+    from .run_rows import content_production_comparison_run
 
     row = content_production_comparison_run(summary)
     artifact_paths = summary.get("artifact_paths") if isinstance(summary.get("artifact_paths"), dict) else {}
