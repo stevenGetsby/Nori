@@ -87,7 +87,13 @@ rerun with the current tunnel URL.
 - `services/content_production_admin.py` owns content-production readiness,
   diagnostics, and workbench service methods used by admin routes.
 - `services/catalogs.py` owns workflow, content-generation, and capability catalogs used by the facade.
-- `services/content_production_console.py` owns content-production case/run reporting, review, artifact, and export operations.
+- `services/content_production_console.py` is the route-compatible facade over
+  split case/run console services.
+- `services/content_production_console_cases.py` owns content-production case
+  reporting, selection, next-action, delivery, timeline, and case export
+  operations.
+- `services/content_production_console_runs.py` owns content-production run
+  listing, comparison, evaluation, artifact, and run export operations.
 - `services/service_errors.py` owns shared domain/storage exception to API
   error mapping for route-facing backend services.
 - `services/content_production_runs.py` owns content-production preflight,

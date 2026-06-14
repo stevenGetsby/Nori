@@ -282,6 +282,14 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert isinstance(backend.catalog_service, services.BackendCatalogService)
     assert isinstance(backend.content_production_admin, services.BackendContentProductionAdminService)
     assert isinstance(backend.content_production_console, services.BackendContentProductionConsoleService)
+    assert isinstance(
+        backend.content_production_console.case_console,
+        services.BackendContentProductionCaseConsoleService,
+    )
+    assert isinstance(
+        backend.content_production_console.run_console,
+        services.BackendContentProductionRunConsoleService,
+    )
     assert isinstance(backend.content_production_run_service, services.BackendContentProductionRunService)
     assert isinstance(backend.experiment_job_service, services.BackendExperimentJobService)
     assert isinstance(backend.reference_image_service, services.BackendReferenceImageService)
@@ -289,6 +297,8 @@ def test_backend_facade_composes_domain_services(tmp_path):
     assert isinstance(backend.session_store, services.BackendSessionStore)
     assert backend.content_production_admin.project_root == tmp_path
     assert backend.content_production_console.project_root == tmp_path
+    assert backend.content_production_console.case_console.project_root == tmp_path
+    assert backend.content_production_console.run_console.project_root == tmp_path
     assert backend.session_store.session_manager is backend.session_manager
     assert backend.content_production_run_service.experiment_runner is backend.experiment_runner
     assert backend.content_production_run_service.job_store is backend.job_store
@@ -400,15 +410,43 @@ def test_content_production_run_service_delegates_template_payload_and_preparati
 
 def test_content_production_console_uses_shared_service_error_boundary():
     console_source = (ROOT / "backend" / "services" / "content_production_console.py").read_text(encoding="utf-8")
+    case_source = (ROOT / "backend" / "services" / "content_production_console_cases.py").read_text(encoding="utf-8")
+    run_source = (ROOT / "backend" / "services" / "content_production_console_runs.py").read_text(encoding="utf-8")
     errors_source = (ROOT / "backend" / "services" / "service_errors.py").read_text(encoding="utf-8")
 
     assert "def map_service_errors" in errors_source
     assert "except FileNotFoundError as exc" in errors_source
     assert "except ValueError as exc" in errors_source
-    assert "from .service_errors import map_service_errors" in console_source
+    assert "from .content_production_console_cases import BackendContentProductionCaseConsoleService" in console_source
+    assert "from .content_production_console_runs import BackendContentProductionRunConsoleService" in console_source
+    assert "from .service_errors import map_service_errors" in case_source
+    assert "from .service_errors import map_service_errors" in run_source
     assert "except FileNotFoundError as exc" not in console_source
     assert "except ValueError as exc" not in console_source
-    assert console_source.count("with map_service_errors():") >= 15
+    assert "except FileNotFoundError as exc" not in case_source
+    assert "except ValueError as exc" not in case_source
+    assert "except FileNotFoundError as exc" not in run_source
+    assert "except ValueError as exc" not in run_source
+    assert case_source.count("with map_service_errors():") >= 10
+    assert run_source.count("with map_service_errors():") >= 8
+
+
+def test_content_production_console_facade_delegates_case_and_run_surfaces():
+    console_source = (ROOT / "backend" / "services" / "content_production_console.py").read_text(encoding="utf-8")
+    case_source = (ROOT / "backend" / "services" / "content_production_console_cases.py").read_text(encoding="utf-8")
+    run_source = (ROOT / "backend" / "services" / "content_production_console_runs.py").read_text(encoding="utf-8")
+
+    assert "from ..experiments import" not in console_source
+    assert "self.case_console = case_console or BackendContentProductionCaseConsoleService" in console_source
+    assert "self.run_console = run_console or BackendContentProductionRunConsoleService" in console_source
+    assert "def case_delivery" in case_source
+    assert "def get_case_delivery_export" in case_source
+    assert "def build_case_evaluation_draft" in case_source
+    assert "def _resolve_case_run_id" in case_source
+    assert "def list_runs" in run_source
+    assert "def get_run_export" in run_source
+    assert "def inspect_run_artifacts" in run_source
+    assert "def record_run_evaluation" in run_source
 
 
 def test_experiment_job_store_delegates_presenter_helpers():
