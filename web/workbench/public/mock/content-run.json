@@ -1,0 +1,53 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "workflow_name": "content_production",
+    "run_id": "mock_run_ready",
+    "run_dir": "cases/Holly/runs/mock_run_ready",
+    "status": "succeeded",
+    "session_id": "mock_session",
+    "task_id": "mock_task",
+    "asset_paths": [],
+    "asset_ids": [],
+    "artifact_paths": {
+      "content_package.json": "cases/Holly/runs/mock_run_ready/content_package.json",
+      "summary.md": "cases/Holly/runs/mock_run_ready/summary.md"
+    },
+    "cover_paths": [
+      "covers/cover_01.png"
+    ],
+    "image_reference": {
+      "status": "sent",
+      "sent": true
+    },
+    "workflow_run": {
+      "status": "succeeded",
+      "session_id": "mock_session",
+      "task_id": "mock_task",
+      "stages": [
+        {
+          "stage_name": "content_package",
+          "status": "succeeded"
+        }
+      ]
+    },
+    "actions": [
+      {
+        "action_id": "inspect_run",
+        "label": "Inspect run",
+        "href": "/workflows/content-production/runs/Holly/mock_run_ready/artifacts/inspect"
+      },
+      {
+        "action_id": "export_run",
+        "label": "Export run",
+        "href": "/workflows/content-production/runs/Holly/mock_run_ready/export"
+      }
+    ],
+    "links": {
+      "self": "/workflows/content-production/runs/Holly/mock_run_ready",
+      "artifacts": "/workflows/content-production/runs/Holly/mock_run_ready/artifacts/inspect",
+      "export": "/workflows/content-production/runs/Holly/mock_run_ready/export"
+    }
+  }
+}

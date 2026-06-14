@@ -1,0 +1,101 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "option_groups": {
+      "platform": [
+        {
+          "option_id": "xhs",
+          "label": "Xiaohongshu",
+          "description": "XHS image-text note and cover workflow.",
+          "default": true
+        },
+        {
+          "option_id": "wechat",
+          "label": "WeChat Official Account",
+          "description": "Article plus cover-pair planning."
+        }
+      ],
+      "artifact_type": [
+        {
+          "option_id": "image_text_post",
+          "label": "Image-text post",
+          "description": "Spec-driven XHS image-text post.",
+          "default": true
+        },
+        {
+          "option_id": "note",
+          "label": "Note",
+          "description": "Text note with optional cover image."
+        },
+        {
+          "option_id": "article",
+          "label": "Article",
+          "description": "Long-form article with cover planning."
+        }
+      ],
+      "image_source": [
+        {
+          "option_id": "uploaded_assets",
+          "label": "Uploaded assets",
+          "description": "Use user-provided images as reference/material.",
+          "default": true
+        },
+        {
+          "option_id": "market_evidence",
+          "label": "Market evidence",
+          "description": "Use collected hot-note images as inspiration/evidence references."
+        },
+        {
+          "option_id": "generated_only",
+          "label": "Generated only",
+          "description": "Generate a cover without image references."
+        }
+      ],
+      "cover_strategy": [
+        {
+          "option_id": "auto",
+          "label": "Auto",
+          "description": "Let Nori choose references and write the image prompt.",
+          "default": true
+        },
+        {
+          "option_id": "manual_references",
+          "label": "Manual references",
+          "description": "User or frontend provides selected reference image paths."
+        },
+        {
+          "option_id": "text_only_prompt",
+          "label": "Text-only prompt",
+          "description": "Skip reference images and generate from prompt only."
+        }
+      ],
+      "human_gate_mode": [
+        {
+          "option_id": "skip",
+          "label": "Skip",
+          "description": "Default local mode; record gate as skipped and continue.",
+          "default": true
+        },
+        {
+          "option_id": "pause",
+          "label": "Pause",
+          "description": "Stop before gated stage and wait for human approval."
+        }
+      ],
+      "entry_mode": [
+        {
+          "option_id": "direct_action",
+          "label": "Direct action",
+          "description": "Call a concrete content capability route.",
+          "default": true
+        },
+        {
+          "option_id": "workflow",
+          "label": "Workflow",
+          "description": "Run an orchestrated workflow such as content-production."
+        }
+      ]
+    }
+  }
+}

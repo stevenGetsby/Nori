@@ -1,0 +1,31 @@
+{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "ready": true,
+    "reason": "image_generation_succeeded",
+    "published_count": 1,
+    "provider_fetchable_count": 1,
+    "provider_fetchable_reference_images": [
+      "https://backend.nori.ai/sessions/mock_session_holly/assets/asset_mock_reference_1/file"
+    ],
+    "publish": {
+      "assets": [
+        {
+          "asset_id": "asset_mock_reference_1",
+          "reason": "backend_public_base_url"
+        }
+      ]
+    },
+    "generation": {
+      "ready": true,
+      "image_count": 1
+    },
+    "next_actions": [
+      {
+        "action_id": "run_strict_preflight",
+        "label": "Run strict preflight"
+      }
+    ]
+  }
+}
