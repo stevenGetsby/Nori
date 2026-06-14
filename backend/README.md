@@ -142,7 +142,9 @@ rerun with the current tunnel URL.
 - `experiments/reference_images.py` owns image-reference summary and trace
   projections for run manifests and reports.
 - `experiments/cases.py` owns case overview, reports, selected-run resolution,
-  comparisons, and case listing.
+  and case listing.
+- `experiments/comparisons.py` owns case-centered run comparison snapshots and
+  comparison candidates for decision UIs.
 - `experiments/workbench.py` owns the product-console workbench snapshot that
   combines diagnostics, overview, comparison, delivery, and active artifacts.
 - `experiments/selections.py` owns case selection state, selection history,

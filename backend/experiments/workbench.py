@@ -3,7 +3,8 @@ from __future__ import annotations
 
 from .common import Any, PROJECT_ROOT, Path, datetime
 from .artifacts import inspect_content_production_run_artifacts
-from .cases import content_production_case_compare, content_production_experiment_overview
+from .cases import content_production_experiment_overview
+from .comparisons import content_production_case_compare
 from .diagnostics import content_production_diagnostics
 
 

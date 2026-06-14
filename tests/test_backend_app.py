@@ -423,6 +423,23 @@ def test_experiment_workbench_is_split_from_case_reports():
     assert "content_production_experiment_overview" in workbench_source
 
 
+def test_experiment_case_comparisons_are_split_from_case_reports():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    cases_source = (ROOT / "backend" / "experiments" / "cases.py").read_text(encoding="utf-8")
+    comparison_source = (ROOT / "backend" / "experiments" / "comparisons.py").read_text(encoding="utf-8")
+    workbench_source = (ROOT / "backend" / "experiments" / "workbench.py").read_text(encoding="utf-8")
+    delivery_source = (ROOT / "backend" / "experiments" / "delivery.py").read_text(encoding="utf-8")
+
+    assert "from .comparisons import content_production_case_compare" in package_source
+    assert "def content_production_case_compare" not in cases_source
+    assert "def _case_compare_candidate" not in cases_source
+    assert "def content_production_case_compare" in comparison_source
+    assert "def _case_compare_candidate" in comparison_source
+    assert "from .cases import content_production_experiment_report" in comparison_source
+    assert "from .comparisons import content_production_case_compare" in workbench_source
+    assert "from .comparisons import content_production_case_compare" in delivery_source
+
+
 def test_image_reference_projections_are_split_from_artifact_catalogs():
     package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
     artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")

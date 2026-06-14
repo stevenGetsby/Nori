@@ -57,12 +57,12 @@ from .selections import (
     record_content_production_case_selection,
 )
 from .cases import (
-    content_production_case_compare,
     content_production_experiment_overview,
     content_production_experiment_report,
     get_content_production_case_selected_run,
     list_content_production_cases,
 )
+from .comparisons import content_production_case_compare
 from .workbench import content_production_experiment_workbench
 from .timelines import content_production_case_timeline
 from .runner import ContentProductionExperimentRunner, ContentProductionRunFailed
