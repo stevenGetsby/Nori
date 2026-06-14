@@ -440,6 +440,23 @@ def test_experiment_case_comparisons_are_split_from_case_reports():
     assert "from .comparisons import content_production_case_compare" in delivery_source
 
 
+def test_experiment_artifact_exports_are_split_from_artifact_catalogs():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")
+    exports_source = (ROOT / "backend" / "experiments" / "artifact_exports.py").read_text(encoding="utf-8")
+
+    assert "from .artifact_exports import" in package_source
+    assert "def build_content_production_run_export" not in artifacts_source
+    assert "def build_content_production_case_export" not in artifacts_source
+    assert "def build_content_production_case_delivery_export" not in artifacts_source
+    assert "def build_content_production_run_export" in exports_source
+    assert "def build_content_production_case_export" in exports_source
+    assert "def build_content_production_case_delivery_export" in exports_source
+    assert "def artifact_catalog_for_run" in artifacts_source
+    assert "def inspect_content_production_run_artifacts" in artifacts_source
+    assert "def resolve_content_production_artifact_path" in artifacts_source
+
+
 def test_image_reference_projections_are_split_from_artifact_catalogs():
     package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
     artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")

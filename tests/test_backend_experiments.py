@@ -62,7 +62,12 @@ def test_backend_experiments_is_split_into_capability_modules():
         "artifacts": [
             "artifact_catalog_for_run",
             "resolve_content_production_artifact_path",
+            "inspect_content_production_run_artifacts",
+        ],
+        "artifact_exports": [
             "build_content_production_run_export",
+            "build_content_production_case_export",
+            "build_content_production_case_delivery_export",
         ],
         "cases": [
             "content_production_experiment_overview",

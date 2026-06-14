@@ -137,8 +137,10 @@ rerun with the current tunnel URL.
   comparison row projection plus shared count helpers for experiment summaries.
 - `experiments/presenters.py` owns shared product-facing report projections
   such as run report rows and best-run scoring.
-- `experiments/artifacts.py` owns artifact catalogs, artifact resolution, and
-  zip exports.
+- `experiments/artifacts.py` owns artifact catalogs, artifact inspection,
+  artifact URLs, and artifact resolution.
+- `experiments/artifact_exports.py` owns run, case, and delivery zip export
+  bundles.
 - `experiments/reference_images.py` owns image-reference summary and trace
   projections for run manifests and reports.
 - `experiments/cases.py` owns case overview, reports, selected-run resolution,
