@@ -423,6 +423,27 @@ def test_experiment_workbench_is_split_from_case_reports():
     assert "content_production_experiment_overview" in workbench_source
 
 
+def test_image_reference_projections_are_split_from_artifact_catalogs():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    artifacts_source = (ROOT / "backend" / "experiments" / "artifacts.py").read_text(encoding="utf-8")
+    reference_source = (ROOT / "backend" / "experiments" / "reference_images.py").read_text(encoding="utf-8")
+    runs_source = (ROOT / "backend" / "experiments" / "runs.py").read_text(encoding="utf-8")
+    runner_source = (ROOT / "backend" / "experiments" / "runner.py").read_text(encoding="utf-8")
+
+    assert "from .reference_images import image_reference_from_package, image_reference_summary" in package_source
+    assert "def image_reference_summary" not in artifacts_source
+    assert "def image_reference_from_package" not in artifacts_source
+    assert "def _image_reference_trace_from_cover_result" not in artifacts_source
+    assert "def _enrich_image_reference_trace" not in artifacts_source
+    assert "from .reference_images import" in artifacts_source
+    assert "def image_reference_summary" in reference_source
+    assert "def image_reference_from_package" in reference_source
+    assert "def _image_reference_trace_from_cover_result" in reference_source
+    assert "def _enrich_image_reference_trace" in reference_source
+    assert "from .reference_images import _enrich_image_reference_trace, image_reference_from_package" in runs_source
+    assert "from .reference_images import _enrich_image_reference_trace, image_reference_summary" in runner_source
+
+
 def test_reference_image_service_is_split_by_strategy_and_result_payloads():
     service_source = (ROOT / "backend" / "services" / "reference_images.py").read_text(encoding="utf-8")
     publishers_source = (ROOT / "backend" / "services" / "reference_image_publishers.py").read_text(encoding="utf-8")

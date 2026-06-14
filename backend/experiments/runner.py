@@ -51,8 +51,9 @@ from .common import (
     top_notes_result_from_dict,
     zipfile,
 )
-from .artifacts import artifact_urls_for_run, cover_urls_for_run, image_reference_summary, _enrich_image_reference_trace
+from .artifacts import artifact_urls_for_run, cover_urls_for_run
 from .diagnostics import _runtime_model_snapshot
+from .reference_images import _enrich_image_reference_trace, image_reference_summary
 from .reviews import _read_evaluations, evaluation_summary
 
 

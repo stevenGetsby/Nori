@@ -36,11 +36,10 @@ from .artifacts import (
     build_content_production_case_export,
     build_content_production_run_export,
     cover_urls_for_run,
-    image_reference_from_package,
-    image_reference_summary,
     inspect_content_production_run_artifacts,
     resolve_content_production_artifact_path,
 )
+from .reference_images import image_reference_from_package, image_reference_summary
 from .runs import (
     compare_content_production_runs,
     content_production_count_by,
