@@ -1,0 +1,285 @@
+{
+  "calendar_id": "cal_2026-06-08_7d",
+  "start_date": "2026-06-08",
+  "end_date": "2026-06-14",
+  "cadence": "2026-06-08 至 2026-06-14 共 7 天，每天制作 1 篇小红书图文笔记任务，不安排真实发布、自动互动或自动抓取数据；每条任务产出需包含封面标题方向、正文脚本方向、素材清单、产品或 IP 植入点和风险自查记录，可交给 ContentTask -> NoteMakerAgent -> CoverDirectorAgent 继续生产。",
+  "themes": [
+    "用“厕所时间神圣不可侵犯”建立 Holly Shit开心拉屎的反焦虑品牌认知",
+    "把杯子、包包、挂件、贴纸、冰箱贴、手机支架转化为可收藏的产品故事",
+    "建立“同济设计生主理人 + 怪趣文创小团队”的真实人设",
+    "用 IP 小剧场和市集观察增强账号记忆点与信任感"
+  ],
+  "tasks": [
+    {
+      "task_id": "task_d01_01",
+      "title": "2026-06-08｜账号第一条：Shit人生也要拉得开心",
+      "scheduled_date": "2026-06-08",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "品牌认知与反焦虑态度开场",
+      "objective": "让用户快速理解 Holly Shit开心拉屎不是低俗玩梗，而是用怪趣文创表达反焦虑、身体自主权和合法躺平。",
+      "status": "planned",
+      "priority": 1,
+      "owner": "",
+      "brief": {
+        "cover_title": "Shit人生，也要拉得开心",
+        "content_pillar": "拉屎哲学",
+        "angle": "从“厕所时间神圣不可侵犯”切入，解释品牌如何用不体面的语言说出体面的诉求，并自然带出贴纸、杯子、挂件等周边。"
+      },
+      "required_assets": [
+        "品牌 logo 或品牌名视觉素材",
+        "贴纸、杯子、挂件、包包、冰箱贴、手机支架合照",
+        "IP 小女孩、小狗、小猫基础形象图",
+        "主理人手写草稿或设计过程图"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "状态：planned",
+        "语气要反叛、自信、搞笑，但避免低俗猎奇。",
+        "必须绑定至少 2 类具体产品，可用“这些话后来被我做成了贴纸、杯子和挂件”等表达。",
+        "不要虚构销量、价格、疗效或合作背书。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_llm"
+      }
+    },
+    {
+      "task_id": "task_d02_02",
+      "title": "2026-06-09｜产品小故事：把焦虑贴在能看见的地方",
+      "scheduled_date": "2026-06-09",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "贴纸与冰箱贴的设计灵感",
+      "objective": "用轻量产品故事承接品牌理念，让贴纸和冰箱贴从搞怪小物变成可收藏、可送人、可表达情绪的文创产品。",
+      "status": "planned",
+      "priority": 1,
+      "owner": "",
+      "brief": {
+        "cover_title": "我把焦虑做成了贴纸",
+        "content_pillar": "产品小故事",
+        "angle": "围绕“反焦虑金句如何变成贴纸/冰箱贴”讲设计过程、摆放场景和情绪价值，降低硬广感。"
+      },
+      "required_assets": [
+        "贴纸单品平铺图",
+        "冰箱贴上冰箱或磁吸板的场景图",
+        "设计草稿、打样图或局部细节图",
+        "带有反焦虑文案的产品特写"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "状态：planned",
+        "至少绑定贴纸和冰箱贴 2 类产品。",
+        "可参考“冰箱新护法”类内容结构，但不得照搬标题或文案。",
+        "避免写成单纯上架广告，要突出设计灵感和使用场景。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_llm"
+      }
+    },
+    {
+      "task_id": "task_d03_03",
+      "title": "2026-06-10｜IP小剧场：今天谁在偷偷合法躺平",
+      "scheduled_date": "2026-06-10",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "小女孩、小狗、小猫的情绪角色剧场",
+      "objective": "建立品牌 IP 角色记忆点，用打工人、学生党、内耗人群的日常瞬间承接产品植入。",
+      "status": "planned",
+      "priority": 1,
+      "owner": "",
+      "brief": {
+        "cover_title": "今天谁在厕所里重启人生？",
+        "content_pillar": "IP角色剧场",
+        "angle": "用三格或多图小剧场呈现小女孩崩溃后去厕所重启、小狗草丛自由时刻、小猫捣蛋式松弛感，并植入挂件、贴纸、手机支架。"
+      },
+      "required_assets": [
+        "小女孩 IP 表情或动作图",
+        "小狗 IP 表情或动作图",
+        "小猫 IP 表情或动作图",
+        "挂件、贴纸、手机支架产品图",
+        "可排成 3-6 张图的小剧场分镜素材"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "状态：planned",
+        "至少明确 1 个主角 IP，建议三位角色都出现。",
+        "剧情要围绕情绪释放和反焦虑，不把屎尿屁写成恶心猎奇。",
+        "每个 IP 最好对应一个产品：小女孩挂件、小狗贴纸、小猫手机支架。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_llm"
+      }
+    },
+    {
+      "task_id": "task_d04_04",
+      "title": "2026-06-11｜市集观察：大家为什么会在摊位前笑出来",
+      "scheduled_date": "2026-06-11",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "线下市集反馈与摊位真实感",
+      "objective": "把线下摊位、顾客反应、陈列细节转化为线上信任资产，让用户相信这是一个真实被喜欢的怪趣文创品牌。",
+      "status": "planned",
+      "priority": 2,
+      "owner": "",
+      "brief": {
+        "cover_title": "市集上大家看到它都笑了",
+        "content_pillar": "市集观察",
+        "angle": "从摊位上最容易被拿起、被拍照、被朋友互相调侃的产品切入，讲真实观察和陈列变化。"
+      },
+      "required_assets": [
+        "市集摊位全景图",
+        "产品陈列局部图",
+        "顾客可匿名化的互动场景或手部挑选画面",
+        "杯子、包包、挂件等线下展示图",
+        "摊位调整前后对比图"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "状态：planned",
+        "线下反馈必须来自已有真实素材，或使用“有些人会”“经常有人”这类模糊表达。",
+        "不要写具体销量、成交额、排队人数或未确认的爆款数据。",
+        "至少绑定杯子、包包、挂件中的 1 类产品。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_llm"
+      }
+    },
+    {
+      "task_id": "task_d05_05",
+      "title": "2026-06-12｜主理人成长：同济设计生一周做出怪趣文创",
+      "scheduled_date": "2026-06-12",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "学生主理人的真实试错过程",
+      "objective": "强化同济设计生、小团队创业、从线下市集到线上品牌化的真实人设，为涨粉、产品种草和潜在合作咨询建立信任。",
+      "status": "planned",
+      "priority": 1,
+      "owner": "",
+      "brief": {
+        "cover_title": "同济设计生，做了个有点离谱的品牌",
+        "content_pillar": "主理人成长",
+        "angle": "讲一次偶然机会、一周仓促做产品、线下反馈不错、决定继续做小红书账号的真实路径，并植入全品类周边。"
+      },
+      "required_assets": [
+        "主理人工作照或背影照",
+        "设计学院相关但不涉及隐私的场景素材",
+        "草稿、电脑设计界面或打样过程图",
+        "小团队协作花絮",
+        "杯子、包包、挂件、贴纸等产品集合图"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "状态：planned",
+        "突出真实试错，不要包装成成熟大品牌。",
+        "可以提“同济大学设计创意学院学生”身份，但避免过度消费学校背书。",
+        "合作入口只能表达“欢迎聊插画定制/市集/联名可能”，不要虚构已有合作案例。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_llm"
+      }
+    },
+    {
+      "task_id": "task_d06_06",
+      "title": "2026-06-13｜产品种草：打工人的合法躺平随身套装",
+      "scheduled_date": "2026-06-13",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "杯子、包包、手机支架的日常使用场景",
+      "objective": "强化产品可购买、可使用、可送人的种草属性，把品牌态度落到办公桌、通勤包和宿舍桌面等具体生活场景。",
+      "status": "planned",
+      "priority": 2,
+      "owner": "",
+      "brief": {
+        "cover_title": "打工人的合法躺平套装",
+        "content_pillar": "产品小故事",
+        "angle": "用一天的生活动线展示杯子、包包、手机支架如何陪伴上班上学，从早八/通勤/工位/厕所时间串起产品。"
+      },
+      "required_assets": [
+        "杯子使用场景图",
+        "包包上身或通勤场景图",
+        "手机支架桌面使用图",
+        "产品细节特写",
+        "可搭配贴纸或挂件的组合图"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "状态：planned",
+        "至少绑定杯子、包包、手机支架 3 类产品。",
+        "不要直接堆产品卖点，要用生活场景带出情绪价值。",
+        "封面建议突出一组产品组合，避免画面过乱。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_llm"
+      }
+    },
+    {
+      "task_id": "task_d07_07",
+      "title": "2026-06-14｜合作入口：这个怪趣 IP 可以长到哪里去",
+      "scheduled_date": "2026-06-14",
+      "platform": "xhs",
+      "content_type": "note",
+      "topic": "品牌栏目复盘与潜在合作咨询入口",
+      "objective": "在不虚构合作背书的前提下，展示品牌可延展方向，为插画定制、联名、市集摊位、校园活动等潜在咨询建立入口。",
+      "status": "planned",
+      "priority": 3,
+      "owner": "",
+      "brief": {
+        "cover_title": "一个怪趣 IP，想继续长大",
+        "content_pillar": "主理人成长",
+        "angle": "用 7 天内容栏目和产品矩阵做一次轻复盘，展示小女孩、小狗、小猫与贴纸、挂件、杯子、包包等产品的延展可能。"
+      },
+      "required_assets": [
+        "IP 三角色集合图",
+        "产品矩阵图",
+        "市集摊位图",
+        "主理人或团队工作花絮",
+        "可展示品牌视觉统一性的拼图素材"
+      ],
+      "references": [],
+      "package_id": "",
+      "notes": [
+        "状态：planned",
+        "不要写已经完成的联名、定制或合作案例，除非客户提供真实素材。",
+        "合作表达要克制，可写“如果你也喜欢这种怪趣表达，可以来聊聊”。",
+        "必须绑定 IP 角色和至少 2 类产品。"
+      ],
+      "metadata": {
+        "source": "calendar_planner_llm"
+      }
+    }
+  ],
+  "notes": [
+    "本排期共 7 条任务，服务 KPI 中 7 篇待发布笔记目标，不超过 7 条。",
+    "内容支柱覆盖：拉屎哲学、产品小故事、IP角色剧场、市集观察、主理人成长，满足至少 5 个栏目覆盖。",
+    "高优先级内容为 day 1、day 2、day 3、day 5，共 4 条。",
+    "所有任务均为 planned 状态，仅用于内容制作排期，不包含真实发布、自动互动或自动抓取数据。",
+    "每条内容均需在进入生产链路前做人工风险自查：不低俗猎奇、不虚构数据或背书、绑定具体产品或 IP、符合小红书安全表达。"
+  ],
+  "metadata": {
+    "planner": "llm_with_fallback",
+    "source_plan_id": "plan_7d",
+    "source_kpi_plan_id": "kpi_plan_7d",
+    "horizon_days": 7,
+    "theme_count": 4,
+    "critic": {
+      "source": "rules",
+      "status": "warn",
+      "issues": [
+        "周期主题未覆盖运营计划内容支柱"
+      ],
+      "checks": {
+        "themes": true,
+        "tasks": true,
+        "date_range": true,
+        "planned_status": true,
+        "task_briefs": true
+      }
+    }
+  }
+}

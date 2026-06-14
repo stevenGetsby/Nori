@@ -1,0 +1,39 @@
+{
+  "task_id": "task_d01_01",
+  "title": "第 1 天｜Holly Shit 不是低俗玩梗，是反焦虑快乐哲学",
+  "scheduled_date": "2026-06-08",
+  "platform": "xhs",
+  "content_type": "note",
+  "topic": "品牌第一条认知内容：解释“Shit人生也要拉得开心”",
+  "objective": "让用户快速理解品牌核心：用荒诞幽默回收焦虑、时间和身体自主权，同时避免被误解为低俗猎奇。",
+  "status": "drafted",
+  "priority": 1,
+  "owner": "",
+  "brief": {
+    "cover_title": "Shit人生，也要拉得开心",
+    "content_pillar": "拉屎哲学：用厕所时间、带薪拉屎、合法躺平等概念表达反焦虑、反内卷和身体自主权。",
+    "angle": "从“厕所时间神圣不可侵犯”切入，把排泄梗转译成年轻人对喘息、尊严和松弛感的需求。正文用 3-5 个金句解释品牌，不展开露骨生理细节。"
+  },
+  "required_assets": [
+    "品牌 logo 或品牌名视觉",
+    "IP 小女孩主视觉或草图",
+    "1-3 个代表性产品合照，如杯子、贴纸、挂件",
+    "可做封面大字的品牌 slogan 素材"
+  ],
+  "references": [],
+  "package_id": "pkg_task_d01_01",
+  "notes": [
+    "正文要讲清楚品牌不是为了恶心人，而是用不体面的语言说体面的诉求。",
+    "避免露骨画面和过度生理描写，表达重点放在反焦虑、合法躺平、打工人松弛感。",
+    "收藏理由：整理成“反焦虑发疯金句”，适合用户收藏当嘴替。",
+    "评论入口：你最想保护哪段厕所时间？上班、上课、回家后还是睡前？"
+  ],
+  "metadata": {
+    "source": "calendar_planner_llm",
+    "production": {
+      "status": "drafted",
+      "package_id": "pkg_task_d01_01",
+      "producer": "ContentProducerAgent"
+    }
+  }
+}

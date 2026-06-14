@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from nori.user_profiling.account_planner import portrait as account_plan_portrait
+from nori.agents.user_profiling.account_planner import portrait as account_plan_portrait
 
 
 def test_account_list_cleans_keywords_limits_rows_and_uses_fallback():

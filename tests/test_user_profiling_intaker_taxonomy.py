@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from nori.user_profiling.intaker import taxonomy as intake_taxonomy
+from nori.agents.user_profiling.intaker import taxonomy as intake_taxonomy
 
 
 def test_rule_taxonomy_picks_goal_format_assets_and_guardrails():

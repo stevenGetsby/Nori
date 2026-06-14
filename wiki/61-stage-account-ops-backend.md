@@ -1,4 +1,4 @@
-<!-- Last verified: 2026-05-24 | Current stage: P1 Account-Ops Backend -->
+<!-- Last verified: 2026-06-01 | Current stage: P1 Account-Ops Backend -->
 
 # Stage 61: Account-Ops Backend
 
@@ -10,16 +10,16 @@ Turn Nori from one-shot generation into an account-operations backend with stabl
 
 | Module | Status | Notes |
 | --- | --- | --- |
-| `nori/context_building/models.py` | Implemented | Provider-free account-operation dataclasses with serialization; `from_dict()` input cleanup uses shared `nori.core.contracts` helpers. |
-| `nori/context_building/operation_planner/operation_planner.py` | Implemented | LLM JSON path + deterministic fallback + critic metadata + fallback `llm_error` metadata. |
-| `nori/context_building/operation_planner/project_builder.py` | Implemented | Builds OperationPlanner deterministic fallback projects, including rule-based tasks, calendars, derived KPI snapshots, positioning, asset requirements, and benchmark references. |
-| `nori/context_building/operation_planner/normalizer.py` | Implemented | Normalizes OperationPlanner LLM operation-plan/calendar output into a fallback project shell, including tasks, date clamps, metadata, and derived KPI snapshot. |
-| `nori/context_building/kpi_planner/kpi_planner.py` | Implemented | Builds measurable targets; can read project task count; records optional LLM failure metadata on fallback. |
-| `nori/context_building/kpi_planner/normalizer.py` | Implemented | Normalizes KPIPlanner fallback and LLM output, including task-count defaults, milestone day clamps, and measurement-note fallback preservation. |
-| `nori/context_building/calendar_planner/calendar_planner.py` | Implemented | Builds scheduled content tasks; records optional LLM failure metadata on fallback. |
-| `nori/context_building/calendar_planner/normalizer.py` | Implemented | Normalizes CalendarPlanner fallback and LLM output, including task-count caps, scheduled-day clamps, content-pillar repair, and empty-list fallback preservation. |
-| `nori/user_profiling/account_planner/account_planner.py` | Implemented | Account positioning and IP portrait. |
-| `nori/user_profiling/account_planner/normalizer.py` | Implemented | Normalizes AccountPlanner LLM/search output into stable `AccountPlanResult` fields, including keyword levels, benchmark creators, and fallback metadata. |
+| `nori/core/planning_models.py` | Implemented | Provider-free account-operation dataclasses with serialization; `from_dict()` input cleanup uses shared `nori.core.contracts` helpers. |
+| `nori/agents/planning/operation_planner/operation_planner.py` | Implemented | LLM JSON path + deterministic fallback + critic metadata + fallback `llm_error` metadata. |
+| `nori/agents/planning/operation_planner/project_builder.py` | Implemented | Builds OperationPlanner deterministic fallback projects, including rule-based tasks, calendars, derived KPI snapshots, positioning, asset requirements, and benchmark references. |
+| `nori/agents/planning/operation_planner/normalizer.py` | Implemented | Normalizes OperationPlanner LLM operation-plan/calendar output into a fallback project shell, including tasks, date clamps, metadata, and derived KPI snapshot. |
+| `nori/agents/planning/kpi_planner/kpi_planner.py` | Implemented | Builds measurable targets; can read project task count; records optional LLM failure metadata on fallback. |
+| `nori/agents/planning/kpi_planner/normalizer.py` | Implemented | Normalizes KPIPlanner fallback and LLM output, including task-count defaults, milestone day clamps, and measurement-note fallback preservation. |
+| `nori/agents/planning/calendar_planner/calendar_planner.py` | Implemented | Builds scheduled content tasks; records optional LLM failure metadata on fallback. |
+| `nori/agents/planning/calendar_planner/normalizer.py` | Implemented | Normalizes CalendarPlanner fallback and LLM output, including task-count caps, scheduled-day clamps, content-pillar repair, and empty-list fallback preservation. |
+| `nori/agents/user_profiling/account_planner/account_planner.py` | Implemented | Account positioning and IP portrait. |
+| `nori/agents/user_profiling/account_planner/normalizer.py` | Implemented | Normalizes AccountPlanner LLM/search output into stable `AccountPlanResult` fields, including keyword levels, benchmark creators, and fallback metadata. |
 
 ## Core Data Model
 
@@ -78,15 +78,15 @@ AccountOperationProject
 | Test | Coverage |
 | --- | --- |
 | `tests/test_workflow_models.py` | Defaults, deep-copy behavior, project round trips, package exports. |
-| `tests/test_context_building_operation_planner_project_builder.py` | OperationPlanner deterministic fallback project, calendar, tasks, derived KPI snapshot, safe defaults, asset requirements, and benchmark references. |
-| `tests/test_context_building_operation_planner_normalizer.py` | OperationPlanner LLM output merge, task-row normalization, date clamping, fallback-task preservation, and derived KPI snapshot behavior. |
-| `tests/test_context_building_operation_planner.py` | Fallback, dict input, mocked LLM JSON, JSON-mode routing, failure fallback metadata. |
-| `tests/test_context_building_kpi_planner_normalizer.py` | KPI fallback defaults, LLM KPI merge, milestone clamping, measurement-note fallback, and metadata behavior. |
-| `tests/test_context_building_kpi_planner.py` | Operation plan/project inputs, mocked LLM JSON, JSON-mode routing, critic and fallback metadata. |
-| `tests/test_context_building_calendar_planner_normalizer.py` | Calendar fallback scheduling, LLM task-row normalization, scheduled-day clamping, content-pillar repair, empty-list fallback, and metadata behavior. |
-| `tests/test_context_building_calendar_planner.py` | Calendar task scheduling, project/dict inputs, mocked LLM JSON, JSON-mode routing, failure fallback metadata. |
-| `tests/test_context_building_asset_research.py` | Asset/competitor model round trips, helper behavior, and project nesting. |
-| `tests/test_context_building_account_positioning.py` | Account positioning extraction, legacy dict compatibility, and planner integration. |
+| `tests/test_planning_operation_planner_project_builder.py` | OperationPlanner deterministic fallback project, calendar, tasks, derived KPI snapshot, safe defaults, asset requirements, and benchmark references. |
+| `tests/test_planning_operation_planner_normalizer.py` | OperationPlanner LLM output merge, task-row normalization, date clamping, fallback-task preservation, and derived KPI snapshot behavior. |
+| `tests/test_planning_operation_planner.py` | Fallback, dict input, mocked LLM JSON, JSON-mode routing, failure fallback metadata. |
+| `tests/test_planning_kpi_planner_normalizer.py` | KPI fallback defaults, LLM KPI merge, milestone clamping, measurement-note fallback, and metadata behavior. |
+| `tests/test_planning_kpi_planner.py` | Operation plan/project inputs, mocked LLM JSON, JSON-mode routing, critic and fallback metadata. |
+| `tests/test_planning_calendar_planner_normalizer.py` | Calendar fallback scheduling, LLM task-row normalization, scheduled-day clamping, content-pillar repair, empty-list fallback, and metadata behavior. |
+| `tests/test_planning_calendar_planner.py` | Calendar task scheduling, project/dict inputs, mocked LLM JSON, JSON-mode routing, failure fallback metadata. |
+| `tests/test_market_analysis_asset_research.py` | Asset/competitor model round trips, helper behavior, and project nesting. |
+| `tests/test_user_profiling_account_positioning.py` | Account positioning extraction, legacy dict compatibility, and planner integration. |
 | `tests/test_user_profiling_account_planner_normalizer.py` | AccountPlanner LLM result normalization, keyword cleaning, benchmark creator derivation, and fallback preservation. |
 | `tests/test_model_coercion.py` | Shared model coercion defaults used by ops and agent model `from_dict()` methods. |
 | `tests/test_domain_model_contracts.py` | `AccountPlannerInput` / `AccountPlanResult` serialization and restoration used before ops handoff. |

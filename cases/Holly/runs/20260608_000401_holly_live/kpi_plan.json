@@ -1,0 +1,52 @@
+{
+  "plan_id": "kpi_plan_7d",
+  "horizon_days": 7,
+  "targets": {
+    "content_tasks": 7,
+    "review_pass_rate": ">= 90%",
+    "manual_metrics_check": "每周 1 次"
+  },
+  "milestones": [
+    {
+      "day": 1,
+      "target": "完成第 1 条品牌认知笔记 brief，人工核验是否讲清 Holly Shit开心拉屎的品牌理念、账号人设、关注理由，并关联至少 1 个产品或 IP"
+    },
+    {
+      "day": 2,
+      "target": "完成第 2 条反焦虑观点笔记 brief，人工核验是否围绕“厕所时间神圣不可侵犯”形成明确封面钩子、评论入口和合规表达"
+    },
+    {
+      "day": 3,
+      "target": "完成第 3 条产品诞生幕后笔记 brief，人工核验是否讲清杯子或贴纸从灵感、草图、打样到成品的故事，并包含收藏理由"
+    },
+    {
+      "day": 4,
+      "target": "完成第 4 条 IP 角色小剧场笔记 brief，人工核验小女孩、小狗、小猫是否承担打工人情绪表达，并避免低俗猎奇"
+    },
+    {
+      "day": 5,
+      "target": "完成第 5 条市集反馈复盘笔记 brief，人工核验是否基于真实线下反馈素材或模糊化表达，不虚构销量、价格、评价和背书"
+    }
+  ],
+  "measurement_notes": [
+    "内容任务完成数以人工检查可交付文件为准：每条 note brief 至少包含主题、封面标题、正文结构、素材清单、关联产品或 IP、评论入口或收藏理由。",
+    "review_pass_rate 按人工审核表计算：通过项包括产品/IP关联、封面钩子、互动设计、合规尺度、未虚构数据背书；通过 brief 数 / 已审核 brief 数 >= 90% 即达标。",
+    "不假设自动抓取能力；如实际发布，可从小红书创作中心或笔记后台人工记录曝光、阅读、点赞、收藏、评论、关注变化和咨询数，但本周期 KPI 不承诺真实发布结果。",
+    "产品关联率人工核验：7 条内容中每条至少关联 1 类具体产品或 1 个品牌 IP，未关联则该条需返工。",
+    "合规核验以人工逐条阅读为准，重点检查是否存在低俗猎奇、疗效承诺、虚构销量价格、未经证实背书、攻击特定职业公司学校或人群等风险。"
+  ],
+  "metadata": {
+    "planner": "llm_with_fallback",
+    "source_plan_id": "plan_7d",
+    "critic": {
+      "source": "rules",
+      "status": "pass",
+      "issues": [],
+      "checks": {
+        "targets": true,
+        "milestones": true,
+        "measurement_notes": true
+      }
+    }
+  }
+}

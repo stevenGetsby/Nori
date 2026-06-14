@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
-from nori.user_profiling.models import AccountPlannerInput
-from nori.user_profiling.account_planner import prompts as account_plan_prompts
+from nori.agents.user_profiling.schemas import AccountPlannerInput
+from nori.agents.user_profiling.account_planner.package import AccountPlannerPromptBuilder
+
+
+account_plan_prompts = AccountPlannerPromptBuilder()
 
 
 def test_account_plan_user_prompt_serializes_input_evidence_and_search_results():
@@ -42,5 +45,5 @@ def test_account_plan_user_prompt_uses_empty_text_fallback():
 
 
 def test_account_plan_prompt_constants_keep_json_only_contract():
-    assert "只输出 JSON" in account_plan_prompts.SYSTEM_PROMPT
-    assert "输出 JSON，字段固定" in account_plan_prompts.USER_PROMPT_TEMPLATE
+    assert "只输出 JSON" in account_plan_prompts.system_prompt
+    assert "输出 JSON，字段固定" in account_plan_prompts.user_prompt_template

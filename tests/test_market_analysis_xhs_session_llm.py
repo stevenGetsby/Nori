@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import json
 
-import llms
+import nori.core.llms as llms
 import pytest
 
 from data_collect import HotNote
-from nori.market_analysis.xhs_note_analyzer import session_llm as xhs_session_llm
+from nori.agents.market_analysis.xhs_note_analyzer import session_llm as xhs_session_llm
 
 
 def _note(note_id: str, *, desc: str = "", tags: list[str] | None = None) -> HotNote:
@@ -34,8 +34,8 @@ def _note(note_id: str, *, desc: str = "", tags: list[str] | None = None) -> Hot
 def test_generate_keywords_routes_through_shared_json_helper(monkeypatch):
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         return {"keywords": [" 封面设计 ", "封面设计", "小红书运营", "超出数量"]}
 
     monkeypatch.setattr(llms, "chat_json", fake_chat_json)
@@ -45,7 +45,7 @@ def test_generate_keywords_routes_through_shared_json_helper(monkeypatch):
     assert keywords == ["封面设计", "小红书运营"]
     assert calls
     assert calls[0]["usage"] == "llm"
-    assert calls[0]["chat"] is llms.chat
+    assert "_chat" not in calls[0]["kwargs"]
     assert calls[0]["kwargs"]["timeout"] == 30
     assert calls[0]["kwargs"]["json_mode"] is True
     assert "ignored" not in calls[0]["messages"][1]["content"]
@@ -54,8 +54,8 @@ def test_generate_keywords_routes_through_shared_json_helper(monkeypatch):
 def test_label_notes_normalizes_llm_labels(monkeypatch):
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         assert "笔记列表" in messages[1]["content"]
         assert "TAIL_AFTER_200" not in messages[1]["content"]
         return {
@@ -78,6 +78,7 @@ def test_label_notes_normalizes_llm_labels(monkeypatch):
         "n1": {"goal": "planting", "tone": "朋友安利"},
         "n2": {"goal": "general", "tone": "12345678901234567890"},
     }
+    assert "_chat" not in calls[0]["kwargs"]
     assert calls[0]["kwargs"]["timeout"] == 120
     assert calls[0]["kwargs"]["json_mode"] is True
     notes_json = calls[0]["messages"][1]["content"].split("笔记列表:\n", 1)[1].split("\n\n输出 JSON:", 1)[0]

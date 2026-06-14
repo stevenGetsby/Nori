@@ -2,15 +2,15 @@ import json
 import importlib
 from pathlib import Path
 
-import llms
+import nori.core.llms as llms
 import pytest
 
-from nori.market_analysis import XHSNoteAnalyzer
-from nori.market_analysis.models import XHSNoteSample, XHSSeedSkillDraft
+from nori.agents.market_analysis import XHSNoteAnalyzer
+from nori.agents.market_analysis.schemas import XHSNoteSample, XHSSeedSkillDraft
 from data_collect import HotNote, TopNotesResult
 
 
-analyzer_module = importlib.import_module("nori.market_analysis.xhs_note_analyzer.xhs_note_analyzer")
+analyzer_module = importlib.import_module("nori.agents.market_analysis.xhs_note_analyzer.xhs_note_analyzer")
 
 
 def _sample_meta_path(tmp_path: Path):
@@ -72,10 +72,10 @@ def test_xhs_note_analyzer_extracts_single_note_seed_skill_without_llm(tmp_path)
 
 
 def test_xhs_note_analyzer_enhances_rule_draft_with_llm(monkeypatch, tmp_path):
-        def fake_chat(messages, *, usage="llm", **kwargs):
+        def fake_chat_json(messages, *, usage="llm", **kwargs):
                 assert usage == "llm"
                 assert "规则草案" in messages[1]["content"]
-                return """
+                return json.loads("""
                 {
                     "match": {
                         "scene": "问题悬念活动型 note",
@@ -109,9 +109,9 @@ def test_xhs_note_analyzer_enhances_rule_draft_with_llm(monkeypatch, tmp_path):
                         "llm_notes": ["需要在更多活动型笔记中验证问题钩子是否高频。"]
                     }
                 }
-                """
+                """)
 
-        monkeypatch.setattr(llms, "chat", fake_chat)
+        monkeypatch.setattr(llms, "chat_json", fake_chat_json)
         analyzer = XHSNoteAnalyzer("cold_start_data/xhs", use_llm=True)
         note = analyzer.load_note(_sample_meta_path(tmp_path))
         skill = analyzer.analyze_note(note)
@@ -126,11 +126,11 @@ def test_xhs_note_analyzer_enhances_rule_draft_with_llm(monkeypatch, tmp_path):
         assert data["validation"]["pipeline"] == ["rule_analyzer", "llm_enhancer", "format_normalizer"]
 
 
-def test_xhs_note_analyzer_routes_json_calls_through_llms_chat_json(monkeypatch, tmp_path):
+def test_xhs_note_analyzer_routes_json_requests_through_llms_chat_json(monkeypatch, tmp_path):
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         return {
             "match": {"scene": "chat_json 场景", "goals": ["收藏"], "note_type": "图文"},
             "craft": {"creative_goal": "通过统一 JSON helper 增强规则。"},
@@ -145,17 +145,17 @@ def test_xhs_note_analyzer_routes_json_calls_through_llms_chat_json(monkeypatch,
 
     assert calls
     assert calls[0]["usage"] == "llm"
-    assert calls[0]["chat"] is llms.chat
+    assert "_chat" not in calls[0]["kwargs"]
     assert calls[0]["kwargs"]["timeout"] == 60
     assert calls[0]["kwargs"]["json_mode"] is True
     assert skill.match["scene"] == "chat_json 场景"
 
 
 def test_xhs_note_analyzer_falls_back_when_llm_fails(monkeypatch, tmp_path):
-    def broken_chat(*args, **kwargs):
+    def broken_chat_json(*args, **kwargs):
         raise RuntimeError("llm down")
 
-    monkeypatch.setattr(llms, "chat", broken_chat)
+    monkeypatch.setattr(llms, "chat_json", broken_chat_json)
     analyzer = XHSNoteAnalyzer("cold_start_data/xhs", use_llm=True)
     note = analyzer.load_note(_sample_meta_path(tmp_path))
     skill = analyzer.analyze_note(note)
@@ -233,17 +233,17 @@ class FakeSessionCollector:
 
 
 def test_collect_for_session_requires_llm_and_writes_skill_only_json(monkeypatch, tmp_path):
-    def fake_chat(messages, *, usage="llm", **kwargs):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
         assert usage == "llm"
         assert "笔记列表" in messages[1]["content"]
-        return """
+        return json.loads("""
         {"labels": [
             {"note_id": "note_1", "goal": "planting", "tone": "朋友安利"},
             {"note_id": "note_2", "goal": "planting", "tone": "朋友安利"}
         ]}
-        """
+        """)
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     analyzer = XHSNoteAnalyzer(use_llm=True)
     report = analyzer.collect_for_session(
         {"platform": "xhs", "keywords": ["测试关键词"], "data_dir": str(tmp_path)},
@@ -264,12 +264,12 @@ def test_collect_for_session_requires_llm_and_writes_skill_only_json(monkeypatch
 
 
 def test_collect_for_session_uses_fixed_search_standard(monkeypatch, tmp_path):
-    monkeypatch.setattr(llms, "chat", lambda *args, **kwargs: """
+    monkeypatch.setattr(llms, "chat_json", lambda *args, **kwargs: json.loads("""
         {"labels": [
             {"note_id": "note_1", "goal": "planting", "tone": "朋友安利"},
             {"note_id": "note_2", "goal": "planting", "tone": "朋友安利"}
         ]}
-        """)
+        """))
     collector = FakeSessionCollector(tmp_path)
     analyzer = XHSNoteAnalyzer(use_llm=True)
 
@@ -287,8 +287,8 @@ def test_collect_for_session_uses_fixed_search_standard(monkeypatch, tmp_path):
 def test_collect_for_session_routes_required_json_stages_through_shared_helper(monkeypatch, tmp_path):
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         prompt = messages[1]["content"]
         if "搜索关键词" in prompt:
             return {"keywords": ["测试关键词"]}
@@ -313,7 +313,7 @@ def test_collect_for_session_routes_required_json_stages_through_shared_helper(m
     assert report.keywords == ["测试关键词"]
     assert [call["kwargs"]["timeout"] for call in calls] == [30, 120]
     assert all(call["usage"] == "llm" for call in calls)
-    assert all(call["chat"] is llms.chat for call in calls)
+    assert all("_chat" not in call["kwargs"] for call in calls)
     assert all(call["kwargs"]["json_mode"] is True for call in calls)
 
 
@@ -327,7 +327,7 @@ def test_collect_for_session_stops_without_llm(tmp_path):
 
 
 def test_collect_for_session_stops_when_llm_labels_are_empty(monkeypatch, tmp_path):
-    monkeypatch.setattr(llms, "chat", lambda *args, **kwargs: '{"labels": []}')
+    monkeypatch.setattr(llms, "chat_json", lambda *args, **kwargs: {"labels": []})
     analyzer = XHSNoteAnalyzer(use_llm=True)
     with pytest.raises(RuntimeError, match="LLM 标签结果为空"):
         analyzer.collect_for_session(
@@ -337,7 +337,7 @@ def test_collect_for_session_stops_when_llm_labels_are_empty(monkeypatch, tmp_pa
 
 
 def test_collect_for_session_stops_when_collection_is_insufficient(monkeypatch, tmp_path):
-    monkeypatch.setattr(llms, "chat", lambda *args, **kwargs: '{"labels": []}')
+    monkeypatch.setattr(llms, "chat_json", lambda *args, **kwargs: {"labels": []})
     analyzer = XHSNoteAnalyzer(use_llm=True)
     with pytest.raises(RuntimeError, match="高赞采集不足"):
         analyzer.collect_for_session(

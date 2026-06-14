@@ -1,0 +1,64 @@
+{
+  "workflow_name": "content_production",
+  "run_id": "workflow_66edd8ac5d5a",
+  "session_id": "session_b67363762b24",
+  "task_id": "task_136fd7a92cd0",
+  "status": "failed",
+  "stages": [
+    {
+      "stage_name": "xhs_top_notes",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_125227_content_production/xhs_top_notes_result.json",
+      "error": "",
+      "started_at": "2026-06-08T04:52:28.002694+00:00",
+      "finished_at": "2026-06-08T04:52:28.003941+00:00",
+      "metadata": {
+        "timeout_seconds": 8.0,
+        "timeout_enforcement": "worker_thread",
+        "timeout_cancellation": "request_returns_worker_may_continue"
+      }
+    },
+    {
+      "stage_name": "market_skill_report",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_125227_content_production/market_session_skill_report.json",
+      "error": "",
+      "started_at": "2026-06-08T04:52:28.004346+00:00",
+      "finished_at": "2026-06-08T04:52:33.403673+00:00",
+      "metadata": {
+        "timeout_seconds": 8.0,
+        "timeout_enforcement": "worker_thread",
+        "timeout_cancellation": "request_returns_worker_may_continue"
+      }
+    },
+    {
+      "stage_name": "intake",
+      "status": "failed",
+      "input_ref": "",
+      "output_ref": "",
+      "error": "StageTimeoutError: stage 'intake' exceeded 8s timeout",
+      "started_at": "2026-06-08T04:52:33.406519+00:00",
+      "finished_at": "2026-06-08T04:52:41.417227+00:00",
+      "metadata": {
+        "timeout_seconds": 8.0,
+        "timeout_enforcement": "worker_thread",
+        "timeout_cancellation": "request_returns_worker_may_continue"
+      }
+    }
+  ],
+  "artifact_refs": [
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_125227_content_production/xhs_top_notes_result.json",
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_125227_content_production/market_session_skill_report.json"
+  ],
+  "metadata": {
+    "engine": "langgraph",
+    "langchain_runnable": "RunnableLambda",
+    "checkpoint_saver": "",
+    "human_gate_mode": "skip",
+    "error": "StageTimeoutError: stage 'intake' exceeded 8s timeout"
+  },
+  "started_at": "2026-06-08T04:52:27.974003+00:00",
+  "finished_at": "2026-06-08T04:52:41.417382+00:00"
+}

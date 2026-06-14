@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 from nori.core import ContentTask, ClientBrief
-from nori.learning_loop.review import policy as content_review_policy
-from nori.content_generation.models import ContentPackage
+from nori.agents.learning_loop.review import policy as content_review_policy
+from nori.agents.content_generation.schemas import ContentPackage
 
 
 def _task() -> ContentTask:

@@ -63,12 +63,11 @@ def test_write_stage_log_keeps_input_output_and_config(tmp_path):
     assert data["output"]["tags"]["platform"] == "小红书"
 
 
-def test_call_stage_json_routes_through_injected_chat_json():
-    sentinel_chat = object()
+def test_call_stage_json_routes_through_chat_json_without_legacy_chat_injection():
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "_chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         return {"ok": True}
 
     data = call_stage_json(
@@ -76,7 +75,6 @@ def test_call_stage_json_routes_through_injected_chat_json():
         user="user prompt",
         timeout=7,
         error_type=StageTestError,
-        chat_func=sentinel_chat,
         chat_json_func=fake_chat_json,
     )
 
@@ -85,13 +83,13 @@ def test_call_stage_json_routes_through_injected_chat_json():
         {"role": "system", "content": "system prompt"},
         {"role": "user", "content": "user prompt"},
     ]
-    assert calls[0]["_chat"] is sentinel_chat
+    assert "_chat" not in calls[0]["kwargs"]
     assert calls[0]["kwargs"]["timeout"] == 7
     assert calls[0]["kwargs"]["json_mode"] is True
 
 
 def test_call_stage_json_translates_parse_errors():
-    import llms
+    import nori.core.llms as llms
 
     def fake_chat_json(*args, **kwargs):
         raise llms.ChatJSONError("bad json", "not json")
@@ -111,16 +109,68 @@ def test_call_stage_json_translates_parse_errors():
         raise AssertionError("expected StageTestError")
 
 
+def test_call_stage_json_retries_parse_errors_with_larger_token_budget():
+    import nori.core.llms as llms
+
+    calls: list[dict] = []
+
+    def fake_chat_json(messages, *, usage="llm", **kwargs):  # noqa: ARG001
+        calls.append(dict(kwargs))
+        if len(calls) == 1:
+            raise llms.ChatJSONError("bad json", '{"items": [1, 2')
+        return {"ok": True}
+
+    data = call_stage_json(
+        system="system",
+        user="user",
+        timeout=1,
+        error_type=StageTestError,
+        chat_json_func=fake_chat_json,
+    )
+
+    assert data == {"ok": True}
+    assert calls[0]["json_mode"] is True
+    assert "_chat" not in calls[0]
+    assert "max_tokens" not in calls[0]
+    assert calls[1]["max_tokens"] == 8192
+
+
+def test_call_stage_json_retries_transient_connection_errors_once():
+    class APIConnectionError(RuntimeError):
+        pass
+
+    calls: list[dict] = []
+
+    def fake_chat_json(messages, *, usage="llm", **kwargs):  # noqa: ARG001
+        calls.append(dict(kwargs))
+        if len(calls) == 1:
+            raise APIConnectionError("Connection error.")
+        return {"ok": True}
+
+    data = call_stage_json(
+        system="system",
+        user="user",
+        timeout=1,
+        error_type=StageTestError,
+        chat_json_func=fake_chat_json,
+    )
+
+    assert data == {"ok": True}
+    assert len(calls) == 2
+    assert calls[0]["timeout"] == 1
+    assert calls[1]["timeout"] == 1
+    assert "max_tokens" not in calls[1]
+
+
 def test_call_stage_messages_json_supports_prebuilt_multimodal_messages():
-    sentinel_chat = object()
     messages = [
         {"role": "system", "content": "vision json"},
         {"role": "user", "content": [{"type": "text", "text": "tag"}, {"type": "image_url", "image_url": {"url": "data:"}}]},
     ]
     calls: list[dict] = []
 
-    def fake_chat_json(messages_arg, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages_arg, "usage": usage, "_chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages_arg, *, usage="llm", **kwargs):
+        calls.append({"messages": messages_arg, "usage": usage, "kwargs": kwargs})
         return {"vision_roles": ["product_shot"]}
 
     data = call_stage_messages_json(
@@ -128,56 +178,51 @@ def test_call_stage_messages_json_supports_prebuilt_multimodal_messages():
         usage="vision",
         timeout=11,
         error_type=StageTestError,
-        chat_func=sentinel_chat,
         chat_json_func=fake_chat_json,
     )
 
     assert data == {"vision_roles": ["product_shot"]}
     assert calls[0]["messages"] == messages
     assert calls[0]["usage"] == "vision"
-    assert calls[0]["_chat"] is sentinel_chat
+    assert "_chat" not in calls[0]["kwargs"]
     assert calls[0]["kwargs"]["timeout"] == 11
     assert calls[0]["kwargs"]["json_mode"] is True
 
 
 def test_try_stage_json_returns_data_and_no_error():
-    sentinel_chat = object()
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "_chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         return {"planned": True}
 
     data, error = try_stage_json(
         system="system",
         user="user",
-        chat_func=sentinel_chat,
         chat_json_func=fake_chat_json,
     )
 
     assert data == {"planned": True}
     assert error is None
-    assert calls[0]["_chat"] is sentinel_chat
+    assert "_chat" not in calls[0]["kwargs"]
     assert calls[0]["kwargs"]["json_mode"] is True
 
 
 def test_try_stage_messages_json_supports_prebuilt_multimodal_messages():
-    sentinel_chat = object()
     messages = [
         {"role": "system", "content": "vision fallback json"},
         {"role": "user", "content": [{"type": "text", "text": "tag"}, {"type": "image_url", "image_url": {"url": "data:"}}]},
     ]
     calls: list[dict] = []
 
-    def fake_chat_json(messages_arg, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages_arg, "usage": usage, "_chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages_arg, *, usage="llm", **kwargs):
+        calls.append({"messages": messages_arg, "usage": usage, "kwargs": kwargs})
         return {"fallback_plan": True}
 
     data, error = try_stage_messages_json(
         messages=messages,
         usage="vision",
         timeout=11,
-        chat_func=sentinel_chat,
         chat_json_func=fake_chat_json,
     )
 
@@ -185,13 +230,13 @@ def test_try_stage_messages_json_supports_prebuilt_multimodal_messages():
     assert error is None
     assert calls[0]["messages"] == messages
     assert calls[0]["usage"] == "vision"
-    assert calls[0]["_chat"] is sentinel_chat
+    assert "_chat" not in calls[0]["kwargs"]
     assert calls[0]["kwargs"]["timeout"] == 11
     assert calls[0]["kwargs"]["json_mode"] is True
 
 
 def test_try_stage_json_returns_redacted_error_metadata():
-    import llms
+    import nori.core.llms as llms
 
     def fake_chat_json(*args, **kwargs):
         raise llms.ChatJSONError("bad json", "not json")
@@ -211,7 +256,7 @@ def test_try_stage_json_returns_redacted_error_metadata():
 
 
 def test_try_stage_json_classifies_empty_json_response():
-    import llms
+    import nori.core.llms as llms
 
     def fake_chat_json(*args, **kwargs):
         raise llms.ChatJSONError("empty", "   ")
@@ -231,7 +276,7 @@ def test_try_stage_json_classifies_empty_json_response():
 
 
 def test_try_stage_messages_json_classifies_empty_json_response():
-    import llms
+    import nori.core.llms as llms
 
     def fake_chat_json(*args, **kwargs):
         raise llms.ChatJSONError("empty", "   ")

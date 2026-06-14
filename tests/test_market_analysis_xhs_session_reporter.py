@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import json
 
-from nori.market_analysis.models import NoteSkill, SessionSkillReport
-from nori.market_analysis.xhs_note_analyzer import session_reporter as xhs_session_reporter
+from nori.agents.market_analysis.schemas import NoteSkill, SessionSkillReport
+from nori.agents.market_analysis.xhs_note_analyzer import session_reporter as xhs_session_reporter
 
 
 def _skill() -> NoteSkill:

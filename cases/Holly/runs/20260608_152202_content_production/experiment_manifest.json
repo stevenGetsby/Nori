@@ -1,0 +1,440 @@
+{
+  "schema_version": 1,
+  "experiment": {
+    "case_id": "Holly",
+    "run_id": "20260608_152202_content_production",
+    "workflow_name": "content_production",
+    "status": "failed",
+    "run_dir": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production",
+    "created_at": "2026-06-08T07:22:02.216880+00:00",
+    "finished_at": "2026-06-08T07:22:03.030676+00:00"
+  },
+  "session": {
+    "session_id": "session_a1705eb18989",
+    "task_id": "task_1f24526bf7d6"
+  },
+  "inputs": {
+    "brief": {
+      "text_path": "original_brief.md",
+      "sha256": "121e95519989d212538af0d39ea5196d9ddcd9bd9aea99a6cbc5347187e1c348",
+      "char_count": 542
+    },
+    "assets": [
+      {
+        "asset_id": "asset_109d8ab98cb0",
+        "kind": "image",
+        "usage": "reference",
+        "filename": "20250617195920.jpg",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_109d8ab98cb0_20250617195920.jpg",
+        "public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "metadata": {
+          "source": "holly_backend_smoke"
+        },
+        "sha256": "26d4667f4d86a862635f2e9ba90be186d569692c665d29b8b4203474727d1b28",
+        "size_bytes": 563087
+      },
+      {
+        "asset_id": "asset_94137216e6b9",
+        "kind": "image",
+        "usage": "reference",
+        "filename": "49@2x.png",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_94137216e6b9_49@2x.png",
+        "public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "metadata": {
+          "source": "holly_backend_smoke"
+        },
+        "sha256": "68fb80258c5b3a560d05f1d3cfdca2d18b4a91ab9d4a4deb2c20f3bc0e5ada89",
+        "size_bytes": 1514999
+      },
+      {
+        "asset_id": "asset_289f9f859735",
+        "kind": "image",
+        "usage": "reference",
+        "filename": "50@2x.png",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_289f9f859735_50@2x.png",
+        "public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "metadata": {
+          "source": "holly_backend_smoke"
+        },
+        "sha256": "900be758b6d29d0fe464df4c7e84600d7149c4de42ae488f68b8ccae4b54e9da",
+        "size_bytes": 365104
+      },
+      {
+        "asset_id": "asset_e3599f8750e8",
+        "kind": "image",
+        "usage": "reference",
+        "filename": "1.png",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_e3599f8750e8_1.png",
+        "public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file",
+        "metadata": {
+          "source": "holly_backend_smoke"
+        },
+        "sha256": "5f468f6a178964b94f6ab1ef027e2639fae05905fbd63dd89481dc3a68fa0783",
+        "size_bytes": 2897771
+      }
+    ],
+    "reference_transfer": {
+      "required": true,
+      "selected_count": 4,
+      "local_count": 4,
+      "remote_count": 0,
+      "provider_fetchable_count": 4,
+      "all_selected_fetchable": true,
+      "strict_public_url_ready": true,
+      "items": [
+        {
+          "asset_id": "asset_109d8ab98cb0",
+          "filename": "20250617195920.jpg",
+          "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_109d8ab98cb0_20250617195920.jpg",
+          "public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+          "provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+          "provider_fetchable": true
+        },
+        {
+          "asset_id": "asset_94137216e6b9",
+          "filename": "49@2x.png",
+          "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_94137216e6b9_49@2x.png",
+          "public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+          "provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+          "provider_fetchable": true
+        },
+        {
+          "asset_id": "asset_289f9f859735",
+          "filename": "50@2x.png",
+          "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_289f9f859735_50@2x.png",
+          "public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+          "provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+          "provider_fetchable": true
+        },
+        {
+          "asset_id": "asset_e3599f8750e8",
+          "filename": "1.png",
+          "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_e3599f8750e8_1.png",
+          "public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file",
+          "provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file",
+          "provider_fetchable": true
+        }
+      ]
+    },
+    "reference_image_generation_check": {
+      "event_id": "event_82165917b58f",
+      "created_at": "2026-06-08T07:21:40.519475+00:00",
+      "ready": true,
+      "reason": "image_generation_succeeded",
+      "selected_count": 4,
+      "published_count": 4,
+      "failed_count": 0,
+      "provider_fetchable_count": 4,
+      "provider_fetchable_reference_images": [
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+      ],
+      "url_probe": {
+        "enabled": true,
+        "passed": true,
+        "checked_count": 4,
+        "reachable_count": 4,
+        "failed_count": 0
+      },
+      "generation": {
+        "ready": true,
+        "reason": "image_generation_succeeded",
+        "image_count": 1,
+        "error_type": "",
+        "error": ""
+      },
+      "metadata": {
+        "source": "backend_holly_smoke",
+        "case_id": "Holly"
+      },
+      "selected_provider_fetchable_reference_images": [
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+      ],
+      "covered_selected_reference_images": [
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+      ],
+      "missing_selected_reference_images": [],
+      "covers_selected_reference_images": true
+    },
+    "market_evidence": {
+      "provided": true,
+      "queries": [
+        "怪趣文创",
+        "反焦虑文创"
+      ],
+      "hot_note_count": 2,
+      "insufficient_count": 0,
+      "sha256": "7c6345fb0ffb56f9cfec30fa0cccee8f5a03eccf1d2ddb8f900bc9a577a53119"
+    },
+    "config": {
+      "client_name": "Holly",
+      "brand_name": "Holly Shit开心拉屎",
+      "project_id_prefix": "holly_backend_smoke",
+      "project_name": "Holly Shit Backend Smoke",
+      "topic": "Holly Shit 开心拉屎反焦虑怪趣文创账号冷启动",
+      "account_position": "用便便精神、反焦虑、怪趣 IP 和原创文创产品做小红书种草与人格化内容。",
+      "target_audience": "高压学习和上班人群、喜欢怪趣文创和反差幽默的年轻女性、原创设计周边买家。",
+      "goals": [
+        "让小红书用户快速理解品牌：Shit人生也要拉得开心。",
+        "把线下卖得好的怪趣文创转成线上可关注、可收藏、可下单的内容资产。"
+      ],
+      "positioning_notes": [
+        "品牌核心不是低俗玩梗，而是用荒诞幽默回收焦虑和身体自主权。"
+      ],
+      "constraints": [
+        "保留 Holly Shit 的反叛、自信、搞笑、怪趣调性。",
+        "内容必须能落到具体产品或 IP，不只写抽象情绪。"
+      ],
+      "taboos": [
+        "不要把便便梗写成低俗猎奇。",
+        "不要虚构销量、价格、疗效或未提供的合作背书。"
+      ],
+      "platform_rules": [
+        {
+          "rule": "小红书图文首屏必须一眼看出情绪利益点和收藏理由。"
+        },
+        {
+          "rule": "标题、封面和正文开头要围绕同一个点击钩子。"
+        }
+      ],
+      "top_k_per_keyword": 1,
+      "download_media": false,
+      "horizon_days": 7,
+      "stage_timeout_seconds": 300.0,
+      "content_package_timeout_seconds": 300.0
+    },
+    "run_options": {
+      "platform": "xhs",
+      "execution_mode": "background",
+      "human_gate_mode": "skip",
+      "require_image_references": true,
+      "require_reference_image_generation_check": true,
+      "verify_reference_urls": true,
+      "reference_url_probe_timeout": 10.0,
+      "backend_public_base_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com",
+      "backend_public_base_url_configured": true
+    },
+    "metadata": {
+      "source": "backend.fixture.holly_content_production",
+      "brief_path": "/Users/geminilight/projects/product/Nori/cases/Holly/brief/original.md",
+      "asset_names": [
+        "微信图片_20250617195920.jpg",
+        "资源 49@2x.png",
+        "资源 50@2x.png",
+        "明信片 打印文件_画板 1.png"
+      ],
+      "market_evidence_source": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_125227_content_production/xhs_top_notes_result.json"
+    },
+    "fingerprints": {
+      "brief_sha256": "121e95519989d212538af0d39ea5196d9ddcd9bd9aea99a6cbc5347187e1c348",
+      "replay_request_sha256": "8c97caa3980733508b54b55792e6cc2f2d0d438ba7159500c5366d03d0f4ca6e",
+      "config_sha256": "6e1ba3361a59916927bc82f17a5a0c729e14edde680ab0cc73cd2b8d996ffa52",
+      "market_evidence_sha256": "7c6345fb0ffb56f9cfec30fa0cccee8f5a03eccf1d2ddb8f900bc9a577a53119",
+      "metadata_sha256": "9a5b6dd554800bb2fe88ceb493eaeedd3c856ac017630045a1d1f0ff0dc7910d",
+      "reference_image_generation_check_sha256": "77e66e226acc1924611bc26fcc753bf87bfc3c1bf2080d04f269976d04bc611b",
+      "asset_sha256s": [
+        "26d4667f4d86a862635f2e9ba90be186d569692c665d29b8b4203474727d1b28",
+        "68fb80258c5b3a560d05f1d3cfdca2d18b4a91ab9d4a4deb2c20f3bc0e5ada89",
+        "900be758b6d29d0fe464df4c7e84600d7149c4de42ae488f68b8ccae4b54e9da",
+        "5f468f6a178964b94f6ab1ef027e2639fae05905fbd63dd89481dc3a68fa0783"
+      ]
+    }
+  },
+  "reference_images": {
+    "status": "not_selected",
+    "required": true,
+    "selected_count": 0,
+    "selected_paths": [],
+    "sent": false,
+    "fallback": "",
+    "uploaded": false,
+    "upload_count": 0,
+    "object_keys": [],
+    "public_urls": [],
+    "trace": [
+      {
+        "index": 0,
+        "asset_id": "asset_109d8ab98cb0",
+        "filename": "20250617195920.jpg",
+        "selected_path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_109d8ab98cb0_20250617195920.jpg",
+        "public_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "provider_fetchable": true,
+        "sent": false,
+        "input_path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_109d8ab98cb0_20250617195920.jpg",
+        "transfer_public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "transfer_provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file"
+      },
+      {
+        "index": 1,
+        "asset_id": "asset_94137216e6b9",
+        "filename": "49@2x.png",
+        "selected_path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_94137216e6b9_49@2x.png",
+        "public_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "provider_fetchable": true,
+        "sent": false,
+        "input_path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_94137216e6b9_49@2x.png",
+        "transfer_public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "transfer_provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file"
+      },
+      {
+        "index": 2,
+        "asset_id": "asset_289f9f859735",
+        "filename": "50@2x.png",
+        "selected_path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_289f9f859735_50@2x.png",
+        "public_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "provider_fetchable": true,
+        "sent": false,
+        "input_path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_289f9f859735_50@2x.png",
+        "transfer_public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "transfer_provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file"
+      },
+      {
+        "index": 3,
+        "asset_id": "asset_e3599f8750e8",
+        "filename": "1.png",
+        "selected_path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_e3599f8750e8_1.png",
+        "public_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file",
+        "provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file",
+        "provider_fetchable": true,
+        "sent": false,
+        "input_path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_e3599f8750e8_1.png",
+        "transfer_public_reference_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file",
+        "transfer_provider_fetchable_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+      }
+    ],
+    "trace_count": 4,
+    "trace_provider_fetchable_count": 4,
+    "trace_sent_count": 0,
+    "latest_generation_check": {
+      "event_id": "event_82165917b58f",
+      "created_at": "2026-06-08T07:21:40.519475+00:00",
+      "ready": true,
+      "reason": "image_generation_succeeded",
+      "selected_count": 4,
+      "published_count": 4,
+      "failed_count": 0,
+      "provider_fetchable_count": 4,
+      "provider_fetchable_reference_images": [
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+      ],
+      "url_probe": {
+        "enabled": true,
+        "passed": true,
+        "checked_count": 4,
+        "reachable_count": 4,
+        "failed_count": 0
+      },
+      "generation": {
+        "ready": true,
+        "reason": "image_generation_succeeded",
+        "image_count": 1,
+        "error_type": "",
+        "error": ""
+      },
+      "metadata": {
+        "source": "backend_holly_smoke",
+        "case_id": "Holly"
+      },
+      "selected_provider_fetchable_reference_images": [
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+      ],
+      "covered_selected_reference_images": [
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+        "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+      ],
+      "missing_selected_reference_images": [],
+      "covers_selected_reference_images": true
+    }
+  },
+  "models": {
+    "llm": {
+      "ready": true,
+      "key": "lumina::gpt-5.5",
+      "provider_id": "lumina",
+      "model_id": "gpt-5.5",
+      "type": "llm",
+      "supports_vision": true,
+      "supports_reference_image": false
+    },
+    "vision": {
+      "ready": true,
+      "key": "lumina::gpt-5.5",
+      "provider_id": "lumina",
+      "model_id": "gpt-5.5",
+      "type": "llm",
+      "supports_vision": true,
+      "supports_reference_image": false
+    },
+    "image": {
+      "ready": true,
+      "key": "relay::gpt-image-2",
+      "provider_id": "relay",
+      "model_id": "gpt-image-2",
+      "type": "image",
+      "supports_vision": false,
+      "supports_reference_image": true
+    }
+  },
+  "artifacts": {
+    "paths": {
+      "input_manifest.json": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production/input_manifest.json",
+      "original_brief.md": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production/original_brief.md",
+      "replay_request.json": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production/replay_request.json",
+      "run.json": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production/run.json",
+      "workflow_run.json": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production/workflow_run.json",
+      "xhs_top_notes_result.json": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production/xhs_top_notes_result.json",
+      "experiment_manifest.json": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production/experiment_manifest.json"
+    },
+    "urls": {
+      "input_manifest.json": "/workflows/content-production/runs/Holly/20260608_152202_content_production/artifacts/input_manifest.json",
+      "original_brief.md": "/workflows/content-production/runs/Holly/20260608_152202_content_production/artifacts/original_brief.md",
+      "replay_request.json": "/workflows/content-production/runs/Holly/20260608_152202_content_production/artifacts/replay_request.json",
+      "run.json": "/workflows/content-production/runs/Holly/20260608_152202_content_production/artifacts/run.json",
+      "workflow_run.json": "/workflows/content-production/runs/Holly/20260608_152202_content_production/artifacts/workflow_run.json",
+      "xhs_top_notes_result.json": "/workflows/content-production/runs/Holly/20260608_152202_content_production/artifacts/xhs_top_notes_result.json",
+      "experiment_manifest.json": "/workflows/content-production/runs/Holly/20260608_152202_content_production/artifacts/experiment_manifest.json"
+    },
+    "cover_paths": [],
+    "cover_urls": []
+  },
+  "evaluations": {
+    "items": [],
+    "summary": {
+      "count": 0,
+      "status": "pending",
+      "score": null,
+      "latest_evaluation_id": "",
+      "latest_reviewer": "",
+      "issue_count": 0,
+      "high_issue_count": 0
+    }
+  },
+  "replay": {
+    "request_path": "replay_request.json",
+    "request_url": "/workflows/content-production/runs/Holly/20260608_152202_content_production/artifacts/replay_request.json",
+    "endpoint": "/workflows/content-production/runs/Holly/20260608_152202_content_production/replay"
+  },
+  "error": {
+    "type": "XHSNoteAnalyzerLLMError",
+    "message": "llms.chat_json 失败: AttributeError: 'CompletionsWithRawResponse' object has no attribute 'parse'"
+  }
+}

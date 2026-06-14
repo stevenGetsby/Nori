@@ -6,14 +6,16 @@ import base64
 import importlib
 import json
 
-import llms
+import nori.core.llms as llms
 import pytest
 
-from nori.content_generation.models import CandidateTitle, CoverResult, NoteDraft, UserAsset
-from nori.content_generation import CoverDirectorAgent
-from nori.content_generation.cover_director import CoverDirectorError
+from nori.agents.content_generation.schemas import CandidateTitle, CoverResult, NoteDraft
+from nori.core import ImageCapabilityError, UserAsset
+from nori.agents.content_generation import CoverDirectorAgent
+from nori.agents.content_generation.cover_director import CoverDirectorError
+from nori.storage import PublishedReference, PublishedReferences
 
-cd_module = importlib.import_module("nori.content_generation.cover_director.cover_director")
+cd_module = importlib.import_module("nori.agents.content_generation.cover_director.cover_director")
 
 
 # 1x1 透明 PNG 字节
@@ -62,6 +64,17 @@ _PROMPT_JSON = json.dumps({
 })
 
 
+def _chat_json_from_chat(fake_chat):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        raw = fake_chat(messages, usage=usage, **kwargs)
+        try:
+            return json.loads(raw)
+        except Exception as exc:  # noqa: BLE001
+            raise llms.ChatJSONError("bad json", str(raw)) from exc
+
+    return fake_chat_json
+
+
 def test_cover_director_writes_local_png_from_data_uri(tmp_path, monkeypatch):
     ref = tmp_path / "main.jpg"
     ref.write_bytes(_TINY_PNG_BYTES)
@@ -85,7 +98,7 @@ def test_cover_director_writes_local_png_from_data_uri(tmp_path, monkeypatch):
         })
         return [_TINY_PNG_DATA_URI]
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", _chat_json_from_chat(fake_chat))
     monkeypatch.setattr(llms, "image", fake_image)
 
     out = tmp_path / "covers"
@@ -106,14 +119,12 @@ def test_cover_director_writes_local_png_from_data_uri(tmp_path, monkeypatch):
 def test_cover_director_routes_prompt_json_through_llms_chat_json(tmp_path, monkeypatch):
     draft = _draft()
     skill = _planting_skill()
-    sentinel_chat = object()
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "_chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         return json.loads(_PROMPT_JSON)
 
-    monkeypatch.setattr(llms, "chat", sentinel_chat)
     monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     monkeypatch.setattr(llms, "image", lambda *a, **k: [_TINY_PNG_DATA_URI])
 
@@ -122,7 +133,6 @@ def test_cover_director_routes_prompt_json_through_llms_chat_json(tmp_path, monk
     assert result.prompt.startswith("A cozy")
     assert len(calls) == 1
     assert calls[0]["usage"] == "llm"
-    assert calls[0]["_chat"] is sentinel_chat
     assert calls[0]["kwargs"]["json_mode"] is True
 
 
@@ -130,7 +140,7 @@ def test_cover_director_writes_png_from_http_url(tmp_path, monkeypatch):
     draft = _draft()
     skill = _planting_skill()
 
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
     monkeypatch.setattr(llms, "image", lambda *a, **k: ["https://example.com/cover.png"])
 
     class _FakeResp:
@@ -162,7 +172,7 @@ def test_cover_director_uses_intent_size_override(tmp_path, monkeypatch):
     draft = _draft()
     skill = _planting_skill()
 
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
     captured: dict = {}
 
     def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
@@ -188,13 +198,156 @@ def test_cover_director_falls_back_to_reference_assets_when_draft_empty(tmp_path
         captured["refs"] = reference_images
         return [_TINY_PNG_DATA_URI]
 
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
     monkeypatch.setattr(llms, "image", fake_image)
 
     result = CoverDirectorAgent().run(draft, skill, refs_asset, out_dir=tmp_path)
     assert result.reference_paths == [str(ref)]
     assert captured["refs"] is not None
     assert len(captured["refs"]) == 1
+
+
+def test_cover_director_retries_without_local_refs_when_provider_rejects_reference_bytes(tmp_path, monkeypatch):
+    ref = tmp_path / "local-ref.jpg"
+    ref.write_bytes(_TINY_PNG_BYTES)
+    draft = _draft(cover_path=str(ref))
+    skill = _planting_skill()
+    calls: list[list | None] = []
+
+    def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
+        calls.append(reference_images)
+        if reference_images:
+            raise ImageCapabilityError("local reference images are not supported")
+        return [_TINY_PNG_DATA_URI]
+
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
+    monkeypatch.setattr(llms, "image", fake_image)
+
+    result = CoverDirectorAgent().run(draft, skill, out_dir=tmp_path)
+
+    assert result.reference_paths == [str(ref)]
+    assert calls[0] is not None
+    assert calls[1] is None
+    assert result.extra["reference_images_sent"] is False
+    assert result.extra["reference_image_fallback"] == "local_refs_not_supported"
+
+
+def test_cover_director_can_require_reference_images_without_text_only_fallback(tmp_path, monkeypatch):
+    ref = tmp_path / "local-ref.jpg"
+    ref.write_bytes(_TINY_PNG_BYTES)
+    draft = _draft(cover_path=str(ref))
+    skill = _planting_skill()
+
+    def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
+        raise ImageCapabilityError("local reference images are not supported")
+
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
+    monkeypatch.setattr(llms, "image", fake_image)
+
+    with pytest.raises(CoverDirectorError, match="参考图已选中"):
+        CoverDirectorAgent().run(
+            draft,
+            skill,
+            out_dir=tmp_path,
+            intent={"require_image_references": True},
+        )
+
+
+def test_cover_director_preserves_remote_url_references(tmp_path, monkeypatch):
+    url = "https://example.test/holly-ref.jpg"
+    draft = _draft(cover_path=url)
+    skill = _planting_skill()
+    captured: dict = {}
+
+    def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
+        captured["refs"] = reference_images
+        return [_TINY_PNG_DATA_URI]
+
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
+    monkeypatch.setattr(llms, "image", fake_image)
+
+    result = CoverDirectorAgent().run(draft, skill, out_dir=tmp_path)
+    assert result.reference_paths == [url]
+    assert captured["refs"] == [url]
+
+
+def test_cover_director_publishes_local_refs_to_https_urls(tmp_path, monkeypatch):
+    ref = tmp_path / "local-ref.png"
+    ref.write_bytes(_TINY_PNG_BYTES)
+    draft = _draft(cover_path=str(ref))
+    skill = _planting_skill()
+    captured: dict = {}
+
+    class FakePublisher:
+        def publish_paths(self, paths, *, project="", session="", now=None, public_url_map=None):  # noqa: ANN001, ARG002
+            captured["publish_paths"] = list(paths)
+            captured["project"] = project
+            captured["session"] = session
+            return PublishedReferences(items=[
+                PublishedReference(
+                    original_path=paths[0],
+                    input_value="https://nori.tos-cn-beijing.volces.com/ref.png?signed=1",
+                    url="https://nori.tos-cn-beijing.volces.com/ref.png?signed=1",
+                    public_url="https://nori.tos-cn-beijing.volces.com/ref.png",
+                    key="nori/reference-images/holly/session-a/20260607/ref.png",
+                    uploaded=True,
+                    reason="uploaded",
+                )
+            ])
+
+    def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
+        captured["refs"] = reference_images
+        return [_TINY_PNG_DATA_URI]
+
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
+    monkeypatch.setattr(llms, "image", fake_image)
+
+    result = CoverDirectorAgent(reference_publisher=FakePublisher()).run(
+        draft,
+        skill,
+        out_dir=tmp_path / "session-a" / "covers",
+        intent={"project_id": "holly", "session_id": "session-a"},
+    )
+
+    assert result.reference_paths == [str(ref)]
+    assert captured["publish_paths"] == [str(ref)]
+    assert captured["project"] == "holly"
+    assert captured["session"] == "session-a"
+    assert captured["refs"] == ["https://nori.tos-cn-beijing.volces.com/ref.png?signed=1"]
+    assert result.extra["reference_images_sent"] is True
+    assert result.extra["reference_images_uploaded"] is True
+    assert result.extra["reference_object_keys"] == ["nori/reference-images/holly/session-a/20260607/ref.png"]
+    assert result.extra["reference_items"][0]["original_path"] == str(ref)
+    assert result.extra["reference_items"][0]["public_url"] == "https://nori.tos-cn-beijing.volces.com/ref.png"
+
+
+def test_cover_director_uses_public_url_map_for_local_refs(tmp_path, monkeypatch):
+    ref = tmp_path / "local-ref.png"
+    ref.write_bytes(_TINY_PNG_BYTES)
+    public_url = "https://backend.example.test/sessions/session-a/assets/asset-a/file"
+    draft = _draft(cover_path=str(ref))
+    skill = _planting_skill()
+    captured: dict = {}
+
+    def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
+        captured["refs"] = reference_images
+        return [_TINY_PNG_DATA_URI]
+
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
+    monkeypatch.setattr(llms, "image", fake_image)
+
+    result = CoverDirectorAgent().run(
+        draft,
+        skill,
+        out_dir=tmp_path,
+        intent={"reference_public_urls_by_path": {str(ref): public_url}, "require_image_references": True},
+    )
+
+    assert captured["refs"] == [public_url]
+    assert result.extra["reference_images_sent"] is True
+    assert result.extra["reference_images_uploaded"] is True
+    assert result.extra["reference_public_urls"] == [public_url]
+    assert result.extra["reference_items"][0]["reason"] == "public_url_map"
 
 
 def test_cover_director_passes_none_references_when_no_assets(tmp_path, monkeypatch):
@@ -207,7 +360,7 @@ def test_cover_director_passes_none_references_when_no_assets(tmp_path, monkeypa
         captured["refs"] = reference_images
         return [_TINY_PNG_DATA_URI]
 
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
     monkeypatch.setattr(llms, "image", fake_image)
 
     CoverDirectorAgent().run(draft, skill, out_dir=tmp_path)
@@ -217,7 +370,7 @@ def test_cover_director_passes_none_references_when_no_assets(tmp_path, monkeypa
 def test_cover_director_raises_when_prompt_empty(tmp_path, monkeypatch):
     draft = _draft()
     skill = _planting_skill()
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: json.dumps({"prompt": ""}))
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: {"prompt": ""})
 
     with pytest.raises(CoverDirectorError, match="返回空 prompt"):
         CoverDirectorAgent().run(draft, skill, out_dir=tmp_path)
@@ -226,7 +379,7 @@ def test_cover_director_raises_when_prompt_empty(tmp_path, monkeypatch):
 def test_cover_director_raises_when_image_api_empty(tmp_path, monkeypatch):
     draft = _draft()
     skill = _planting_skill()
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
     monkeypatch.setattr(llms, "image", lambda *a, **k: [])
 
     with pytest.raises(CoverDirectorError, match="没返回任何图"):
@@ -236,7 +389,7 @@ def test_cover_director_raises_when_image_api_empty(tmp_path, monkeypatch):
 def test_cover_director_raises_when_image_api_throws(tmp_path, monkeypatch):
     draft = _draft()
     skill = _planting_skill()
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
 
     def boom(*a, **k):
         raise RuntimeError("image down")
@@ -249,7 +402,10 @@ def test_cover_director_raises_when_image_api_throws(tmp_path, monkeypatch):
 def test_cover_director_raises_when_chat_returns_non_json(tmp_path, monkeypatch):
     draft = _draft()
     skill = _planting_skill()
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: "no json")
+    def bad_chat_json(*a, **k):
+        raise llms.ChatJSONError("bad json", "no json")
+
+    monkeypatch.setattr(llms, "chat_json", bad_chat_json)
 
     with pytest.raises(CoverDirectorError, match="无法解析为 JSON"):
         CoverDirectorAgent().run(draft, skill, out_dir=tmp_path)
@@ -264,7 +420,7 @@ def test_cover_director_caps_reference_paths_to_three(tmp_path, monkeypatch):
     draft = _draft(cover_path=refs[0], image_paths=refs[1:])
     skill = _planting_skill()
 
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: _PROMPT_JSON)
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: json.loads(_PROMPT_JSON))
     captured: dict = {}
 
     def fake_image(prompt, *, usage="image", size=None, reference_images=None, **kwargs):
@@ -320,7 +476,7 @@ def test_cover_director_uses_tagged_assets_via_llm_selection(tmp_path, monkeypat
         captured["refs"] = reference_images
         return [_TINY_PNG_DATA_URI]
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", _chat_json_from_chat(fake_chat))
     monkeypatch.setattr(llms, "image", fake_image)
 
     result = CoverDirectorAgent().run(draft, _planting_skill(), out_dir=tmp_path, tagged_assets=tagged)
@@ -347,7 +503,7 @@ def test_cover_director_accepts_zero_refs_from_tagged_selector(tmp_path, monkeyp
         captured["refs"] = reference_images
         return [_TINY_PNG_DATA_URI]
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", _chat_json_from_chat(fake_chat))
     monkeypatch.setattr(llms, "image", fake_image)
 
     result = CoverDirectorAgent().run(draft, _planting_skill(), out_dir=tmp_path, tagged_assets=tagged)
@@ -368,7 +524,7 @@ def test_cover_director_caps_tagged_selection_at_max_references(tmp_path, monkey
             return json.dumps({"chosen_indices": list(range(12))})
         return _PROMPT_JSON
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", _chat_json_from_chat(fake_chat))
     monkeypatch.setattr(llms, "image", lambda *a, **k: [_TINY_PNG_DATA_URI])
 
     result = CoverDirectorAgent().run(draft, _planting_skill(), out_dir=tmp_path, tagged_assets=tagged)
@@ -386,7 +542,7 @@ def test_cover_director_ignores_out_of_range_or_missing_indices(tmp_path, monkey
             return json.dumps({"chosen_indices": [0, 99, "bad", -1]})
         return _PROMPT_JSON
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", _chat_json_from_chat(fake_chat))
     monkeypatch.setattr(llms, "image", lambda *a, **k: [_TINY_PNG_DATA_URI])
 
     result = CoverDirectorAgent().run(draft, _planting_skill(), out_dir=tmp_path, tagged_assets=tagged)

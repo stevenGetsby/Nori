@@ -8,6 +8,7 @@ relay.json
 
 # ── Python ──
 __pycache__/
+.pytest_cache/
 *.pyc
 *.pyo
 *.egg-info/
@@ -37,20 +38,20 @@ log/
 logs/
 *.log
 tmp/
+.cc-branch/
 
 # ── 产物 ──
 demo_output.json
+*.zip
 
 # ── 本地数据 / 素材 / 抓取产物 ──
-data/
+data/*
+!data/artifact_index/
+!data/artifact_index/**
 cold_start_data/
-SHOWCASE/*
-!SHOWCASE/Holly/
-!SHOWCASE/Holly/**
 *.xlsx
 
 # ── 外部参考仓库 / 前端依赖 ──
-文档/reference/
 node_modules/
 .next/
 coverage/

@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from nori.user_profiling.models import IntakeResult, UserInput
-from nori.user_profiling.intaker import normalizer as intake_normalizer
+from nori.agents.user_profiling.schemas import IntakeResult, UserInput
+from nori.agents.user_profiling.intaker import normalizer as intake_normalizer
 
 
 def _fallback() -> IntakeResult:

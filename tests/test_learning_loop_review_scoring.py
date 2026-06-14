@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from nori.learning_loop.review import scoring as content_review_scoring
+from nori.agents.learning_loop.review import scoring as content_review_scoring
 
 
 def test_issue_truncates_evidence_and_omits_empty_evidence():

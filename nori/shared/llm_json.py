@@ -3,8 +3,7 @@ from __future__ import annotations
 
 from typing import Any
 
-import llms
-from llms.structured_outputs import chat_json_error_reason
+import nori.core.llms as llms
 
 
 def call_stage_json(
@@ -15,7 +14,8 @@ def call_stage_json(
     error_type,
     usage: str = "llm",
     json_mode: bool = True,
-    chat_func=None,
+    retry_max_tokens: int | None = 8192,
+    retry_transient_errors: int = 1,
     chat_json_func=None,
 ) -> dict[str, Any]:
     """Call the project LLM gateway for a JSON object and raise a domain error.
@@ -34,7 +34,8 @@ def call_stage_json(
         error_type=error_type,
         usage=usage,
         json_mode=json_mode,
-        chat_func=chat_func,
+        retry_max_tokens=retry_max_tokens,
+        retry_transient_errors=retry_transient_errors,
         chat_json_func=chat_json_func,
     )
 
@@ -46,24 +47,88 @@ def call_stage_messages_json(
     error_type,
     usage: str = "llm",
     json_mode: bool = True,
-    chat_func=None,
+    retry_max_tokens: int | None = 8192,
+    retry_transient_errors: int = 1,
     chat_json_func=None,
 ) -> dict[str, Any]:
     """Call the project LLM gateway for JSON using pre-built messages."""
+    chat_json_func = chat_json_func or llms.chat_json
     try:
-        chat_func = chat_func or llms.chat
-        chat_json_func = chat_json_func or llms.chat_json
-        return chat_json_func(
+        return _call_chat_json(
+            chat_json_func,
             messages,
             usage=usage,
             timeout=timeout,
             json_mode=json_mode,
-            _chat=chat_func,
         )
     except llms.ChatJSONError as exc:
+        if retry_max_tokens and _should_retry_json_parse(exc):
+            try:
+                return _call_chat_json(
+                    chat_json_func,
+                    messages,
+                    usage=usage,
+                    timeout=timeout,
+                    json_mode=json_mode,
+                    max_tokens=retry_max_tokens,
+            )
+            except llms.ChatJSONError as retry_exc:
+                raise error_type(f"LLM 输出无法解析为 JSON: {retry_exc.preview!r}") from retry_exc
         raise error_type(f"LLM 输出无法解析为 JSON: {exc.preview!r}") from exc
     except Exception as exc:  # noqa: BLE001
-        raise error_type(f"llms.chat 失败: {type(exc).__name__}: {exc}") from exc
+        if retry_transient_errors > 0 and _is_transient_connection_error(exc):
+            try:
+                return _call_chat_json(
+                    chat_json_func,
+                    messages,
+                    usage=usage,
+                    timeout=timeout,
+                    json_mode=json_mode,
+                )
+            except llms.ChatJSONError as retry_json_exc:
+                raise error_type(f"LLM 输出无法解析为 JSON: {retry_json_exc.preview!r}") from retry_json_exc
+            except Exception as retry_exc:  # noqa: BLE001
+                raise error_type(
+                    f"llms.chat_json 失败: {type(retry_exc).__name__}: {retry_exc}"
+                ) from retry_exc
+        raise error_type(f"llms.chat_json 失败: {type(exc).__name__}: {exc}") from exc
+
+
+def _call_chat_json(
+    chat_json_func,
+    messages: list[dict[str, Any]],
+    *,
+    usage: str,
+    timeout: int,
+    json_mode: bool,
+    max_tokens: int | None = None,
+) -> dict[str, Any]:
+    kwargs: dict[str, Any] = {
+        "usage": usage,
+        "timeout": timeout,
+        "json_mode": json_mode,
+    }
+    if max_tokens:
+        kwargs["max_tokens"] = max_tokens
+    return chat_json_func(messages, **kwargs)
+
+
+def _should_retry_json_parse(exc: llms.ChatJSONError) -> bool:
+    raw = exc.raw.strip()
+    if not raw:
+        return False
+    return raw.count("{") != raw.count("}") or raw.count("[") != raw.count("]") or len(raw) > 120
+
+
+def _is_transient_connection_error(exc: Exception) -> bool:
+    return type(exc).__name__ in {"APIConnectionError", "APITimeoutError"} or isinstance(
+        exc,
+        (ConnectionError, TimeoutError),
+    )
+
+
+def _chat_json_error_reason(exc: llms.ChatJSONError) -> str:
+    return "empty_response" if not exc.raw.strip() else "parse_error"
 
 
 def try_stage_json(
@@ -73,7 +138,6 @@ def try_stage_json(
     timeout: int | None = None,
     usage: str = "llm",
     json_mode: bool = True,
-    chat_func=None,
     chat_json_func=None,
 ) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     """Call a JSON LLM stage for flows that must keep deterministic fallback."""
@@ -85,7 +149,6 @@ def try_stage_json(
         timeout=timeout,
         usage=usage,
         json_mode=json_mode,
-        chat_func=chat_func,
         chat_json_func=chat_json_func,
     )
 
@@ -96,16 +159,13 @@ def try_stage_messages_json(
     timeout: int | None = None,
     usage: str = "llm",
     json_mode: bool = True,
-    chat_func=None,
     chat_json_func=None,
 ) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     """Call optional JSON LLM stages using pre-built messages and fallback metadata."""
-    chat_func = chat_func or llms.chat
     chat_json_func = chat_json_func or llms.chat_json
     kwargs: dict[str, Any] = {
         "usage": usage,
         "json_mode": json_mode,
-        "_chat": chat_func,
     }
     if timeout is not None:
         kwargs["timeout"] = timeout
@@ -113,7 +173,7 @@ def try_stage_messages_json(
         data = chat_json_func(messages, **kwargs)
     except llms.ChatJSONError as exc:
         return None, {
-            "reason": chat_json_error_reason(exc),
+            "reason": _chat_json_error_reason(exc),
             "error_type": "ChatJSONError",
             "preview": exc.preview,
         }

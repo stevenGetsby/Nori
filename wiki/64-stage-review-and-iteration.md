@@ -21,10 +21,10 @@ The first implementation is deterministic and text-only so it can run in the def
 
 | Module | Status | Notes |
 | --- | --- | --- |
-| `nori/learning_loop/review/review_gate.py` | Implemented | Rule-based compliance and consistency reviewers. |
-| `nori/learning_loop/review/policy.py` | Implemented | Pure review policy boundary for compliance/consistency issue calculation, score/status mapping, severity counts, and fix suggestions. |
-| `nori/learning_loop/strategy/strategy_iteration.py` | Implemented | Manual metrics snapshot recorder and rule-based strategy iteration. |
-| `nori/learning_loop/strategy/policy.py` | Implemented | Pure strategy policy boundary for metric summary, review summary, diagnosis, decisions, and next actions. |
+| `nori/agents/learning_loop/review/review_gate.py` | Implemented | Rule-based compliance and consistency reviewers. |
+| `nori/agents/learning_loop/review/policy.py` | Implemented | Pure review policy boundary for compliance/consistency issue calculation, score/status mapping, severity counts, and fix suggestions. |
+| `nori/agents/learning_loop/strategy/strategy_iteration.py` | Implemented | Manual metrics snapshot recorder and rule-based strategy iteration. |
+| `nori/agents/learning_loop/strategy/policy.py` | Implemented | Pure strategy policy boundary for metric summary, review summary, diagnosis, decisions, and next actions. |
 | `tests/test_learning_loop_review_policy.py` | Implemented | Policy-level compliance issues, consistency issues, score/status/severity, and suggestions. |
 | `tests/test_learning_loop_review.py` | Implemented | Pass, blocked compliance, needs-revision consistency, and project attachment. |
 | `tests/test_learning_loop_strategy_policy.py` | Implemented | Metric aliases/rates, review summaries, weak/strong engagement strategy rules, ref identity, date, and slug helpers. |

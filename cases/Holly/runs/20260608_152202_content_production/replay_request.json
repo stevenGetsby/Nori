@@ -1,0 +1,189 @@
+{
+  "session_id": "session_a1705eb18989",
+  "task_id": "task_1f24526bf7d6",
+  "goal": "用 Holly 真实素材和小红书市场证据生成一篇图文内容，并生成封面图片。",
+  "brief_text": "我是一个同济大学设计创意学院的学生，因为一个很偶然的机会，我用一周的时间仓促的做了几个文创产品做的很好，大家都很喜欢，于是我打算继续做下去。现在市集可以卖的很好，但是线上卖不动，于是我想做个小红书账号，给大家分享我的文创的品牌理念和做产品的小故事。这是我的想法，你有什么其他做账号的想法吗？\n我的文创品牌素材如下：\n关键词：\n反焦虑的快乐哲学\nSlogan：\nShit人生也要拉的开心\n品牌风格：\n不羁 自信 有趣 搞怪\n品牌理念：\n“Holly Shit开心拉屎”设计品牌致力于把排泄从羞耻行为回归到身体权利与精神庇护。\n“厕所时间神圣不可侵犯”“带薪拉屎是我应得的”用粗俗的话语把被剥夺的时间和尊严抢回来。\n不要永远鸡血奋斗，请允许自己在厕所里合法躺平。\n我们致力于用最不体面的语言，说出人们最体面的诉求。\n品牌IP形象：\n小女孩——每天Shitting的打工人\n小狗——草丛里拉屎尿尿\n小猫——爱玩蛋蛋\n可以围绕“屎尿屁”文学开展，用冲击力的画面传递价值，但是内容不要违规，不要太恶俗\n我的产品多数是：杯子，包包，挂件，贴纸，冰箱贴，手机支架\n我有一个小团队，后期需要的话她们也可以出镜，请你帮我先找一下我账号的定位，我应该是一个什么人设，在可以涨粉接单的同时还可以卖我的产品。",
+  "case_id": "Holly",
+  "case_title": "Holly Shit开心拉屎",
+  "platform": "xhs",
+  "asset_ids": [
+    "asset_109d8ab98cb0",
+    "asset_94137216e6b9",
+    "asset_289f9f859735",
+    "asset_e3599f8750e8"
+  ],
+  "asset_paths": [
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_109d8ab98cb0_20250617195920.jpg",
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_94137216e6b9_49@2x.png",
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_289f9f859735_50@2x.png",
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_a1705eb18989/asset_e3599f8750e8_1.png"
+  ],
+  "backend_public_base_url": "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com",
+  "execution_mode": "background",
+  "human_gate_mode": "skip",
+  "require_image_references": true,
+  "require_reference_image_generation_check": true,
+  "verify_reference_urls": true,
+  "reference_url_probe_timeout": 10.0,
+  "reference_image_generation_check": {
+    "event_id": "event_82165917b58f",
+    "created_at": "2026-06-08T07:21:40.519475+00:00",
+    "ready": true,
+    "reason": "image_generation_succeeded",
+    "selected_count": 4,
+    "published_count": 4,
+    "failed_count": 0,
+    "provider_fetchable_count": 4,
+    "provider_fetchable_reference_images": [
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+    ],
+    "url_probe": {
+      "enabled": true,
+      "passed": true,
+      "checked_count": 4,
+      "reachable_count": 4,
+      "failed_count": 0
+    },
+    "generation": {
+      "ready": true,
+      "reason": "image_generation_succeeded",
+      "image_count": 1,
+      "error_type": "",
+      "error": ""
+    },
+    "metadata": {
+      "source": "backend_holly_smoke",
+      "case_id": "Holly"
+    },
+    "selected_provider_fetchable_reference_images": [
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+    ],
+    "covered_selected_reference_images": [
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_109d8ab98cb0/file",
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_94137216e6b9/file",
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_289f9f859735/file",
+      "https://38c5f2070f7d1143-111-205-14-82.serveousercontent.com/sessions/session_a1705eb18989/assets/asset_e3599f8750e8/file"
+    ],
+    "missing_selected_reference_images": [],
+    "covers_selected_reference_images": true
+  },
+  "market_evidence": {
+    "platform": "xhs",
+    "queries": [
+      "怪趣文创",
+      "反焦虑文创"
+    ],
+    "hot_notes": [
+      {
+        "note_id": "68a0272b000000001c00d1ed",
+        "keyword": "怪趣文创",
+        "title": "我的冰箱新护法➕1……🐾",
+        "desc": "#礼物[话题]# #新奇的玩意儿[话题]# #稀奇古怪的小玩意儿[话题]# #冰箱贴[话题]##有趣[话题]##我家的可爱怪东西[话题]##冰箱贴推荐[话题]# #树蛙[话题]#",
+        "author_id": "637629c600000000240099b9",
+        "author_name": "HARES HOME 家居",
+        "liked": 26000,
+        "collected": 6486,
+        "comment": 562,
+        "share": 5678,
+        "tags": [
+          "礼物",
+          "新奇的玩意儿",
+          "稀奇古怪的小玩意儿",
+          "冰箱贴",
+          "有趣",
+          "我家的可爱怪东西",
+          "冰箱贴推荐",
+          "树蛙"
+        ],
+        "image_count": 1,
+        "note_type": "video",
+        "note_url": "https://www.xiaohongshu.com/explore/68a0272b000000001c00d1ed?xsec_token=AB-rb6sWOxqJimjzW85jpNxhDPWe3ij-6t_D79TEOXH5A=&xsec_source=pc_search",
+        "time_ms": 1755326251000,
+        "cover_path": null,
+        "image_paths": [],
+        "video_path": null
+      },
+      {
+        "note_id": "69e9ce140000000013030800",
+        "keyword": "反焦虑文创",
+        "title": "你正在焦虑的事终会迎来好结果",
+        "desc": "越是心急事多，越容易被情绪牵着走。\n怕出错、怕赶不上、怕结果落空，也怕前路看不清方向。\n其实你心里慌的那些事，远没想象中那么难熬。\n可能是工作的压力，感情的摇摆，生活的杂乱，或是独自扛了太久的委屈。\n不用强迫自己立刻振作，也不必事事硬撑。\n可以焦虑，可以放慢，可以允许一切暂时没有答案。\n人生本就不会事事按计划发生，\n你以为跨不过的难关，回头看不过如此；\n那些辗转反侧的烦恼，最终都会慢慢释怀。\n你心里牵挂的所有事，\n终将迎来让你安心释然的好结果。\n照顾好自己，吃好睡好，\n其余的，慢慢交给时间就好。#记录吧就现在 #好事即将发生 #不必焦虑过好当下 #焦虑 #正能量 #情绪管理 #心理测试 #对抗焦虑 #焦虑躯体化 #心理",
+        "author_id": "5cba7c66000000001700bd16",
+        "author_name": "D大卢手作",
+        "liked": 1716,
+        "collected": 71,
+        "comment": 997,
+        "share": 5,
+        "tags": [],
+        "image_count": 1,
+        "note_type": "normal",
+        "note_url": "https://www.xiaohongshu.com/explore/69e9ce140000000013030800?xsec_token=ABZE8c0WcuHSYJ6ZI4b4GIYR8-bezMy7FpmrDqkwHtf1Q=&xsec_source=pc_search",
+        "time_ms": 1776930324000,
+        "cover_path": null,
+        "image_paths": [],
+        "video_path": null
+      }
+    ],
+    "insufficient": [],
+    "source_data_dir": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/market",
+    "source_keyword_dirs": {
+      "怪趣文创": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/market/20260531_040954_怪趣文创",
+      "反焦虑文创": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260531_040953_holly_live/market/20260531_040954_反焦虑文创"
+    },
+    "_source_path": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_125227_content_production/xhs_top_notes_result.json"
+  },
+  "config": {
+    "client_name": "Holly",
+    "brand_name": "Holly Shit开心拉屎",
+    "project_id_prefix": "holly_backend_smoke",
+    "project_name": "Holly Shit Backend Smoke",
+    "topic": "Holly Shit 开心拉屎反焦虑怪趣文创账号冷启动",
+    "account_position": "用便便精神、反焦虑、怪趣 IP 和原创文创产品做小红书种草与人格化内容。",
+    "target_audience": "高压学习和上班人群、喜欢怪趣文创和反差幽默的年轻女性、原创设计周边买家。",
+    "goals": [
+      "让小红书用户快速理解品牌：Shit人生也要拉得开心。",
+      "把线下卖得好的怪趣文创转成线上可关注、可收藏、可下单的内容资产。"
+    ],
+    "positioning_notes": [
+      "品牌核心不是低俗玩梗，而是用荒诞幽默回收焦虑和身体自主权。"
+    ],
+    "constraints": [
+      "保留 Holly Shit 的反叛、自信、搞笑、怪趣调性。",
+      "内容必须能落到具体产品或 IP，不只写抽象情绪。"
+    ],
+    "taboos": [
+      "不要把便便梗写成低俗猎奇。",
+      "不要虚构销量、价格、疗效或未提供的合作背书。"
+    ],
+    "platform_rules": [
+      {
+        "rule": "小红书图文首屏必须一眼看出情绪利益点和收藏理由。"
+      },
+      {
+        "rule": "标题、封面和正文开头要围绕同一个点击钩子。"
+      }
+    ],
+    "top_k_per_keyword": 1,
+    "download_media": false,
+    "horizon_days": 7,
+    "stage_timeout_seconds": 300.0,
+    "content_package_timeout_seconds": 300.0
+  },
+  "metadata": {
+    "source": "backend.fixture.holly_content_production",
+    "brief_path": "/Users/geminilight/projects/product/Nori/cases/Holly/brief/original.md",
+    "asset_names": [
+      "微信图片_20250617195920.jpg",
+      "资源 49@2x.png",
+      "资源 50@2x.png",
+      "明信片 打印文件_画板 1.png"
+    ],
+    "market_evidence_source": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_125227_content_production/xhs_top_notes_result.json"
+  }
+}

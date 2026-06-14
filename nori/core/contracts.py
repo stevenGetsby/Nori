@@ -5,7 +5,6 @@ from dataclasses import dataclass as _stdlib_dataclass
 from dataclasses import field as _stdlib_field
 from typing import Any, Optional
 
-from nori._compat import dataclass, field
 from nori.shared.normalization import int_value as _shared_int_value
 from nori.shared.normalization import mapping as _shared_mapping
 
@@ -88,50 +87,6 @@ class ImageCapabilityError(ValueError):
 
 class ImageResultError(ValueError):
     """Raised when an image provider response contains no usable image result."""
-
-
-@dataclass(slots=True)
-class StructuredCallResult:
-    data: dict[str, Any] | None = None
-    raw: str = ""
-    error: str | None = None
-
-    @property
-    def ok(self) -> bool:
-        return self.error is None and self.data is not None
-
-
-@dataclass(slots=True)
-class IntentLLMResult:
-    """LLM intent extraction result."""
-
-    fields: dict[str, str] = field(default_factory=dict)
-    candidates: dict[str, list[str]] = field(default_factory=dict)
-    raw: str = ""
-    model: str | None = None
-    error: str | None = None
-
-    @property
-    def ok(self) -> bool:
-        return self.error is None and bool(self.fields)
-
-
-@dataclass(slots=True)
-class TargetSelectionResult:
-    """LLM edit-target selection result."""
-
-    target_selector: str | None = None
-    refined_instruction: str | None = None
-    alternatives: list[str] = field(default_factory=list)
-    confidence: str = "low"
-    reason: str | None = None
-    raw: str = ""
-    model: str | None = None
-    error: str | None = None
-
-    @property
-    def ok(self) -> bool:
-        return self.error is None and self.target_selector is not None
 
 
 def mapping(value: Any) -> dict[str, Any]:
@@ -220,13 +175,10 @@ __all__ = [
     "ChatResultError",
     "ImageCapabilityError",
     "ImageResultError",
-    "IntentLLMResult",
     "LLMClientConfigError",
     "ModelConfig",
     "ProviderConfig",
     "ResolvedModel",
-    "StructuredCallResult",
-    "TargetSelectionResult",
     "bool_value",
     "dict_list",
     "float_value",

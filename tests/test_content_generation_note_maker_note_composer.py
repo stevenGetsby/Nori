@@ -1,7 +1,10 @@
 import pytest
 
-from nori.content_generation.models import AssetBundle, CandidateTitle
-from nori.content_generation.note_maker import note_composer
+from nori.agents.content_generation.schemas import AssetBundle, CandidateTitle
+from nori.agents.content_generation.note_maker.package import NoteComposer
+
+
+note_composer = NoteComposer()
 
 
 class NoteComposerTestError(RuntimeError):
@@ -43,7 +46,7 @@ def test_note_composer_prompts_json_call_and_normalizes_output():
             "validation": {"status": "needs_human_review", "issues": [" 命中禁止项 "]},
         }
 
-    composed = note_composer.compose_note_llm(
+    composed = note_composer.compose(
         _skill(),
         bundle,
         {"goal": "产品种草"},
@@ -62,6 +65,12 @@ def test_note_composer_prompts_json_call_and_normalizes_output():
     assert "素材卖点" in calls[0]["user"]
     assert "通勤香薰很治愈" in calls[0]["user"]
     assert "不要硬广" in calls[0]["user"]
+    assert "热点证据" in calls[0]["user"]
+    assert "账号可信度" in calls[0]["user"]
+    assert "首图一眼看懂" in calls[0]["user"]
+    assert "title：推荐标题，<=20 字" in calls[0]["user"]
+    assert "body：开场 → 主体段落 → 互动钩子，<=1000 字" in calls[0]["user"]
+    assert "不要伪造用户体验、截图、官方背书或前后对比证据" in calls[0]["user"]
 
 
 def test_note_composer_adds_fallback_candidate_title():
@@ -73,7 +82,7 @@ def test_note_composer_adds_fallback_candidate_title():
             "validation": {},
         }
 
-    composed = note_composer.compose_note_llm(
+    composed = note_composer.compose(
         _skill(),
         AssetBundle(),
         {},
@@ -90,7 +99,7 @@ def test_note_composer_raises_domain_error_when_title_or_body_missing():
         return {"title": "", "body": "正文"}
 
     with pytest.raises(NoteComposerTestError, match="缺 title 或 body"):
-        note_composer.compose_note_llm(
+        note_composer.compose(
             _skill(),
             AssetBundle(),
             {},

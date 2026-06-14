@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "case_id": "Holly",
+  "run_id": "20260601_000000_holly_image_smoke",
+  "workflow": "holly_image_smoke",
+  "path": "cases/Holly/runs/20260601_000000_holly_image_smoke",
+  "status": "migrated",
+  "metadata": {
+    "migration": "case_centric_artifact_store"
+  },
+  "artifacts": [
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:account_plan",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "account_plan",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/account_plan.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:client_brief",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "client_brief",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/client_brief.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:content_calendar",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "content_calendar",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/content_calendar.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:content_context_pack",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "content_context_pack",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/content_context_pack.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:content_design_spec",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "content_design_spec",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/content_design_spec.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:content_package",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "content_package",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/content_package.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:covers__cover_种草推荐_朋友安利笔记制作指南_20260601_010709",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "covers__cover_种草推荐_朋友安利笔记制作指南_20260601_010709",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/covers/cover_种草推荐_朋友安利笔记制作指南_20260601_010709.png",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:covers__cover_种草推荐_朋友安利笔记制作指南_20260607_005606",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "covers__cover_种草推荐_朋友安利笔记制作指南_20260607_005606",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/covers/cover_种草推荐_朋友安利笔记制作指南_20260607_005606.png",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:covers__cover_种草推荐_朋友安利笔记制作指南_20260607_020316",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "covers__cover_种草推荐_朋友安利笔记制作指南_20260607_020316",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/covers/cover_种草推荐_朋友安利笔记制作指南_20260607_020316.png",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:intake_result",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "intake_result",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/intake_result.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:kpi_plan",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "kpi_plan",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/kpi_plan.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:market_session_skill_report",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "market_session_skill_report",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/market_session_skill_report.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:operation_project",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "operation_project",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/operation_project.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:reviews",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "reviews",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/reviews.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:selected_task",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "selected_task",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/selected_task.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:summary",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "summary",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/summary.md",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    },
+    {
+      "schema_version": 1,
+      "artifact_id": "Holly:20260601_000000_holly_image_smoke:xhs_top_notes_result",
+      "case_id": "Holly",
+      "run_id": "20260601_000000_holly_image_smoke",
+      "type": "xhs_top_notes_result",
+      "path": "cases/Holly/runs/20260601_000000_holly_image_smoke/xhs_top_notes_result.json",
+      "created_by": "migration",
+      "input_artifacts": [],
+      "status": "migrated",
+      "metadata": {
+        "source": "legacy_holly_run"
+      }
+    }
+  ]
+}

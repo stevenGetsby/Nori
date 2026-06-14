@@ -1,20 +1,21 @@
 import importlib
+import json
 from pathlib import Path
 
-import llms
+import nori.core.llms as llms
 
-from nori.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
+from nori.agents.user_profiling import AccountPlannerAgent, AccountPlannerInput, IntakeAgent, UserInput
 
 
-planner_module = importlib.import_module("nori.user_profiling.account_planner.account_planner")
+planner_module = importlib.import_module("nori.agents.user_profiling.account_planner.account_planner")
 
 
 def _holly_input(enable_search=False):
-    holly_dir = Path("SHOWCASE/Holly")
-    text = (holly_dir / "设计理念.md").read_text(encoding="utf-8")
+    holly_dir = Path("cases/Holly/showcase")
+    text = (holly_dir / "brief.md").read_text(encoding="utf-8")
     images = sorted(
         str(path)
-        for path in (holly_dir / "holly shit品牌素材").iterdir()
+        for path in (holly_dir / "assets").iterdir()
         if path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}
     )
     return AccountPlannerInput(text=text, images=images, platform="xhs", enable_search=enable_search)
@@ -79,11 +80,11 @@ def test_account_planner_no_llm_does_not_infer_holly_keywords():
 
 
 def test_account_planner_consumes_intaker_result_without_rule_inference():
-    holly_dir = Path("SHOWCASE/Holly")
-    text = (holly_dir / "设计理念.md").read_text(encoding="utf-8")
+    holly_dir = Path("cases/Holly/showcase")
+    text = (holly_dir / "brief.md").read_text(encoding="utf-8")
     images = sorted(
         str(path)
-        for path in (holly_dir / "holly shit品牌素材").iterdir()
+        for path in (holly_dir / "assets").iterdir()
         if path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}
     )
     intaker_result = IntakeAgent(use_llm=False).run(UserInput(text=text, images=images))
@@ -100,13 +101,14 @@ def test_account_planner_consumes_intaker_result_without_rule_inference():
 
 
 def test_account_planner_uses_llm_for_keywords(monkeypatch):
-    def fake_chat(messages, *, usage="llm", **kwargs):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
         assert usage == "llm"
-        assert kwargs["response_format"] == {"type": "json_object"}
+        assert "_chat" not in kwargs
+        assert kwargs["json_mode"] is True
         assert "搜索结果" in messages[1]["content"]
-        return _fake_llm_response()
+        return json.loads(_fake_llm_response())
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     result = AccountPlannerAgent(use_llm=True).run(_holly_input())
 
     assert result.tags["track"] == "怪趣文创"
@@ -120,10 +122,10 @@ def test_account_planner_uses_llm_for_keywords(monkeypatch):
 
 
 def test_account_planner_invalid_llm_json_falls_back(monkeypatch):
-    def fake_chat(messages, *, usage="llm", **kwargs):  # noqa: ARG001
-        return "not json"
+    def fake_chat_json(messages, *, usage="llm", **kwargs):  # noqa: ARG001
+        raise llms.ChatJSONError("bad json", "not json")
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     result = AccountPlannerAgent(use_llm=True).run(_holly_input())
 
     assert result.tags["track"] == "待判断"
@@ -134,8 +136,8 @@ def test_account_planner_invalid_llm_json_falls_back(monkeypatch):
 
 
 def test_account_planner_search_uses_llm_keywords(monkeypatch):
-    def fake_chat(messages, *, usage="llm", **kwargs):
-        return _fake_llm_response()
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        return json.loads(_fake_llm_response())
 
     class FakeSearchProvider:
         def __init__(self):
@@ -151,7 +153,7 @@ def test_account_planner_search_uses_llm_keywords(monkeypatch):
                 }
             ]
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     provider = FakeSearchProvider()
     result = AccountPlannerAgent(use_llm=True, search_provider=provider).run(_holly_input(enable_search=True))
 

@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "session_id": "session_41080b6dfe80",
+  "task_id": "task_b28e0394ec52",
+  "case_id": "Holly",
+  "case_title": "Holly Shit开心拉屎",
+  "replay_request_path": "replay_request.json",
+  "brief": {
+    "text_path": "original_brief.md",
+    "sha256": "121e95519989d212538af0d39ea5196d9ddcd9bd9aea99a6cbc5347187e1c348",
+    "char_count": 542
+  },
+  "assets": [
+    {
+      "asset_id": "asset_204b66421de2",
+      "kind": "image",
+      "usage": "reference",
+      "filename": "20250617195920.jpg",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_204b66421de2_20250617195920.jpg",
+      "public_reference_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_204b66421de2/file",
+      "metadata": {
+        "source": "holly_backend_smoke"
+      },
+      "sha256": "26d4667f4d86a862635f2e9ba90be186d569692c665d29b8b4203474727d1b28",
+      "size_bytes": 563087
+    },
+    {
+      "asset_id": "asset_a9142939dac3",
+      "kind": "image",
+      "usage": "reference",
+      "filename": "49@2x.png",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_a9142939dac3_49@2x.png",
+      "public_reference_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_a9142939dac3/file",
+      "metadata": {
+        "source": "holly_backend_smoke"
+      },
+      "sha256": "68fb80258c5b3a560d05f1d3cfdca2d18b4a91ab9d4a4deb2c20f3bc0e5ada89",
+      "size_bytes": 1514999
+    },
+    {
+      "asset_id": "asset_0e35d029008b",
+      "kind": "image",
+      "usage": "reference",
+      "filename": "50@2x.png",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_0e35d029008b_50@2x.png",
+      "public_reference_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_0e35d029008b/file",
+      "metadata": {
+        "source": "holly_backend_smoke"
+      },
+      "sha256": "900be758b6d29d0fe464df4c7e84600d7149c4de42ae488f68b8ccae4b54e9da",
+      "size_bytes": 365104
+    },
+    {
+      "asset_id": "asset_49a3fe92ef28",
+      "kind": "image",
+      "usage": "reference",
+      "filename": "1.png",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_49a3fe92ef28_1.png",
+      "public_reference_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_49a3fe92ef28/file",
+      "metadata": {
+        "source": "holly_backend_smoke"
+      },
+      "sha256": "5f468f6a178964b94f6ab1ef027e2639fae05905fbd63dd89481dc3a68fa0783",
+      "size_bytes": 2897771
+    }
+  ],
+  "reference_public_urls_by_path": {
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_204b66421de2_20250617195920.jpg": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_204b66421de2/file",
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_a9142939dac3_49@2x.png": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_a9142939dac3/file",
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_0e35d029008b_50@2x.png": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_0e35d029008b/file",
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_49a3fe92ef28_1.png": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_49a3fe92ef28/file"
+  },
+  "reference_transfer": {
+    "required": true,
+    "selected_count": 4,
+    "local_count": 4,
+    "remote_count": 0,
+    "provider_fetchable_count": 4,
+    "all_selected_fetchable": true,
+    "strict_public_url_ready": true,
+    "items": [
+      {
+        "asset_id": "asset_204b66421de2",
+        "filename": "20250617195920.jpg",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_204b66421de2_20250617195920.jpg",
+        "public_reference_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_204b66421de2/file",
+        "provider_fetchable_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_204b66421de2/file",
+        "provider_fetchable": true
+      },
+      {
+        "asset_id": "asset_a9142939dac3",
+        "filename": "49@2x.png",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_a9142939dac3_49@2x.png",
+        "public_reference_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_a9142939dac3/file",
+        "provider_fetchable_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_a9142939dac3/file",
+        "provider_fetchable": true
+      },
+      {
+        "asset_id": "asset_0e35d029008b",
+        "filename": "50@2x.png",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_0e35d029008b_50@2x.png",
+        "public_reference_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_0e35d029008b/file",
+        "provider_fetchable_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_0e35d029008b/file",
+        "provider_fetchable": true
+      },
+      {
+        "asset_id": "asset_49a3fe92ef28",
+        "filename": "1.png",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_41080b6dfe80/asset_49a3fe92ef28_1.png",
+        "public_reference_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_49a3fe92ef28/file",
+        "provider_fetchable_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_49a3fe92ef28/file",
+        "provider_fetchable": true
+      }
+    ]
+  },
+  "reference_image_generation_check": {
+    "event_id": "event_53166d3093d6",
+    "created_at": "2026-06-08T08:10:05.227591+00:00",
+    "ready": true,
+    "reason": "image_generation_succeeded",
+    "selected_count": 4,
+    "published_count": 4,
+    "failed_count": 0,
+    "provider_fetchable_count": 4,
+    "provider_fetchable_reference_images": [
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_204b66421de2/file",
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_a9142939dac3/file",
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_0e35d029008b/file",
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_49a3fe92ef28/file"
+    ],
+    "url_probe": {
+      "enabled": true,
+      "passed": true,
+      "checked_count": 4,
+      "reachable_count": 4,
+      "failed_count": 0
+    },
+    "generation": {
+      "ready": true,
+      "reason": "image_generation_succeeded",
+      "image_count": 1,
+      "error_type": "",
+      "error": ""
+    },
+    "metadata": {
+      "source": "backend_holly_smoke",
+      "case_id": "Holly"
+    },
+    "selected_provider_fetchable_reference_images": [
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_204b66421de2/file",
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_a9142939dac3/file",
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_0e35d029008b/file",
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_49a3fe92ef28/file"
+    ],
+    "covered_selected_reference_images": [
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_204b66421de2/file",
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_a9142939dac3/file",
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_0e35d029008b/file",
+      "https://7af075631ed38597-111-205-14-82.serveousercontent.com/sessions/session_41080b6dfe80/assets/asset_49a3fe92ef28/file"
+    ],
+    "missing_selected_reference_images": [],
+    "covers_selected_reference_images": true
+  },
+  "run_options": {
+    "platform": "xhs",
+    "execution_mode": "background",
+    "human_gate_mode": "skip",
+    "require_image_references": true,
+    "require_reference_image_generation_check": true,
+    "verify_reference_urls": true,
+    "reference_url_probe_timeout": 30.0,
+    "backend_public_base_url": "https://7af075631ed38597-111-205-14-82.serveousercontent.com",
+    "backend_public_base_url_configured": true
+  },
+  "market_evidence": {
+    "provided": true,
+    "queries": [
+      "怪趣文创",
+      "反焦虑文创"
+    ],
+    "hot_note_count": 2,
+    "insufficient_count": 0,
+    "sha256": "46481b66875423209b50ac0675d12dc0eba93fc48818693cf42abab76dc5475e"
+  },
+  "config": {
+    "client_name": "Holly",
+    "brand_name": "Holly Shit开心拉屎",
+    "project_id_prefix": "holly_backend_smoke",
+    "project_name": "Holly Shit Backend Smoke",
+    "topic": "Holly Shit 开心拉屎反焦虑怪趣文创账号冷启动",
+    "account_position": "用便便精神、反焦虑、怪趣 IP 和原创文创产品做小红书种草与人格化内容。",
+    "target_audience": "高压学习和上班人群、喜欢怪趣文创和反差幽默的年轻女性、原创设计周边买家。",
+    "goals": [
+      "让小红书用户快速理解品牌：Shit人生也要拉得开心。",
+      "把线下卖得好的怪趣文创转成线上可关注、可收藏、可下单的内容资产。"
+    ],
+    "positioning_notes": [
+      "品牌核心不是低俗玩梗，而是用荒诞幽默回收焦虑和身体自主权。"
+    ],
+    "constraints": [
+      "保留 Holly Shit 的反叛、自信、搞笑、怪趣调性。",
+      "内容必须能落到具体产品或 IP，不只写抽象情绪。"
+    ],
+    "taboos": [
+      "不要把便便梗写成低俗猎奇。",
+      "不要虚构销量、价格、疗效或未提供的合作背书。"
+    ],
+    "platform_rules": [
+      {
+        "rule": "小红书图文首屏必须一眼看出情绪利益点和收藏理由。"
+      },
+      {
+        "rule": "标题、封面和正文开头要围绕同一个点击钩子。"
+      }
+    ],
+    "top_k_per_keyword": 1,
+    "download_media": false,
+    "horizon_days": 7,
+    "stage_timeout_seconds": 300.0,
+    "content_package_timeout_seconds": 300.0
+  },
+  "metadata": {
+    "source": "backend.fixture.holly_content_production",
+    "brief_path": "/Users/geminilight/projects/product/Nori/cases/Holly/brief/original.md",
+    "asset_names": [
+      "微信图片_20250617195920.jpg",
+      "资源 49@2x.png",
+      "资源 50@2x.png",
+      "明信片 打印文件_画板 1.png"
+    ],
+    "market_evidence_source": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_154655_content_production/xhs_top_notes_result.json"
+  },
+  "fingerprints": {
+    "brief_sha256": "121e95519989d212538af0d39ea5196d9ddcd9bd9aea99a6cbc5347187e1c348",
+    "replay_request_sha256": "af2351ee7e28be44bacf4c472286175ab291b86b3945a99481a24891162f4432",
+    "config_sha256": "6e1ba3361a59916927bc82f17a5a0c729e14edde680ab0cc73cd2b8d996ffa52",
+    "market_evidence_sha256": "46481b66875423209b50ac0675d12dc0eba93fc48818693cf42abab76dc5475e",
+    "metadata_sha256": "03255848a0bdbf7ff3b83b5bb6dac30d955b8ff33328990ce18d6ea7f5bae60d",
+    "reference_image_generation_check_sha256": "de82f29ba7db0f91f2f11d8dfb263438026b294e114b35d217c2a8217547ae87",
+    "asset_sha256s": [
+      "26d4667f4d86a862635f2e9ba90be186d569692c665d29b8b4203474727d1b28",
+      "68fb80258c5b3a560d05f1d3cfdca2d18b4a91ab9d4a4deb2c20f3bc0e5ada89",
+      "900be758b6d29d0fe464df4c7e84600d7149c4de42ae488f68b8ccae4b54e9da",
+      "5f468f6a178964b94f6ab1ef027e2639fae05905fbd63dd89481dc3a68fa0783"
+    ]
+  }
+}

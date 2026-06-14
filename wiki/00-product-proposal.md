@@ -37,7 +37,7 @@ Client / creator input
 
 | Area | Status | Canonical source |
 | --- | --- | --- |
-| LLM gateway | Implemented: config loader, OpenAI-compatible clients, chat/image helpers, JSON parsing helper, mode switch. | [20-system-architecture.md](./20-system-architecture.md#llm-gateway) |
+| LLM gateway | Implemented: config loader, LangChain chat adapter, OpenAI-compatible image clients, chat/image helpers, JSON parsing helper, mode switch. | [20-system-architecture.md](./20-system-architecture.md#llm-gateway) |
 | Generation chain | Implemented: `IntakeAgent -> NoteMakerAgent -> CoverDirectorAgent`. | [60-stage-generation-core.md](./60-stage-generation-core.md) |
 | Analysis / skill learning | Implemented: XHS note analyzer and session-level skill reports; crawler integration is partly operational. | [62-stage-data-collection-and-skill-learning.md](./62-stage-data-collection-and-skill-learning.md) |
 | Account planning | Implemented: `AccountPlannerAgent` plus ops models/agents for operation plan, KPI, calendar. | [61-stage-account-ops-backend.md](./61-stage-account-ops-backend.md) |
@@ -50,7 +50,7 @@ Client / creator input
 | --- | --- |
 | Real publishing | Backend production/review loop is not stable enough; publish adapter should remain reserved. |
 | Automated comment/DM operations | Needs risk controls, account safety, and metrics loop first. |
-| Full frontend workbench | Current stage validates contracts via Python API, CLI, smoke scripts, and local artifacts. |
+| Full frontend workbench | `web/` is reserved for product UI/prototypes and `backend/` now provides a lightweight service adapter, but the current stage still validates most generation contracts via Python API, CLI, smoke scripts, and local artifacts. |
 | Multi-platform product parity | `data_collect` supports more platforms, but Nori product logic is XHS-first. |
 | Unbounded live LLM/crawler/image runs in tests | Tests should stay mocked by default; live runs belong to explicit smoke scripts. |
 
@@ -69,7 +69,7 @@ Client / creator input
 | Existing source | Role after wiki |
 | --- | --- |
 | `README.md` | Lightweight project entry; should point to wiki as canonical docs. |
-| `进度.md` | Historical P0 backend tracker; current status must live in roadmap/backlog. |
-| `文档/Nori总设计.md` | Historical design note; current pipeline facts are mirrored in stage docs. |
-| `文档/Agent-*.md` | Agent-specific reference material; keep as supporting docs until migrated. |
-| `文档/Codex自动化推进计划.md` | Automation log and project-skill context; durable roadmap should live in [01-project-roadmap.md](./01-project-roadmap.md). |
+| `wiki/archive/进度.md` | Historical P0 backend tracker; current status must live in roadmap/backlog. |
+| `wiki/archive/legacy-docs/Nori总设计.md` | Historical design note; current pipeline facts are mirrored in stage docs. |
+| `wiki/archive/legacy-docs/Agent-*.md` | Agent-specific reference material; keep as supporting docs until migrated. |
+| `wiki/archive/legacy-docs/Codex自动化推进计划.md` | Automation log and project-skill context; durable roadmap should live in [01-project-roadmap.md](./01-project-roadmap.md). |

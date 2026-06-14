@@ -1,12 +1,13 @@
 import importlib
+import json
 from pathlib import Path
 
-import llms
+import nori.core.llms as llms
 
-from nori.user_profiling import IntakeAgent, UserInput
+from nori.agents.user_profiling import IntakeAgent, UserInput
 
 
-intaker_module = importlib.import_module("nori.user_profiling.intaker.intaker")
+intaker_module = importlib.import_module("nori.agents.user_profiling.intaker.intaker")
 
 
 def test_intaker_text_goal_format_and_tone():
@@ -37,11 +38,11 @@ def test_intaker_text_with_images_as_context():
 
 
 def test_intaker_holly_showcase_materials():
-    holly_dir = Path("SHOWCASE/Holly")
-    text = (holly_dir / "设计理念.md").read_text(encoding="utf-8")
+    holly_dir = Path("cases/Holly/showcase")
+    text = (holly_dir / "brief.md").read_text(encoding="utf-8")
     images = sorted(
         str(path)
-        for path in (holly_dir / "holly shit品牌素材").iterdir()
+        for path in (holly_dir / "assets").iterdir()
         if path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}
     )
 
@@ -66,10 +67,10 @@ def test_intaker_requires_goal_when_missing():
 
 
 def test_intaker_uses_llm_when_enabled(monkeypatch):
-    def fake_chat(messages, *, usage="llm", **kwargs):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
         assert usage == "llm"
         assert "用户文字" in messages[1]["content"]
-        return """
+        return json.loads("""
         {
             "intention": {
                 "goal": "销售转化",
@@ -86,9 +87,9 @@ def test_intaker_uses_llm_when_enabled(monkeypatch):
             "missing": [],
             "questions": []
         }
-        """
+        """)
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     result = IntakeAgent(use_llm=True).run("帮我做一篇小红书，别硬广，要带商品链接转化")
 
     assert result.ready
@@ -99,8 +100,8 @@ def test_intaker_uses_llm_when_enabled(monkeypatch):
 def test_intaker_text_uses_chat_json_helper(monkeypatch):
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "_chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         return {
             "intention": {
                 "goal": "销售转化",
@@ -118,10 +119,6 @@ def test_intaker_text_uses_chat_json_helper(monkeypatch):
             "questions": [],
         }
 
-    def fail_chat(*args, **kwargs):
-        raise AssertionError("Intake text parsing should go through llms.chat_json")
-
-    monkeypatch.setattr(llms, "chat", fail_chat)
     monkeypatch.setattr(llms, "chat_json", fake_chat_json)
 
     result = IntakeAgent(use_llm=True).run(
@@ -134,14 +131,13 @@ def test_intaker_text_uses_chat_json_helper(monkeypatch):
     assert result.context["commercial_assets"] == ["商品链接"]
     assert len(calls) == 1
     assert calls[0]["usage"] == "llm"
-    assert calls[0]["_chat"] is fail_chat
     assert calls[0]["kwargs"]["json_mode"] is True
     assert "用户文字" in calls[0]["messages"][1]["content"]
 
 
 def test_intaker_accepts_legacy_english_llm_labels(monkeypatch):
-    def fake_chat(messages, *, usage="llm", **kwargs):
-        return """
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        return json.loads("""
         {
             "intention": {
                 "goal": "sales_conversion",
@@ -158,9 +154,9 @@ def test_intaker_accepts_legacy_english_llm_labels(monkeypatch):
             "missing": [],
             "questions": []
         }
-        """
+        """)
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     result = IntakeAgent(use_llm=True).run("帮我做一篇小红书，别硬广，要带商品链接转化")
 
     assert result.intention["goal"] == "销售转化"
@@ -172,10 +168,10 @@ def test_intaker_accepts_legacy_english_llm_labels(monkeypatch):
 
 
 def test_intaker_falls_back_when_llm_fails(monkeypatch):
-    def broken_chat(*args, **kwargs):
+    def broken_chat_json(*args, **kwargs):
         raise RuntimeError("llm down")
 
-    monkeypatch.setattr(llms, "chat", broken_chat)
+    monkeypatch.setattr(llms, "chat_json", broken_chat_json)
     result = IntakeAgent(use_llm=True).run("帮我做一篇小红书图文，给新品种草，要高级")
 
     assert result.ready
@@ -238,7 +234,7 @@ def test_intaker_tags_images_with_vision_llm(tmp_path, monkeypatch):
 
     chat_calls: list[dict] = []
 
-    def fake_chat(messages, *, usage="llm", **kwargs):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
         chat_calls.append({"messages": messages, "usage": usage})
         # 通过 data-uri 长度区分两张图不太靠谱;这里改用调用顺序匹配,但因为并发,顺序无关
         # 我们直接用 image_url 内容长度做一个粗略 hash 来挑 payload
@@ -248,9 +244,9 @@ def test_intaker_tags_images_with_vision_llm(tmp_path, monkeypatch):
         # 两张图字节相同(都是 _TINY_PNG_BYTES),所以 uri 相同;按调用顺序返回不同 payload
         idx = (len(chat_calls) - 1) % 2
         target = a if idx == 0 else b
-        return __import__("json").dumps(payloads_by_path[target])
+        return payloads_by_path[target]
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     # 关掉并发以便用顺序断言（线程池 max_workers=1 等价串行）
     monkeypatch.setattr(intaker_module, "VISION_PARALLELISM", 1)
 
@@ -287,14 +283,14 @@ def test_intaker_vision_passes_user_text_in_prompt(tmp_path, monkeypatch):
     a = _write_tiny_png(tmp_path / "a.png")
     captured: list[str] = []
 
-    def fake_chat(messages, *, usage="llm", **kwargs):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
         assert usage == "vision"
         for part in messages[1]["content"]:
             if isinstance(part, dict) and part.get("type") == "text":
                 captured.append(part["text"])
-        return "{}"
+        return {}
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     IntakeAgent(use_llm=False).run(
         UserInput(text="给品牌种草，要可爱风格", images=[a]),
         use_vision=True,
@@ -309,8 +305,8 @@ def test_intaker_vision_uses_chat_json_helper_and_isolates_failures(tmp_path, mo
     b = _write_tiny_png(tmp_path / "b.png")
     calls: list[dict] = []
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "_chat": _chat, "kwargs": kwargs})
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         if len(calls) == 2:
             raise llms.ChatJSONError("bad vision json", "{")
         return {
@@ -321,10 +317,6 @@ def test_intaker_vision_uses_chat_json_helper_and_isolates_failures(tmp_path, mo
             "quality": "high",
         }
 
-    def fail_chat(*args, **kwargs):
-        raise AssertionError("Intake vision parsing should go through llms.chat_json")
-
-    monkeypatch.setattr(llms, "chat", fail_chat)
     monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     monkeypatch.setattr(intaker_module, "VISION_PARALLELISM", 1)
 
@@ -342,7 +334,6 @@ def test_intaker_vision_uses_chat_json_helper_and_isolates_failures(tmp_path, mo
     assert image_assets[1].subject == ""
     assert len(calls) == 2
     assert all(call["usage"] == "vision" for call in calls)
-    assert all(call["_chat"] is fail_chat for call in calls)
     assert all(call["kwargs"]["timeout"] == 60 for call in calls)
     assert all(call["kwargs"]["json_mode"] is True for call in calls)
 
@@ -352,22 +343,22 @@ def test_intaker_vision_runs_one_call_per_image(tmp_path, monkeypatch):
     paths = [_write_tiny_png(tmp_path / f"p{i}.png") for i in range(10)]
     call_count = {"n": 0}
 
-    def fake_chat(messages, *, usage="llm", **kwargs):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
         assert usage == "vision"
         call_count["n"] += 1
         # 每次只见 1 张图
         user_parts = messages[1]["content"]
         img_count = sum(1 for p in user_parts if isinstance(p, dict) and p.get("type") == "image_url")
         assert img_count == 1, f"expected single image per call, got {img_count}"
-        return __import__("json").dumps({
+        return {
             "vision_roles": ["unknown"],
             "subject": "",
             "brand_signals": [],
             "usable_for": ["body"],
             "quality": "low",
-        })
+        }
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
 
     result = IntakeAgent(use_llm=False).run(
         UserInput(text="t", images=paths),
@@ -383,10 +374,10 @@ def test_intaker_vision_runs_one_call_per_image(tmp_path, monkeypatch):
 def test_intaker_vision_falls_back_to_empty_tag_when_llm_fails(tmp_path, monkeypatch):
     a = _write_tiny_png(tmp_path / "a.png")
 
-    def broken_chat(*args, **kwargs):
+    def broken_chat_json(*args, **kwargs):
         raise RuntimeError("vision down")
 
-    monkeypatch.setattr(llms, "chat", broken_chat)
+    monkeypatch.setattr(llms, "chat_json", broken_chat_json)
     result = IntakeAgent(use_llm=False).run(
         UserInput(text="t", images=[a]),
         use_vision=True,
@@ -403,11 +394,11 @@ def test_intaker_skips_vision_when_use_llm_false(tmp_path, monkeypatch):
     a = _write_tiny_png(tmp_path / "a.png")
     called = {"n": 0}
 
-    def fake_chat(*args, **kwargs):
+    def fake_chat_json(*args, **kwargs):
         called["n"] += 1
-        return "{}"
+        return {}
 
-    monkeypatch.setattr(llms, "chat", fake_chat)
+    monkeypatch.setattr(llms, "chat_json", fake_chat_json)
     # 不显式传 use_vision，依赖 use_llm=False 时自动关掉 vision
     result = IntakeAgent(use_llm=False).run(UserInput(text="t", images=[a]))
 
@@ -428,7 +419,7 @@ def test_intaker_filters_unknown_role_and_normalizes_case(tmp_path, monkeypatch)
         "quality": "HIGH",
     }
 
-    monkeypatch.setattr(llms, "chat", lambda *a, **k: __import__("json").dumps(payload))
+    monkeypatch.setattr(llms, "chat_json", lambda *a, **k: payload)
 
     result = IntakeAgent(use_llm=False).run(
         UserInput(text="t", images=[a]),

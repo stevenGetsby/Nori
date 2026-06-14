@@ -1,0 +1,49 @@
+{
+  "workflow_name": "content_production",
+  "run_id": "workflow_9afa8ff72699",
+  "session_id": "session_a1705eb18989",
+  "task_id": "task_1f24526bf7d6",
+  "status": "failed",
+  "stages": [
+    {
+      "stage_name": "xhs_top_notes",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production/xhs_top_notes_result.json",
+      "error": "",
+      "started_at": "2026-06-08T07:22:02.216880+00:00",
+      "finished_at": "2026-06-08T07:22:02.218449+00:00",
+      "metadata": {
+        "timeout_seconds": 300.0,
+        "timeout_enforcement": "worker_thread",
+        "timeout_cancellation": "request_returns_worker_may_continue"
+      }
+    },
+    {
+      "stage_name": "market_skill_report",
+      "status": "failed",
+      "input_ref": "",
+      "output_ref": "",
+      "error": "XHSNoteAnalyzerLLMError: llms.chat_json 失败: AttributeError: 'CompletionsWithRawResponse' object has no attribute 'parse'",
+      "started_at": "2026-06-08T07:22:02.218815+00:00",
+      "finished_at": "2026-06-08T07:22:03.030638+00:00",
+      "metadata": {
+        "timeout_seconds": 300.0,
+        "timeout_enforcement": "worker_thread",
+        "timeout_cancellation": "request_returns_worker_may_continue"
+      }
+    }
+  ],
+  "artifact_refs": [
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_152202_content_production/xhs_top_notes_result.json"
+  ],
+  "metadata": {
+    "engine": "langgraph",
+    "langchain_runnable": "RunnableLambda",
+    "checkpoint_saver": "",
+    "human_gate_mode": "skip",
+    "error": "XHSNoteAnalyzerLLMError: llms.chat_json 失败: AttributeError: 'CompletionsWithRawResponse' object has no attribute 'parse'"
+  },
+  "started_at": "2026-06-08T07:22:02.133568+00:00",
+  "finished_at": "2026-06-08T07:22:03.030676+00:00"
+}

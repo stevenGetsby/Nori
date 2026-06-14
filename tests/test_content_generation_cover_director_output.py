@@ -6,7 +6,7 @@ import base64
 
 import pytest
 
-from nori.content_generation.cover_director import output as cover_output
+from nori.agents.content_generation.cover_director import output as cover_output
 
 
 class _OutputError(RuntimeError):

@@ -1,5 +1,9 @@
-from nori.content_generation.models import AssetBundle, UserAsset
-from nori.content_generation.note_maker import asset_curator
+from nori.agents.content_generation.schemas import AssetBundle
+from nori.core import UserAsset
+from nori.agents.content_generation.note_maker.package import NoteAssetCurator
+
+
+asset_curator = NoteAssetCurator()
 
 
 def test_asset_curator_builds_bundle_from_llm_indices_and_text_buckets():
@@ -10,7 +14,7 @@ def test_asset_curator_builds_bundle_from_llm_indices_and_text_buckets():
         UserAsset(kind="image", path="/tmp/c.jpg"),
     ]
 
-    bundle = asset_curator.bundle_from_curator_data(
+    bundle = asset_curator.bundle_from_data(
         {
             "main_image_indices": ["2", 1, "bad"],
             "aux_image_indices": [3, 2, 99],
@@ -45,7 +49,7 @@ def test_asset_curator_prompts_json_call_with_asset_payloads():
             "data_points": [],
         }
 
-    bundle = asset_curator.curate_assets_llm(
+    bundle = asset_curator.curate(
         assets,
         {"creative_goal": "种草", "tone": "朋友安利", "note_type": "图文"},
         {"goal": "产品种草"},
@@ -64,7 +68,7 @@ def test_asset_curator_skips_llm_when_no_assets():
     def fail_json_call(*args, **kwargs):
         raise AssertionError("empty assets should not call the LLM")
 
-    bundle = asset_curator.curate_assets_llm([], {}, {}, json_call=fail_json_call)
+    bundle = asset_curator.curate([], {}, {}, json_call=fail_json_call)
 
     assert bundle == AssetBundle()
 

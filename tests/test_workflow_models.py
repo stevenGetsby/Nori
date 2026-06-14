@@ -1,6 +1,6 @@
 from nori.core import AccountOperationProject, ClientBrief, ContentCalendar, ContentTask, KPIPlan, OperationPlan
-from nori.content_generation.models import ContentPackage
-from nori.learning_loop.models import ComplianceReview, MetricsSnapshot, StrategyIteration
+from nori.agents.content_generation.schemas import ContentPackage
+from nori.agents.learning_loop.schemas import ComplianceReview, MetricsSnapshot, StrategyIteration
 
 
 def test_client_brief_serializes_with_defaults_and_copies_lists():
@@ -139,9 +139,9 @@ def test_account_operation_project_round_trips_core_contract():
 
 def test_workflow_models_are_owned_by_canonical_modules():
     assert AccountOperationProject.__module__ == "nori.core.project"
-    assert ContentTask.__module__ == "nori.core.models"
-    assert KPIPlan.__module__ == "nori.core.models"
-    assert ContentPackage.__module__ == "nori.content_generation.models"
-    assert ComplianceReview.__module__ == "nori.learning_loop.models"
-    assert MetricsSnapshot.__module__ == "nori.learning_loop.models"
-    assert StrategyIteration.__module__ == "nori.learning_loop.models"
+    assert ContentTask.__module__ == "nori.core.planning_models"
+    assert KPIPlan.__module__ == "nori.core.planning_models"
+    assert ContentPackage.__module__ == "nori.agents.content_generation.schemas.generation"
+    assert ComplianceReview.__module__ == "nori.agents.learning_loop.schemas.learning"
+    assert MetricsSnapshot.__module__ == "nori.agents.learning_loop.schemas.learning"
+    assert StrategyIteration.__module__ == "nori.agents.learning_loop.schemas.learning"

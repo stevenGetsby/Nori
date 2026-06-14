@@ -8,7 +8,10 @@
 import asyncio
 
 import aiofiles
-import aiomysql
+try:
+    import aiomysql
+except ModuleNotFoundError:  # MySQL is optional for JSON/SQLite crawler paths.
+    aiomysql = None
 
 import data_collect.crawler.config as config
 from data_collect.crawler.async_db import AbstractAsyncDB, AsyncMysqlDB, AsyncSQLiteDB
@@ -20,6 +23,8 @@ async def init_mediacrawler_db():
     """
     初始化 MySQL 数据库链接池对象，并将该对象塞给 media_crawler_db_var 上下文变量
     """
+    if aiomysql is None:
+        raise RuntimeError("aiomysql is required when DB_TYPE is mysql")
     pool = await aiomysql.create_pool(
         host=config.RELATION_DB_HOST,
         port=config.RELATION_DB_PORT,

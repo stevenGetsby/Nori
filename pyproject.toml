@@ -1,0 +1,27 @@
+[project]
+name = "nori"
+version = "0.1.0"
+description = "Agentic content-generation runtime for Nori."
+requires-python = ">=3.9"
+dependencies = [
+    "fastapi>=0.104,<1",
+    "langchain-core>=0.3.79,<0.4",
+    "langchain-openai>=0.3.35,<0.4",
+    "langgraph>=0.6.10,<0.7",
+    "openai>=1.0",
+    "pillow>=10.0",
+    "python-multipart>=0.0.9",
+    "pytest>=8.0",
+    "tos>=2.9,<3",
+    "uvicorn>=0.24,<1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["backend*", "nori*", "data_collect*"]

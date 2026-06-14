@@ -1,8 +1,10 @@
-<!-- Last verified: 2026-05-25 | Current stage: Architecture Refactor -->
+<!-- Last verified: 2026-06-01 | Current stage: Architecture Refactor -->
 
-# Spec: Domain Architecture Refactor
+# Historical Spec: Domain Architecture Refactor
 
-## Goal
+This document is retained as historical context for the earlier domain-module refactor. The current canonical architecture is capability/runtime based; see `spec-capability-architecture.md`.
+
+## Original Goal
 
 Refactor Nori into one shared layer plus five stable domain modules:
 
@@ -30,21 +32,22 @@ The purpose is to make the shared layer and five domain modules the canonical im
 
 | Layer | Modules | Responsibility |
 | --- | --- | --- |
-| `shared` | `nori/core/models.py`, `nori/core/architecture.py` | Common contract types, canonical domain registry, context packs, decision traces, evidence references, learning signals. |
-| `user profiling` | `nori/user_profiling/facade.py` | Long-lived user/account/brand/preferences/constraints profiles. |
-| `market analysis` | `nori/market_analysis/facade.py` | Benchmark samples, market snapshots, trend insights, audience insights. |
-| `context building` | `nori/context_building/facade.py`, operation/KPI/calendar planner modules, planner critics | Build operation project context, KPI plans, content calendars, `ContentTask` rows, and `ContextPack` from profile + task + market + assets + history. |
-| `content generation` | `nori/content_generation/facade.py`, `content_producer/*`, `note_maker/*`, `cover_director/*` | Produce content packages, manage production state/provenance, group candidates, and expose final deliverables. |
-| `learning loop` | `nori/learning_loop/facade.py`, `review/*`, `strategy/*` | Review gates, monitoring snapshots, analytics, feedback signals, preference updates, strategy iteration. |
+| `shared` | `nori/core/{profile_models,asset_models,planning_models,capability_models}.py`, `nori/core/architecture.py` | Common contract owners, canonical registry, context packs, decision traces, evidence references, learning signals. |
+| `user profiling` | `nori/agents/user_profiling/facade.py` | Long-lived user/account/brand/preferences/constraints profiles. |
+| `market analysis` | `nori/agents/market_analysis/facade.py` | Benchmark samples, market snapshots, trend insights, audience insights. |
+| `context building` | `nori/context`, operation/KPI/calendar planner modules, planner critics | Build operation project context, KPI plans, content calendars, `ContentTask` rows, and `ContextPack` from profile + task + market + assets + history. |
+| `content generation` | `nori/agents/content_generation/facade.py`, `content_producer/*`, `note_maker/*`, `cover_director/*` | Produce content packages, manage production state/provenance, group candidates, and expose final deliverables. |
+| `learning loop` | `nori/agents/learning_loop/facade.py`, `review/*`, `strategy/*` | Review gates, monitoring snapshots, analytics, feedback signals, preference updates, strategy iteration. |
 
 ## Public Entrypoint
 
-`nori.domain` is the recommended stable import path for upper layers that need the complete projected architecture:
+At the time of this historical refactor, `nori.domain` was proposed as the stable import path for upper layers that needed the complete projected architecture. Current pre-launch code removed that compatibility layer and the later `nori.capabilities` facade; use the owning modules directly:
 
 | API | Purpose |
 | --- | --- |
-| `build_domain_snapshot(project, ...)` | Builds a full `DomainSnapshot` from an `AccountOperationProject` or persisted project dict. |
-| `validate_domain_snapshot(snapshot)` | Validates a `DomainSnapshot` object or persisted snapshot dict and returns structured issues. |
+| `nori.core.capability_registry_snapshot()` | Returns the five agent-owned capability groups. |
+| `nori.agents.learning_loop.build_capability_snapshot(project, ...)` | Builds a full `CapabilitySnapshot` from an `AccountOperationProject` or persisted project dict. |
+| `nori.agents.learning_loop.validate_capability_snapshot(snapshot)` | Validates a `CapabilitySnapshot` object or persisted snapshot dict and returns structured issues. |
 
 ## Shared Contracts
 
@@ -58,18 +61,18 @@ The purpose is to make the shared layer and five domain modules the canonical im
 | `ExplanationTrace` | xAI trace that explains why a candidate or decision exists; serialized stage history uses `stage_steps`, while old `agent_steps` payloads are accepted only as read-time compatibility input. |
 | `LearningSignal` | Observation that updates profile, market memory, or strategy. |
 | `PerformanceSnapshot` | Post-publish or post-review measured result. |
-| `DomainSnapshot` | Full projected view of one project/workflow across the five domain modules; includes `validate()` / `is_valid()` structural quality gates. |
+| `CapabilitySnapshot` | Full projected view of one project/workflow across the five agent-owned capability groups; includes `validate()` / `is_valid()` structural quality gates. |
 
 ## Architecture Registry
 
-`nori.core.architecture` exposes the canonical module map for orchestration, docs, and future CLI/UI inspection:
+`nori.core.architecture` exposes the canonical capability map for orchestration, docs, and future CLI/UI inspection:
 
 | API | Purpose |
 | --- | --- |
-| `DomainModule` | Metadata for one domain module: name, package, facade, responsibility, contracts, dependencies. |
-| `DOMAIN_MODULES` | Ordered tuple of the five business modules. |
-| `domain_module_names()` | Returns the canonical module order. |
-| `get_domain_module(name)` | Looks up a module by canonical name, returning `None` for unknown names. |
+| `CapabilityModule` | Metadata for one capability group: name, package, responsibility, agents, contracts, dependencies. |
+| `CAPABILITY_MODULES` | Ordered tuple of the five capability groups. |
+| `capability_module_names()` | Returns the canonical capability order. |
+| `get_capability_module(name)` | Looks up a capability by canonical name, returning `None` for unknown names. |
 
 ## Project Projection API
 
@@ -79,14 +82,14 @@ The first compatibility bridge from the existing ops world into the new domain a
 | --- | --- | --- |
 | `user_profiling` | `UserProfilingFacade.build_from_project(project)` | `UserProfile` with project metadata and profile source refs. |
 | `market_analysis` | `MarketAnalysisFacade.build_from_project(project)` | `MarketAnalysis` with competitor evidence and project metadata. |
-| `context_building` | `ContextPackBuilder.build_from_project(project, task_id=...)` | `ContextPack` assembled from project profile, market evidence, task, assets, and decisions. |
+| `context` | `ContextPackBuilder.build_from_project(project, task_id=...)` | `ContextPack` assembled from project profile, platform strategy, market evidence, task, skills, content strategy, assets, and decisions. |
 | `content_generation` | `ContentGenerationFacade.candidate_set_from_project(project, task_id=...)` | `CandidateSet` filtered to the task and linked back to the `ContextPack` trace. |
 | `learning_loop` | `LearningLoopFacade.performance_snapshots_from_project(project)` / `learning_signals_from_project(project, ...)` | Normalized monitoring snapshots and learning signals. |
-| `learning_loop` | `LearningLoopFacade.domain_snapshot_from_project(project, ...)` | `DomainSnapshot` containing profile, market, context packs, candidate sets, monitoring snapshots, and learning signals. |
+| `learning_loop` | `LearningLoopFacade.capability_snapshot_from_project(project, ...)` | `CapabilitySnapshot` containing profile, market, context packs, candidate sets, monitoring snapshots, and learning signals. |
 
 ## Snapshot Quality Gates
 
-`DomainSnapshot.validate()` returns structured issue dictionaries with `code`, `path`, `message`, `severity`, and `metadata`. Current gates catch:
+`CapabilitySnapshot.validate()` returns structured issue dictionaries with `code`, `path`, `message`, `severity`, and `metadata`. Current gates catch:
 
 | Issue code | Meaning |
 | --- | --- |
@@ -103,18 +106,18 @@ The first compatibility bridge from the existing ops world into the new domain a
 | Evidence everywhere | Every decision and candidate should retain source refs / evidence refs. |
 | Human decision is explicit | Human choices are modeled, not hidden in free-text comments. |
 | Learning is separate from generation | Generated content should not mutate preference/market state directly. |
-| Canonical imports only | Agent/model code imports from `nori.user_profiling`, `nori.market_analysis`, `nori.context_building`, `nori.content_generation`, or `nori.learning_loop`; legacy roots are not importable. |
+| Canonical imports only | Agent/model code imports from `nori.agents.user_profiling`, `nori.agents.market_analysis`, `nori.agents.planning`, `nori.agents.content_generation`, or `nori.agents.learning_loop`; legacy roots are not importable. |
 
 ## Migration Strategy
 
 | Phase | Change |
 | --- | --- |
 | P0 | Add shared `nori/core` contracts and facades that wrap existing models. |
-| P1 | Add `user_profiling`, `market_analysis`, `context_building`, `content_generation`, `learning_loop` packages as thin orchestrators. |
-| P2 | Move review/monitoring/strategy implementation into `nori.learning_loop`. |
-| P3 | Move content producer/package helpers into `nori.content_generation`. |
-| P4 | Move intake/account planning and XHS analyzer implementation into `nori.user_profiling` and `nori.market_analysis`. |
-| P5 | Move NoteMaker/CoverDirector generation chain into `nori.content_generation`. |
+| P1 | Add `user_profiling`, `market_analysis`, `planning`, `content_generation`, `learning_loop` packages as thin orchestrators. |
+| P2 | Move review/monitoring/strategy implementation into `nori.agents.learning_loop`. |
+| P3 | Move content producer/package helpers into `nori.agents.content_generation`. |
+| P4 | Move intake/account planning and XHS analyzer implementation into `nori.agents.user_profiling` and `nori.agents.market_analysis`. |
+| P5 | Move NoteMaker/CoverDirector generation chain into `nori.agents.content_generation`. |
 | P6 | Remove legacy roots `nori/gen_agents`, `nori/ops_agents`, `nori/ana_agents`, `nori/ops_models`, `nori/agent_models`, and `nori/agent_utils`; keep tests enforcing canonical-only imports. |
 
 Current implementation note: each domain package owns both facade-level orchestration and its internal implementation modules. Legacy package roots are gone.

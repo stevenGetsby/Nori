@@ -1,12 +1,12 @@
 import json
 
-import llms
+import nori.core.llms as llms
 
-from nori.market_analysis.models import NoteEvidence, NoteSkill, SessionSkillReport
-from nori.market_analysis import load_note_skills, note_skill_fixture, write_note_skill_fixture
-from nori.market_analysis.note_skill_fixture import load_note_skills as direct_load_note_skills
-from nori.content_generation.models import UserAsset
-from nori.content_generation import NoteMakerAgent
+from nori.agents.market_analysis.schemas import NoteEvidence, NoteSkill, SessionSkillReport
+from nori.agents.market_analysis import load_note_skills, note_skill_fixture, write_note_skill_fixture
+from nori.agents.market_analysis.note_skill_fixture import load_note_skills as direct_load_note_skills
+from nori.core import UserAsset
+from nori.agents.content_generation import NoteMakerAgent
 
 
 def _skill() -> NoteSkill:
@@ -57,7 +57,7 @@ def test_note_skill_fixture_round_trips_report_and_skills_only_json(tmp_path):
 
 def test_note_skill_fixture_helpers_are_owned_by_market_analysis():
     assert load_note_skills is direct_load_note_skills
-    assert load_note_skills.__module__ == "nori.market_analysis.note_skill_fixture"
+    assert load_note_skills.__module__ == "nori.agents.market_analysis.note_skill_fixture"
 
 
 def test_session_skill_report_from_dict_parses_string_booleans():
@@ -107,7 +107,7 @@ def test_loaded_note_skill_fixture_can_feed_note_maker(monkeypatch, tmp_path):
             "validation": {"status": "pass", "issues": []},
         }
 
-    monkeypatch.setattr("llms.chat_json", fake_chat_json)
+    monkeypatch.setattr("nori.core.llms.chat_json", fake_chat_json)
     path = write_note_skill_fixture([_skill()], tmp_path / "fixture.json")
     skills = load_note_skills(json.loads(path.read_text(encoding="utf-8")))
 

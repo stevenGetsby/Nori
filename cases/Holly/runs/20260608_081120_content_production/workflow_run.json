@@ -1,0 +1,41 @@
+{
+  "workflow_name": "content_production",
+  "run_id": "workflow_852071e5f9d2",
+  "session_id": "session_e21995da6f5d",
+  "task_id": "task_d9e24ea01913",
+  "status": "failed",
+  "stages": [
+    {
+      "stage_name": "xhs_top_notes",
+      "status": "succeeded",
+      "input_ref": "",
+      "output_ref": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_081120_content_production/xhs_top_notes_result.json",
+      "error": "",
+      "started_at": "2026-06-08T00:11:20.499779+00:00",
+      "finished_at": "2026-06-08T00:11:20.500492+00:00",
+      "metadata": {}
+    },
+    {
+      "stage_name": "market_skill_report",
+      "status": "failed",
+      "input_ref": "",
+      "output_ref": "",
+      "error": "XHSNoteAnalyzerLLMError: llms.chat 失败: AttributeError: 'CompletionsWithRawResponse' object has no attribute 'parse'",
+      "started_at": "2026-06-08T00:11:20.500741+00:00",
+      "finished_at": "2026-06-08T00:11:23.543486+00:00",
+      "metadata": {}
+    }
+  ],
+  "artifact_refs": [
+    "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_081120_content_production/xhs_top_notes_result.json"
+  ],
+  "metadata": {
+    "engine": "langgraph",
+    "langchain_runnable": "RunnableLambda",
+    "checkpoint_saver": "",
+    "human_gate_mode": "skip",
+    "error": "XHSNoteAnalyzerLLMError: llms.chat 失败: AttributeError: 'CompletionsWithRawResponse' object has no attribute 'parse'"
+  },
+  "started_at": "2026-06-08T00:11:20.472289+00:00",
+  "finished_at": "2026-06-08T00:11:23.543508+00:00"
+}

@@ -1,11 +1,41 @@
 """Base class for concrete Nori runtime agents."""
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Any
 
 from nori.shared.llm_json import attach_llm_error, call_stage_json, call_stage_messages_json, try_stage_json
 
 from .llm import LLMFactory
+
+
+@dataclass(frozen=True)
+class AgentPrompt:
+    """A fully rendered system/user prompt pair for one JSON stage."""
+
+    system: str
+    user: str
+
+
+class AgentInputPreparer:
+    """Base marker for class-owned stage input restoration.
+
+    Stage packages use subclasses to keep coercion, defaults, and run-window
+    normalization together instead of scattering standalone helper functions.
+    """
+
+
+class AgentPromptBuilder:
+    """Base class for class-owned prompt contracts."""
+
+    system_prompt = ""
+    user_prompt_template = ""
+
+    def build_user_prompt(self, *args: Any, **kwargs: Any) -> str:
+        raise NotImplementedError
+
+    def build(self, *args: Any, **kwargs: Any) -> AgentPrompt:
+        return AgentPrompt(system=self.system_prompt, user=self.build_user_prompt(*args, **kwargs))
 
 
 class AgentBase:
@@ -55,7 +85,6 @@ class AgentBase:
             usage=usage,
             json_mode=json_mode,
             error_type=error_type,
-            chat_func=self.llm_factory.chat_func,
             chat_json_func=self.llm_factory.chat_json_func,
         )
 
@@ -74,7 +103,6 @@ class AgentBase:
             usage=usage,
             json_mode=json_mode,
             error_type=error_type,
-            chat_func=self.llm_factory.chat_func,
             chat_json_func=self.llm_factory.chat_json_func,
         )
 
@@ -93,7 +121,6 @@ class AgentBase:
             timeout=timeout,
             usage=usage,
             json_mode=json_mode,
-            chat_func=self.llm_factory.chat_func,
             chat_json_func=self.llm_factory.chat_json_func,
         )
 
@@ -101,4 +128,4 @@ class AgentBase:
         attach_llm_error(target, stage or self.stage_name, error)
 
 
-__all__ = ["AgentBase"]
+__all__ = ["AgentBase", "AgentInputPreparer", "AgentPrompt", "AgentPromptBuilder"]

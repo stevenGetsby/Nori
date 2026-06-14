@@ -4,8 +4,9 @@ from nori.core import AccountOperationProject
 from nori.core import ContentTask, ClientBrief
 import pytest
 
-from nori.content_generation.models import CandidateTitle, CoverResult, NoteDraft, UserAsset
-from nori.content_generation import ContentProducerAgent, ContentProductionError, produce_content_package
+from nori.agents.content_generation.schemas import CandidateTitle, CoverResult, NoteDraft
+from nori.core import UserAsset
+from nori.agents.content_generation import ContentProducerAgent, ContentProductionError, produce_content_package
 
 
 def _task() -> ContentTask:
@@ -176,4 +177,3 @@ def test_content_producer_failure_attaches_structured_error_to_task_and_project(
     assert project.metadata["production_errors"] == [task.metadata["production_error"]]
     assert project.content_packages == []
     assert excinfo.value.error == task.metadata["production_error"]
-

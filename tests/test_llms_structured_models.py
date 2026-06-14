@@ -1,36 +1,20 @@
 from __future__ import annotations
 
-import llms
-import llms.intent_extractor as intent_module
-import llms.structured_calls as calls_module
-import llms.structured_models as models
-import llms.target_selector as target_module
-from nori.core import IntentLLMResult, StructuredCallResult, TargetSelectionResult
+import nori.core as core
+import nori.core.llms as llms
 from nori.core import contracts
 
 
-def test_structured_result_models_live_in_core_contracts_boundary():
-    intent = IntentLLMResult(fields={"topic": "通勤香薰"})
-    target = TargetSelectionResult(target_selector="cover#1")
-    call = StructuredCallResult(data={"ok": True})
+def test_removed_structured_helper_result_models_are_not_public_contracts():
+    removed = {
+        "IntentLLMResult",
+        "StructuredCallResult",
+        "TargetSelectionResult",
+    }
 
-    assert intent.ok is True
-    assert target.ok is True
-    assert call.ok is True
-    assert IntentLLMResult(error="parse_error").ok is False
-    assert TargetSelectionResult(error="missing_selector").ok is False
-    assert StructuredCallResult(error="api_error:RuntimeError").ok is False
-
-
-def test_structured_result_model_import_identities_stay_compatible():
-    assert contracts.IntentLLMResult is IntentLLMResult
-    assert contracts.TargetSelectionResult is TargetSelectionResult
-    assert contracts.StructuredCallResult is StructuredCallResult
-    assert llms.IntentLLMResult is models.IntentLLMResult
-    assert llms.TargetSelectionResult is models.TargetSelectionResult
-    assert models.IntentLLMResult is IntentLLMResult
-    assert models.TargetSelectionResult is TargetSelectionResult
-    assert models.StructuredCallResult is StructuredCallResult
-    assert intent_module.IntentLLMResult is models.IntentLLMResult
-    assert target_module.TargetSelectionResult is models.TargetSelectionResult
-    assert calls_module.StructuredCallResult is models.StructuredCallResult
+    assert removed.isdisjoint(contracts.__all__)
+    assert removed.isdisjoint(core.__all__)
+    for name in removed:
+        assert not hasattr(contracts, name)
+        assert not hasattr(core, name)
+        assert not hasattr(llms, name)

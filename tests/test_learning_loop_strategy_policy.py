@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from nori.learning_loop.strategy import policy as strategy_iteration_policy
-from nori.learning_loop.models import ComplianceReview, MetricsSnapshot
+from nori.agents.learning_loop.strategy import policy as strategy_iteration_policy
+from nori.agents.learning_loop.schemas import ComplianceReview, MetricsSnapshot
 
 
 def _passed_review() -> ComplianceReview:

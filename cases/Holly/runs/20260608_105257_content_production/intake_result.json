@@ -1,0 +1,155 @@
+{
+  "intention": {
+    "goal": "涨粉",
+    "format": "小红书图文",
+    "tone": [
+      "有趣",
+      "亲和",
+      "犀利"
+    ],
+    "anti": [
+      "不要硬广",
+      "不要低价感",
+      "保持人设",
+      "不要太商业",
+      "不要违规"
+    ]
+  },
+  "context": {
+    "creative_assets": [
+      "图片资产"
+    ],
+    "commercial_assets": [],
+    "guardrails": [
+      "不要硬广",
+      "不要低价感",
+      "不要太商业"
+    ],
+    "data_refs": [],
+    "images": [
+      {
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_39ee6981aebd/asset_310534353faa_20250617195920.jpg",
+        "kind": "jpg",
+        "usage": "context"
+      },
+      {
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_39ee6981aebd/asset_109b1904bf41_49@2x.png",
+        "kind": "png",
+        "usage": "context"
+      },
+      {
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_39ee6981aebd/asset_a6d36a5b53be_50@2x.png",
+        "kind": "png",
+        "usage": "context"
+      },
+      {
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_39ee6981aebd/asset_c2fbab991bb2_1.png",
+        "kind": "png",
+        "usage": "context"
+      }
+    ]
+  },
+  "ready": true,
+  "missing": [],
+  "questions": [
+    "现阶段账号最优先的目标是涨粉、卖货，还是设计接单/品牌合作？",
+    "你的核心目标受众更偏向同校学生、年轻打工人，还是喜欢搞怪文创的泛年轻人？"
+  ],
+  "assets": [
+    {
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_39ee6981aebd/asset_310534353faa_20250617195920.jpg",
+      "text": "",
+      "vision_roles": [
+        "product_shot"
+      ],
+      "subject": "两款屎尿屁主题便签本产品，贴合品牌搞怪反焦虑风格",
+      "brand_signals": [
+        "MEMO PAPER",
+        "To Do List",
+        "HollyShit",
+        "Just Doo It.",
+        "Shitting...",
+        "HOLY SHIT!",
+        "Shit happens but keep going"
+      ],
+      "usable_for": [
+        "cover",
+        "body"
+      ],
+      "quality": "medium"
+    },
+    {
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_39ee6981aebd/asset_109b1904bf41_49@2x.png",
+      "text": "",
+      "vision_roles": [
+        "product_shot",
+        "ip_character"
+      ],
+      "subject": "白色布艺产品置于金属篮中，印有搞怪屎尿屁风格图案和IP元素",
+      "brand_signals": [
+        "HOLLY SIT"
+      ],
+      "usable_for": [
+        "cover",
+        "body"
+      ],
+      "quality": "high"
+    },
+    {
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_39ee6981aebd/asset_a6d36a5b53be_50@2x.png",
+      "text": "",
+      "vision_roles": [
+        "product_shot",
+        "ip_character",
+        "scene_photo"
+      ],
+      "subject": "印有搞怪女孩与屎尿屁元素的帆布包，契合反焦虑文创品牌",
+      "brand_signals": [
+        "Life is shit, so what"
+      ],
+      "usable_for": [
+        "cover",
+        "body"
+      ],
+      "quality": "high"
+    },
+    {
+      "kind": "image",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_39ee6981aebd/asset_c2fbab991bb2_1.png",
+      "text": "",
+      "vision_roles": [
+        "reference_style",
+        "brand_logo",
+        "scene_photo"
+      ],
+      "subject": "黑白厕所意象海报，传达反焦虑与完成优先的品牌态度",
+      "brand_signals": [
+        "Holly Shit!",
+        "GET SHIT DOWN",
+        "Done is the New Daring",
+        "完成比完美更性感"
+      ],
+      "usable_for": [
+        "cover",
+        "body"
+      ],
+      "quality": "medium"
+    },
+    {
+      "kind": "text",
+      "path": "",
+      "text": "我是一个同济大学设计创意学院的学生，因为一个很偶然的机会，我用一周的时间仓促的做了几个文创产品做的很好，大家都很喜欢，于是我打算继续做下去。现在市集可以卖的很好，但是线上卖不动，于是我想做个小红书账号，给大家分享我的文创的品牌理念和做产品的小故事。这是我的想法，你有什么其他做账号的想法吗？\n我的文创品牌素材如下：\n关键词：\n反焦虑的快乐哲学\nSlogan：\nShit人生也要拉的开心\n品牌风格：\n不羁 自信 有趣 搞怪\n品牌理念：\n“Holly Shit开心拉屎”设计品牌致力于把排泄从羞耻行为回归到身体权利与精神庇护。\n“厕所时间神圣不可侵犯”“带薪拉屎是我应得的”用粗俗的话语把被剥夺的时间和尊严抢回来。\n不要永远鸡血奋斗，请允许自己在厕所里合法躺平。\n我们致力于用最不体面的语言，说出人们最体面的诉求。\n品牌IP形象：\n小女孩——每天Shitting的打工人\n小狗——草丛里拉屎尿尿\n小猫——爱玩蛋蛋\n可以围绕“屎尿屁”文学开展，用冲击力的画面传递价值，但是内容不要违规，不要太恶俗\n我的产品多数是：杯子，包包，挂件，贴纸，冰箱贴，手机支架\n我有一个小团队，后期需要的话她们也可以出镜，请你帮我先找一下我账号的定位，我应该是一个什么人设，在可以涨粉接单的同时还可以卖我的产品。",
+      "vision_roles": [],
+      "subject": "",
+      "brand_signals": [],
+      "usable_for": [],
+      "quality": ""
+    }
+  ],
+  "metadata": {
+    "llm_enhanced": true
+  }
+}

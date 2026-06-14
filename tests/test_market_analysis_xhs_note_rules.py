@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from nori.market_analysis.models import XHSSeedSkillDraft, XHSNoteSample
-from nori.market_analysis.xhs_note_analyzer import rules as xhs_note_rules
+from nori.agents.market_analysis.schemas import XHSSeedSkillDraft, XHSNoteSample
+from nori.agents.market_analysis.xhs_note_analyzer import rules as xhs_note_rules
 
 
 def _sample_note(**overrides) -> XHSNoteSample:

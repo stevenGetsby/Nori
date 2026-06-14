@@ -1,0 +1,9 @@
+{
+  "ok": true,
+  "reference_url": "https://nori.tos-cn-beijing.volces.com/nori/reference-fidelity-probes/reference-probe/public-read-check/20260607/probe_public.png",
+  "output_path": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260607_reference_fidelity_probe/outputs_reference_images/cover_reference_images_probe_20260607_015139.png",
+  "elapsed_seconds": 52.88,
+  "payload_variant": "extra_body.reference_images",
+  "prompt": "Use the supplied reference image as the only source. Recreate the same poster faithfully. Preserve all visible text, colors, objects, and layout. Do not invent a new scene or any extra text.",
+  "source_prefix": "https://sd2oss-american.oss-us-west-1.aliyuncs.com/temp_images/2026/06/06/img-79"
+}

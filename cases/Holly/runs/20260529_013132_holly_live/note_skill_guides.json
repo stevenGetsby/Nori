@@ -1,0 +1,256 @@
+{
+  "skills": [
+    {
+      "skill_id": "情绪吐槽·吐槽笔记制作指南",
+      "label": "情绪吐槽·吐槽",
+      "goal": "rant",
+      "note_type": "视频",
+      "tone": "吐槽",
+      "creative_goal": "用情绪共鸣带出评论欲，再给一句缓冲收口。",
+      "title_rules": [
+        {
+          "name": "口播感标题",
+          "rule": "用强语气让标题像一句现场发言。",
+          "evidence": "甘肃省博物馆的新文创，给我整不会了！"
+        },
+        {
+          "name": "短标题",
+          "rule": "标题控制在短句内，先给情绪或悬念。",
+          "evidence": "甘肃省博物馆的新文创，给我整不会了！"
+        }
+      ],
+      "opening_rules": [
+        {
+          "name": "首句定场",
+          "rule": "第一句先给场景、情绪或判断，不急着解释信息。",
+          "evidence": "很难崩，笑出鹅叫。以为甘博的绿马是巅峰，殊不知是画风崩塌的开始  @甘肃省博物馆文创团队  @甘肃省博物馆小红书号"
+        }
+      ],
+      "body_structure": [
+        {
+          "name": "开场",
+          "rule": "先给情绪、场景或核心判断。",
+          "evidence": "很难崩，笑出鹅叫。以为甘博的绿马是巅峰，殊不知是画风崩塌的开始  @甘肃省博物馆文创团队  @甘肃省博物馆小红书号"
+        }
+      ],
+      "interaction_rules": [
+        {
+          "name": "评论触发",
+          "rule": "标题或正文要留下可回答的问题。",
+          "evidence": "comment_count=463"
+        }
+      ],
+      "visual_rules": [
+        {
+          "name": "封面先承担点击",
+          "rule": "封面必须先表达主题、情绪或问题，不只是放素材。",
+          "evidence": "cover"
+        },
+        {
+          "name": "少图集中",
+          "rule": "少图笔记要让单张图完成主题表达。",
+          "evidence": "image_count=1"
+        },
+        {
+          "name": "前 3 秒钩子",
+          "rule": "视频前 3 秒要先抛主题或情绪，不留缓冲。",
+          "evidence": "note_type=video"
+        }
+      ],
+      "cover_rules": [
+        {
+          "name": "封面一句话钩子",
+          "rule": "封面主文案用 6-14 个字说清这类内容的点击理由，优先承接标题里的结果、问题或情绪；不要把正文摘要整段搬上封面。类型：情绪吐槽·吐槽。",
+          "evidence": "甘肃省博物馆的新文创，给我整不会了！"
+        },
+        {
+          "name": "双层信息层级",
+          "rule": "封面只保留主标题和一个辅助信息层：主标题最大、辅助信息更小，可放数字、对象或场景；不要超过 3 组文字块。",
+          "evidence": "cover"
+        },
+        {
+          "name": "主体画面占位",
+          "rule": "产品、人物、截图或设计稿必须成为第一视觉主体，占画面约 60%-75%；四周留安全边，避免标题压住主体关键细节。",
+          "evidence": "image_count=1"
+        },
+        {
+          "name": "情绪符号强化",
+          "rule": "根据语气加一个明确情绪符号：吐槽类用夸张表情或反差字词，专业类用干净标签和编号，朋友安利用生活化场景词。当前语气：吐槽。",
+          "evidence": "吐槽"
+        },
+        {
+          "name": "图文一致校验",
+          "rule": "封面承诺必须能在标题或正文第一屏找到对应信息；不能用与笔记证据无关的大词、夸张收益或误导性前后对比。",
+          "evidence": "甘肃省博物馆的新文创，给我整不会了！"
+        }
+      ],
+      "avoid_rules": [
+        "不要照搬原笔记句子，只抽结构和方法。",
+        "不要把单篇个例直接当稳定规律。"
+      ],
+      "metrics_summary": {
+        "liked_p25": 3804,
+        "liked_p50": 3804,
+        "liked_p75": 3804,
+        "collected_p50": 497,
+        "sample": 1
+      },
+      "evidence_notes": [
+        {
+          "note_id": "659eb0f3000000001d035792",
+          "note_url": "https://www.xiaohongshu.com/explore/659eb0f3000000001d035792?xsec_token=ABppjd7WQeJZ-xmwXSANma5g5KOReI0M1ExBMRhhh_IbQ=&xsec_source=pc_search",
+          "title": "甘肃省博物馆的新文创，给我整不会了！",
+          "liked": 3804,
+          "collected": 497,
+          "keyword": "怪趣文创",
+          "cover_path": null,
+          "image_paths": [],
+          "video_path": null,
+          "quoted_segments": [
+            "很难崩，笑出鹅叫。以为甘博的绿马是巅峰，殊不知是画风崩塌的开始  @甘肃省博物馆文创团队  @甘肃省博物馆小红书号"
+          ]
+        }
+      ],
+      "cluster_signals": {
+        "rule_goal_distribution": {
+          "general": 1
+        },
+        "size": 1
+      }
+    },
+    {
+      "skill_id": "经验复盘·个人经验笔记制作指南",
+      "label": "经验复盘·个人经验",
+      "goal": "debrief",
+      "note_type": "图文",
+      "tone": "个人经验",
+      "creative_goal": "用真实经历换一份可执行的避雷清单。",
+      "title_rules": [
+        {
+          "name": "短标题",
+          "rule": "标题控制在短句内，先给情绪或悬念。",
+          "evidence": "我的毕设——Moodbalancer"
+        }
+      ],
+      "opening_rules": [
+        {
+          "name": "首句定场",
+          "rule": "第一句先给场景、情绪或判断，不急着解释信息。",
+          "evidence": "☁️设计说明："
+        },
+        {
+          "name": "短句开场",
+          "rule": "用短句开场，让用户快速进入语境。",
+          "evidence": "☁️设计说明："
+        }
+      ],
+      "body_structure": [
+        {
+          "name": "开场",
+          "rule": "先给情绪、场景或核心判断。",
+          "evidence": "☁️设计说明："
+        },
+        {
+          "name": "模块分段",
+          "rule": "用明确小标题承载规则、方向、奖励或清单信息。",
+          "evidence": "☁️设计说明："
+        },
+        {
+          "name": "话题归档",
+          "rule": "用话题标签承接平台分发和活动入口。",
+          "evidence": "#产品设计[话题]# #设计[话题]# #毕设[话题]# #毕业展览[话题]# #工业设计[话题]# #情绪调节[话题]# #情绪[话题]# #内耗[话题]# #华农毕设[话题]# #产品[话题]#"
+        }
+      ],
+      "interaction_rules": [
+        {
+          "name": "话题入口",
+          "rule": "保留核心话题标签，方便平台识别主题。",
+          "evidence": "产品设计 设计 毕设"
+        },
+        {
+          "name": "评论触发",
+          "rule": "标题或正文要留下可回答的问题。",
+          "evidence": "comment_count=22"
+        }
+      ],
+      "visual_rules": [
+        {
+          "name": "封面先承担点击",
+          "rule": "封面必须先表达主题、情绪或问题，不只是放素材。",
+          "evidence": "cover"
+        },
+        {
+          "name": "多图递进",
+          "rule": "图集应承担信息递进：封面吸引，后续图补充细节。",
+          "evidence": "image_count=8"
+        }
+      ],
+      "cover_rules": [
+        {
+          "name": "封面一句话钩子",
+          "rule": "封面主文案用 6-14 个字说清这类内容的点击理由，优先承接标题里的结果、问题或情绪；不要把正文摘要整段搬上封面。类型：经验复盘·个人经验。",
+          "evidence": "我的毕设——Moodbalancer"
+        },
+        {
+          "name": "双层信息层级",
+          "rule": "封面只保留主标题和一个辅助信息层：主标题最大、辅助信息更小，可放数字、对象或场景；不要超过 3 组文字块。",
+          "evidence": "cover"
+        },
+        {
+          "name": "主体画面占位",
+          "rule": "产品、人物、截图或设计稿必须成为第一视觉主体，占画面约 60%-75%；四周留安全边，避免标题压住主体关键细节。",
+          "evidence": "image_count=8"
+        },
+        {
+          "name": "情绪符号强化",
+          "rule": "根据语气加一个明确情绪符号：吐槽类用夸张表情或反差字词，专业类用干净标签和编号，朋友安利用生活化场景词。当前语气：个人经验。",
+          "evidence": "个人经验"
+        },
+        {
+          "name": "图文一致校验",
+          "rule": "封面承诺必须能在标题或正文第一屏找到对应信息；不能用与笔记证据无关的大词、夸张收益或误导性前后对比。",
+          "evidence": "我的毕设——Moodbalancer"
+        },
+        {
+          "name": "多图封面分工",
+          "rule": "封面只负责点击和主题判断，后续图片再拆步骤、细节、清单或案例；不要把所有卖点塞进第一张。",
+          "evidence": "image_count=8"
+        }
+      ],
+      "avoid_rules": [
+        "不要照搬原笔记句子，只抽结构和方法。",
+        "不要把单篇个例直接当稳定规律。"
+      ],
+      "metrics_summary": {
+        "liked_p25": 2061,
+        "liked_p50": 2061,
+        "liked_p75": 2061,
+        "collected_p50": 1077,
+        "sample": 1
+      },
+      "evidence_notes": [
+        {
+          "note_id": "6658456700000000150089c8",
+          "note_url": "https://www.xiaohongshu.com/explore/6658456700000000150089c8?xsec_token=ABVzUVjaJWf3T49NR1c1kNimt_Sk7zqr41p3FNYmVg1oQ=&xsec_source=pc_search",
+          "title": "我的毕设——Moodbalancer",
+          "liked": 2061,
+          "collected": 1077,
+          "keyword": "反焦虑文创",
+          "cover_path": null,
+          "image_paths": [],
+          "video_path": null,
+          "quoted_segments": [
+            "☁️设计说明：",
+            "这是一款多模态的内耗情绪缓解产品。由于本设计的理念是情绪调节平衡，便引伸想到天平的形式。用天平的两端分别代表用户和内耗情绪。产品运用心理学中调节情绪的方法，通过多模态设计，从视听嗅触提供用户情绪舒缓功能，视觉上可以直观的看到情绪的状态，听觉上可以通过播放舒缓的音乐来缓解情绪，嗅觉上通过植物精油等香薰来缓解情绪，触觉上通过转、按手环的表盘以得到解压的功能。该设计以圆润的造型，表层使用硅胶材质，突出产品温暖、柔和的特点，让产品具有更有亲和力的优势。"
+          ]
+        }
+      ],
+      "cluster_signals": {
+        "rule_goal_distribution": {
+          "general": 1
+        },
+        "size": 1
+      }
+    }
+  ]
+}

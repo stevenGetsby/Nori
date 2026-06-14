@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from nori.content_generation.models import CandidateTitle, NoteDraft
-from nori.content_generation.cover_director import prompts as cover_prompt
+from nori.agents.content_generation.schemas import CandidateTitle, NoteDraft
+from nori.agents.content_generation.cover_director.package import CoverPromptBuilder
+
+
+cover_prompt = CoverPromptBuilder()
 
 
 class _PromptError(RuntimeError):
@@ -50,11 +53,30 @@ def test_design_prompt_llm_builds_cover_prompt_contract():
         calls.append(kwargs)
         return {"prompt": "A vertical 3:4 cover with warm light and Chinese title text."}
 
-    prompt = cover_prompt.design_prompt_llm(
+    prompt = cover_prompt.design_with_llm(
         _draft(),
         _skill(),
         ["/tmp/ref-a.png", "/tmp/ref-b.png"],
-        {"user_text": "突出通勤治愈感"},
+        {
+            "user_text": "突出通勤治愈感",
+            "content_design_spec": {
+                "media_plan": {
+                    "social_card": {
+                        "source": "guizang_social_card_skill",
+                        "platform": "xhs",
+                        "artifact": "social_card_carousel",
+                        "canvas": {
+                            "width": 1080,
+                            "height": 1440,
+                            "ratio": "3:4",
+                            "safe_area_px": {"left": 72, "right": 72, "top": 96, "bottom": 96},
+                        },
+                        "page_count": {"min": 5, "max": 9, "target": 6},
+                        "layout_principles": ["Page 1 是封面钩子，Page 2-N 每页只讲一个观点"],
+                    }
+                }
+            },
+        },
         json_call=fake_json_call,
         error_type=_PromptError,
     )
@@ -69,6 +91,14 @@ def test_design_prompt_llm_builds_cover_prompt_contract():
     assert "下班通勤香气治愈" in user_prompt
     assert "第四个卖点不进入 prompt" not in user_prompt
     assert "参考图数量：2" in user_prompt
+    assert "首图一眼看懂" in user_prompt
+    assert "热点/账号适配" in user_prompt
+    assert "封面文字 6-14 字" in user_prompt
+    assert "社交卡片设计约束（来自 content_design_spec）" in user_prompt
+    assert "guizang_social_card_skill" in user_prompt
+    assert "1080" in user_prompt
+    assert "小红书首图设计：大钩子、一个强视觉、底部 3-5 个关键词" in user_prompt
+    assert "不要伪造 UI 截图、官方通知、用户背书、医疗金融证明" in user_prompt
     assert "只输出 JSON" in user_prompt
 
 
@@ -77,7 +107,7 @@ def test_design_prompt_llm_raises_domain_error_for_empty_prompt():
         return {"prompt": "  "}
 
     with pytest.raises(_PromptError, match="返回空 prompt"):
-        cover_prompt.design_prompt_llm(
+        cover_prompt.design_with_llm(
             _draft(),
             _skill(),
             [],

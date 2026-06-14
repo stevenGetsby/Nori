@@ -1,17 +1,19 @@
-"""Registry for Nori's shared layer and five domain modules."""
+"""Registry for Nori's runtime capability modules."""
 from __future__ import annotations
+
+from typing import Any
 
 from nori._compat import dataclass
 
 
 @dataclass(frozen=True, slots=True)
-class DomainModule:
-    """Stable metadata for one top-level domain module."""
+class CapabilityModule:
+    """Stable metadata for one agent-owned business capability group."""
 
     name: str
     package: str
-    facade: str
     responsibility: str
+    agents: tuple[str, ...] = ()
     contracts: tuple[str, ...] = ()
     depends_on: tuple[str, ...] = ()
 
@@ -19,74 +21,84 @@ class DomainModule:
         return {
             "name": self.name,
             "package": self.package,
-            "facade": self.facade,
             "responsibility": self.responsibility,
+            "agents": list(self.agents),
             "contracts": list(self.contracts),
             "depends_on": list(self.depends_on),
         }
 
 
-DOMAIN_MODULES: tuple[DomainModule, ...] = (
-    DomainModule(
+CAPABILITY_MODULES: tuple[CapabilityModule, ...] = (
+    CapabilityModule(
         name="user_profiling",
-        package="nori.user_profiling",
-        facade="UserProfilingFacade",
-        responsibility="Build long-lived user, account, brand, preference, and constraint profiles.",
-        contracts=("UserProfile", "UserAsset"),
+        package="nori.agents.user_profiling",
+        responsibility="Understand user input, brand assets, account positioning, and audience assumptions.",
+        agents=("IntakeAgent", "AccountPlannerAgent"),
+        contracts=("UserInput", "IntakeResult", "AccountPlannerInput", "AccountPlanResult"),
     ),
-    DomainModule(
+    CapabilityModule(
         name="market_analysis",
-        package="nori.market_analysis",
-        facade="MarketAnalysisFacade",
-        responsibility="Normalize market, competitor, trend, and audience evidence.",
-        contracts=("MarketAnalysis",),
+        package="nori.agents.market_analysis",
+        responsibility="Turn market evidence into reusable note skills and content references.",
+        agents=("XHSNoteAnalyzer",),
+        contracts=("NoteSkill", "SessionSkillReport"),
     ),
-    DomainModule(
-        name="context_building",
-        package="nori.context_building",
-        facade="ContextPackBuilder",
-        responsibility="Assemble profile, task, market, asset, decision, and evidence context for generation.",
-        contracts=("ContextPack", "DecisionPoint", "ExplanationTrace"),
+    CapabilityModule(
+        name="planning",
+        package="nori.agents.planning",
+        responsibility="Build operation, KPI, and content-calendar plans from the current profile and task.",
+        agents=("OperationPlannerAgent", "KPIPlannerAgent", "CalendarPlannerAgent"),
+        contracts=("AccountOperationProject", "KPIPlan", "ContentCalendar", "ContentTask"),
         depends_on=("user_profiling", "market_analysis"),
     ),
-    DomainModule(
+    CapabilityModule(
         name="content_generation",
-        package="nori.content_generation",
-        facade="ContentGenerationFacade",
-        responsibility="Group generated outputs into candidate sets for review and selection.",
-        contracts=("CandidateSet", "DecisionPoint", "ExplanationTrace"),
-        depends_on=("context_building",),
+        package="nori.agents.content_generation",
+        responsibility="Design reusable content specs, then instantiate them into generated packages.",
+        agents=("ContentSpecAgent", "ArtifactGenerationAgent", "ContentProducerAgent", "NoteMakerAgent", "CoverDirectorAgent"),
+        contracts=("ContentDesignSpec", "ContentPackage", "NoteDraft", "CoverResult"),
+        depends_on=("planning", "market_analysis"),
     ),
-    DomainModule(
+    CapabilityModule(
         name="learning_loop",
-        package="nori.learning_loop",
-        facade="LearningLoopFacade",
-        responsibility="Convert monitoring, review, and strategy evidence into learning signals.",
-        contracts=("PerformanceSnapshot", "LearningSignal", "DomainSnapshot"),
-        depends_on=("user_profiling", "market_analysis", "context_building", "content_generation"),
+        package="nori.agents.learning_loop",
+        responsibility="Review generated content and convert outcomes into learning signals.",
+        agents=("ReviewGateAgent", "StrategyIterationAgent"),
+        contracts=("ComplianceReview", "MetricsSnapshot", "StrategyIteration"),
+        depends_on=("content_generation",),
     ),
 )
 
 
-def domain_module_names() -> list[str]:
-    """Return the canonical module order used by orchestration and docs."""
+def capability_module_names() -> list[str]:
+    """Return the canonical capability order used by runtime orchestration."""
 
-    return [module.name for module in DOMAIN_MODULES]
+    return [module.name for module in CAPABILITY_MODULES]
 
 
-def get_domain_module(name: str) -> DomainModule | None:
-    """Look up a domain module by canonical name."""
+def get_capability_module(name: str) -> CapabilityModule | None:
+    """Look up a capability module by canonical name."""
 
     normalized = str(name or "").strip()
-    for module in DOMAIN_MODULES:
+    for module in CAPABILITY_MODULES:
         if module.name == normalized:
             return module
     return None
 
 
+def capability_registry_snapshot() -> dict[str, Any]:
+    """Return a JSON-serializable view of the agent-owned capability registry."""
+
+    return {
+        "module_names": capability_module_names(),
+        "modules": [module.to_dict() for module in CAPABILITY_MODULES],
+    }
+
+
 __all__ = [
-    "DOMAIN_MODULES",
-    "DomainModule",
-    "domain_module_names",
-    "get_domain_module",
+    "CAPABILITY_MODULES",
+    "CapabilityModule",
+    "capability_module_names",
+    "capability_registry_snapshot",
+    "get_capability_module",
 ]

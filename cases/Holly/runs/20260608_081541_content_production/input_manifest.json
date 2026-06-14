@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "session_id": "session_d1c130dabe26",
+  "task_id": "task_47785624138d",
+  "case_id": "Holly",
+  "case_title": "Holly Shit开心拉屎",
+  "replay_request_path": "replay_request.json",
+  "brief": {
+    "text_path": "original_brief.md",
+    "sha256": "121e95519989d212538af0d39ea5196d9ddcd9bd9aea99a6cbc5347187e1c348",
+    "char_count": 542
+  },
+  "assets": [
+    {
+      "asset_id": "asset_2b279025a4e0",
+      "kind": "image",
+      "usage": "reference",
+      "filename": "20250617195920.jpg",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_2b279025a4e0_20250617195920.jpg",
+      "public_reference_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_2b279025a4e0/file",
+      "metadata": {
+        "source": "holly_backend_smoke"
+      },
+      "sha256": "26d4667f4d86a862635f2e9ba90be186d569692c665d29b8b4203474727d1b28",
+      "size_bytes": 563087
+    },
+    {
+      "asset_id": "asset_4c76d0e2fa1f",
+      "kind": "image",
+      "usage": "reference",
+      "filename": "49@2x.png",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_4c76d0e2fa1f_49@2x.png",
+      "public_reference_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_4c76d0e2fa1f/file",
+      "metadata": {
+        "source": "holly_backend_smoke"
+      },
+      "sha256": "68fb80258c5b3a560d05f1d3cfdca2d18b4a91ab9d4a4deb2c20f3bc0e5ada89",
+      "size_bytes": 1514999
+    },
+    {
+      "asset_id": "asset_446f180a5187",
+      "kind": "image",
+      "usage": "reference",
+      "filename": "50@2x.png",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_446f180a5187_50@2x.png",
+      "public_reference_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_446f180a5187/file",
+      "metadata": {
+        "source": "holly_backend_smoke"
+      },
+      "sha256": "900be758b6d29d0fe464df4c7e84600d7149c4de42ae488f68b8ccae4b54e9da",
+      "size_bytes": 365104
+    },
+    {
+      "asset_id": "asset_35d69c96c9aa",
+      "kind": "image",
+      "usage": "reference",
+      "filename": "1.png",
+      "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_35d69c96c9aa_1.png",
+      "public_reference_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_35d69c96c9aa/file",
+      "metadata": {
+        "source": "holly_backend_smoke"
+      },
+      "sha256": "5f468f6a178964b94f6ab1ef027e2639fae05905fbd63dd89481dc3a68fa0783",
+      "size_bytes": 2897771
+    }
+  ],
+  "reference_public_urls_by_path": {
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_2b279025a4e0_20250617195920.jpg": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_2b279025a4e0/file",
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_4c76d0e2fa1f_49@2x.png": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_4c76d0e2fa1f/file",
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_446f180a5187_50@2x.png": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_446f180a5187/file",
+    "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_35d69c96c9aa_1.png": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_35d69c96c9aa/file"
+  },
+  "reference_transfer": {
+    "required": true,
+    "selected_count": 4,
+    "local_count": 4,
+    "remote_count": 0,
+    "provider_fetchable_count": 4,
+    "all_selected_fetchable": true,
+    "strict_public_url_ready": true,
+    "items": [
+      {
+        "asset_id": "asset_2b279025a4e0",
+        "filename": "20250617195920.jpg",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_2b279025a4e0_20250617195920.jpg",
+        "public_reference_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_2b279025a4e0/file",
+        "provider_fetchable_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_2b279025a4e0/file",
+        "provider_fetchable": true
+      },
+      {
+        "asset_id": "asset_4c76d0e2fa1f",
+        "filename": "49@2x.png",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_4c76d0e2fa1f_49@2x.png",
+        "public_reference_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_4c76d0e2fa1f/file",
+        "provider_fetchable_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_4c76d0e2fa1f/file",
+        "provider_fetchable": true
+      },
+      {
+        "asset_id": "asset_446f180a5187",
+        "filename": "50@2x.png",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_446f180a5187_50@2x.png",
+        "public_reference_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_446f180a5187/file",
+        "provider_fetchable_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_446f180a5187/file",
+        "provider_fetchable": true
+      },
+      {
+        "asset_id": "asset_35d69c96c9aa",
+        "filename": "1.png",
+        "path": "/Users/geminilight/projects/product/Nori/data/backend/uploads/session_d1c130dabe26/asset_35d69c96c9aa_1.png",
+        "public_reference_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_35d69c96c9aa/file",
+        "provider_fetchable_url": "https://backend.example.test/sessions/session_d1c130dabe26/assets/asset_35d69c96c9aa/file",
+        "provider_fetchable": true
+      }
+    ]
+  },
+  "run_options": {
+    "platform": "xhs",
+    "human_gate_mode": "skip",
+    "require_image_references": true,
+    "backend_public_base_url_configured": true
+  },
+  "market_evidence": {
+    "provided": true,
+    "queries": [
+      "怪趣文创",
+      "反焦虑文创"
+    ],
+    "hot_note_count": 2,
+    "insufficient_count": 0
+  },
+  "metadata": {
+    "source": "backend.fixture.holly_content_production",
+    "brief_path": "/Users/geminilight/projects/product/Nori/cases/Holly/brief/original.md",
+    "asset_names": [
+      "微信图片_20250617195920.jpg",
+      "资源 49@2x.png",
+      "资源 50@2x.png",
+      "明信片 打印文件_画板 1.png"
+    ],
+    "market_evidence_source": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260608_081120_content_production/xhs_top_notes_result.json"
+  }
+}

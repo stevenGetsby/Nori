@@ -5,15 +5,15 @@ from __future__ import annotations
 import importlib
 import json
 
-import llms
+import nori.core.llms as llms
 import pytest
 
-from nori.market_analysis.models import NoteSkill
-from nori.content_generation.models import UserAsset
-from nori.content_generation import NoteMakerAgent
-from nori.content_generation.note_maker import NoteMakerLLMError
+from nori.agents.market_analysis.schemas import NoteSkill
+from nori.core import UserAsset
+from nori.agents.content_generation import NoteMakerAgent
+from nori.agents.content_generation.note_maker import NoteMakerLLMError
 
-note_maker_module = importlib.import_module("nori.content_generation.note_maker.note_maker")
+note_maker_module = importlib.import_module("nori.agents.content_generation.note_maker.note_maker")
 
 
 def _planting_skill() -> dict:
@@ -49,32 +49,34 @@ def _debrief_skill() -> dict:
 
 
 def _stub_chat(call_log: list[dict], responses: list[str]):
-    """按顺序返回 responses，每次调用记录到 call_log。"""
+    """按顺序返回 JSON responses，每次调用记录到 call_log。"""
     it = iter(responses)
 
-    def fake_chat(messages, *, usage="llm", **kwargs):
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
         call_log.append({"messages": messages, "usage": usage, "kwargs": kwargs})
         try:
-            return next(it)
+            raw = next(it)
         except StopIteration as exc:
             raise AssertionError("LLM 被调用次数超过预设") from exc
+        try:
+            return json.loads(raw)
+        except Exception as exc:  # noqa: BLE001
+            raise llms.ChatJSONError("bad json", raw) from exc
 
-    return fake_chat
+    return fake_chat_json
 
 
-def test_note_maker_routes_json_calls_through_llms_chat_json(monkeypatch):
+def test_note_maker_routes_json_requests_through_llms_chat_json(monkeypatch):
     skills = [_planting_skill()]
     assets = [UserAsset(kind="text", text="香薰好物")]
     calls: list[dict] = []
-    sentinel_chat = object()
 
-    def fake_chat_json(messages, *, usage="llm", _chat=None, **kwargs):
-        calls.append({"messages": messages, "usage": usage, "_chat": _chat, "kwargs": kwargs})
-        assert _chat is sentinel_chat
+    def fake_chat_json(messages, *, usage="llm", **kwargs):
+        calls.append({"messages": messages, "usage": usage, "kwargs": kwargs})
+        assert "_chat" not in kwargs
         assert kwargs["json_mode"] is True
         return json.loads(_CURATE_JSON) if len(calls) == 1 else json.loads(_COMPOSE_JSON)
 
-    monkeypatch.setattr(llms, "chat", sentinel_chat)
     monkeypatch.setattr(llms, "chat_json", fake_chat_json)
 
     draft = NoteMakerAgent().run(skills, assets, intent={"goal": "产品种草"})
@@ -113,7 +115,7 @@ def test_note_maker_single_skill_skips_picker(monkeypatch):
         UserAsset(kind="text", text="3 个让我回购的随身香薰"),
     ]
     log: list[dict] = []
-    monkeypatch.setattr(llms, "chat", _stub_chat(log, [_CURATE_JSON, _COMPOSE_JSON]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat(log, [_CURATE_JSON, _COMPOSE_JSON]))
 
     draft = NoteMakerAgent().run(skills, assets, intent={"goal": "产品种草"})
 
@@ -135,7 +137,7 @@ def test_note_maker_multi_skill_invokes_picker(monkeypatch):
     pick_json = json.dumps({"skill_id": "种草推荐·朋友安利笔记制作指南"})
     log: list[dict] = []
     monkeypatch.setattr(
-        llms, "chat",
+        llms, "chat_json",
         _stub_chat(log, [pick_json, _CURATE_JSON, _COMPOSE_JSON]),
     )
 
@@ -157,7 +159,7 @@ def test_note_maker_uses_main_image_as_cover(monkeypatch):
         "aux_image_indices": [0, 2],
         "text_points": [], "brand_facts": [], "data_points": [],
     })
-    monkeypatch.setattr(llms, "chat", _stub_chat([], [curate_json, _COMPOSE_JSON]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat([], [curate_json, _COMPOSE_JSON]))
 
     draft = NoteMakerAgent().run(skills, assets)
 
@@ -173,7 +175,7 @@ def test_note_maker_falls_back_first_image_when_llm_returns_no_main(monkeypatch)
         "aux_image_indices": [],
         "text_points": [], "brand_facts": [], "data_points": [],
     })
-    monkeypatch.setattr(llms, "chat", _stub_chat([], [curate_json, _COMPOSE_JSON]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat([], [curate_json, _COMPOSE_JSON]))
 
     draft = NoteMakerAgent().run(skills, assets)
 
@@ -188,7 +190,7 @@ def test_note_maker_caps_image_paths_to_eight(monkeypatch):
         "aux_image_indices": list(range(1, 12)),
         "text_points": [], "brand_facts": [], "data_points": [],
     })
-    monkeypatch.setattr(llms, "chat", _stub_chat([], [curate_json, _COMPOSE_JSON]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat([], [curate_json, _COMPOSE_JSON]))
 
     draft = NoteMakerAgent().run(skills, assets)
 
@@ -206,7 +208,7 @@ def test_note_maker_propagates_validation_from_llm(monkeypatch):
         "comment_hook": "",
         "validation": {"status": "needs_human_review", "issues": ["命中禁止项：硬广"]},
     })
-    monkeypatch.setattr(llms, "chat", _stub_chat([], [_CURATE_JSON, compose_json]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat([], [_CURATE_JSON, compose_json]))
 
     draft = NoteMakerAgent().run(skills, assets)
 
@@ -218,7 +220,7 @@ def test_note_maker_raises_when_compose_missing_title(monkeypatch):
     skills = [_planting_skill()]
     assets = [UserAsset(kind="text", text="x")]
     bad_compose = json.dumps({"title": "", "body": "x"})
-    monkeypatch.setattr(llms, "chat", _stub_chat([], [_CURATE_JSON, bad_compose]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat([], [_CURATE_JSON, bad_compose]))
 
     with pytest.raises(NoteMakerLLMError, match="缺 title 或 body"):
         NoteMakerAgent().run(skills, assets)
@@ -228,7 +230,7 @@ def test_note_maker_raises_when_picker_returns_unknown_id(monkeypatch):
     skills = [_planting_skill(), _debrief_skill()]
     assets = [UserAsset(kind="text", text="x")]
     pick_json = json.dumps({"skill_id": "不存在的 skill"})
-    monkeypatch.setattr(llms, "chat", _stub_chat([], [pick_json]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat([], [pick_json]))
 
     with pytest.raises(NoteMakerLLMError, match="未知 skill_id"):
         NoteMakerAgent().run(skills, assets)
@@ -241,15 +243,15 @@ def test_note_maker_raises_when_llm_chat_throws(monkeypatch):
     def boom(messages, *, usage="llm", **kwargs):
         raise RuntimeError("llm down")
 
-    monkeypatch.setattr(llms, "chat", boom)
-    with pytest.raises(NoteMakerLLMError, match="llms.chat 失败"):
+    monkeypatch.setattr(llms, "chat_json", boom)
+    with pytest.raises(NoteMakerLLMError, match="llms.chat_json 失败"):
         NoteMakerAgent().run(skills, assets)
 
 
 def test_note_maker_raises_when_llm_returns_non_json(monkeypatch):
     skills = [_planting_skill()]
     assets = [UserAsset(kind="text", text="x")]
-    monkeypatch.setattr(llms, "chat", _stub_chat([], ["this is not json"]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat([], ["this is not json"]))
 
     with pytest.raises(NoteMakerLLMError, match="无法解析为 JSON"):
         NoteMakerAgent().run(skills, assets)
@@ -267,7 +269,7 @@ def test_note_maker_accepts_note_skill_dataclass(monkeypatch):
         avoid_rules=["不要硬广"],
         metrics_summary={"liked_p50": 500, "sample": 2},
     )
-    monkeypatch.setattr(llms, "chat", _stub_chat([], [_CURATE_JSON, _COMPOSE_JSON]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat([], [_CURATE_JSON, _COMPOSE_JSON]))
 
     draft = NoteMakerAgent().run([skill], [UserAsset(kind="text", text="测评要点")])
 
@@ -278,7 +280,7 @@ def test_note_maker_accepts_note_skill_dataclass(monkeypatch):
 def test_note_maker_accepts_path_strings_and_dict_assets(monkeypatch):
     skills = [_planting_skill()]
     assets = ["/tmp/main.jpg", {"kind": "text", "text": "随手好物"}]
-    monkeypatch.setattr(llms, "chat", _stub_chat([], [_CURATE_JSON, _COMPOSE_JSON]))
+    monkeypatch.setattr(llms, "chat_json", _stub_chat([], [_CURATE_JSON, _COMPOSE_JSON]))
 
     draft = NoteMakerAgent().run(skills, assets)
 

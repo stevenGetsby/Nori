@@ -1,21 +1,26 @@
 from __future__ import annotations
 
 import inspect
+from pathlib import Path
 
-import llms
+import nori.core.llms as llms
 from nori.core import AgentBase, LLMFactory, WorkflowBase, named_workflow_steps
 from nori.core import contracts
-from nori.content_generation.content_producer import ContentProducerAgent
-from nori.content_generation.cover_director import CoverDirectorAgent
-from nori.content_generation.note_maker import NoteMakerAgent
-from nori.context_building.calendar_planner import CalendarPlannerAgent
-from nori.context_building.kpi_planner import KPIPlannerAgent
-from nori.context_building.operation_planner import OperationPlannerAgent
-from nori.learning_loop.review import ComplianceReviewerAgent, ConsistencyReviewerAgent, ReviewGateAgent
-from nori.learning_loop.strategy import MetricsSnapshotAgent, StrategyIterationAgent
-from nori.market_analysis.xhs_note_analyzer import XHSNoteAnalyzer
-from nori.user_profiling.account_planner import AccountPlannerAgent
-from nori.user_profiling.intaker import IntakeAgent
+from nori.agents.content_generation.content_producer import ContentProducerAgent
+from nori.agents.content_generation.cover_director import CoverDirectorAgent
+from nori.agents.content_generation.note_maker import NoteMakerAgent
+from nori.agents.planning.calendar_planner import CalendarPlannerAgent
+from nori.agents.planning.kpi_planner import KPIPlannerAgent
+from nori.agents.planning.operation_planner import OperationPlannerAgent
+from nori.agents.learning_loop.review import ComplianceReviewerAgent, ConsistencyReviewerAgent, ReviewGateAgent
+from nori.agents.learning_loop.strategy import MetricsSnapshotAgent, StrategyIterationAgent
+from nori.agents.market_analysis.xhs_note_analyzer import XHSNoteAnalyzer
+from nori.agents.supervisor import NoriSupervisorAgent
+from nori.agents.user_profiling.account_planner import AccountPlannerAgent
+from nori.agents.user_profiling.intaker import IntakeAgent
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 AGENT_CLASSES = [
@@ -33,6 +38,7 @@ AGENT_CLASSES = [
     MetricsSnapshotAgent,
     StrategyIterationAgent,
     XHSNoteAnalyzer,
+    NoriSupervisorAgent,
 ]
 
 
@@ -62,7 +68,7 @@ def test_llm_factory_delegates_to_project_llm_gateway():
     assert factory.chat_json(messages, usage="unit", json_mode=True) == {"ok": True}
     assert calls == [
         ("chat", messages, {"usage": "unit"}),
-        ("chat_json", messages, {"usage": "unit", "json_mode": True, "_chat": chat}),
+        ("chat_json", messages, {"usage": "unit", "json_mode": True}),
     ]
 
 
@@ -101,6 +107,13 @@ def test_named_workflow_steps_declare_noop_stage_names():
 
     assert workflow.step_names == ["ingest", "emit"]
     assert workflow.run_steps({"value": 1}) == {"value": 1}
+
+
+def test_core_workflow_base_does_not_depend_on_runtime_workflow_backend():
+    source = (ROOT / "nori" / "core" / "workflow.py").read_text()
+
+    assert "nori.workflows" not in source
+    assert "langgraph" not in source.lower()
 
 
 def test_concrete_agents_inherit_agent_base_and_keep_run_entrypoint():

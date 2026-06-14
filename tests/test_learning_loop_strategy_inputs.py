@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from nori.core import AccountOperationProject
-from nori.learning_loop.strategy import inputs as strategy_iteration_inputs
-from nori.learning_loop.models import ComplianceReview, MetricsSnapshot
+from nori.agents.learning_loop.strategy.package import StrategyIterationInputPreparer
+from nori.agents.learning_loop.schemas import ComplianceReview, MetricsSnapshot
+
+
+strategy_iteration_inputs = StrategyIterationInputPreparer()
 
 
 def test_normalize_reviews_restores_dicts_and_preserves_instances():

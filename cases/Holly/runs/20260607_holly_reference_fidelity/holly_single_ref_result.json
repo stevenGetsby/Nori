@@ -1,0 +1,10 @@
+{
+  "reference_path": "/Users/geminilight/projects/product/Nori/cases/Holly/assets/raw/brand_materials/资源 50@2x.png",
+  "reference_object_key": "nori/reference-images/holly/single-reference-fidelity/20260607/900be758b6d29d0f_资源-50-2x.png",
+  "reference_public_url": "https://nori.tos-cn-beijing.volces.com/nori/reference-images/holly/single-reference-fidelity/20260607/900be758b6d29d0f_%E8%B5%84%E6%BA%90-50-2x.png",
+  "output_path": "/Users/geminilight/projects/product/Nori/cases/Holly/runs/20260607_holly_reference_fidelity/outputs/cover_holly_single_ref_fidelity_20260607_020002.png",
+  "elapsed_seconds": 80.03,
+  "via": "llms.image signed OSS URL + reference_images",
+  "prompt": "Create a 3:4 vertical Xiaohongshu cover using the supplied reference image as the primary visual source. Preserve the actual main product from the reference: the white canvas tote bag, the yellow chair, the black line-art cartoon figure, the small poop icon, and the playful sticker-like marks. Do not replace it with a toy, mascot head, toilet scene, travel product, food, movie poster, or unrelated ad. Keep the Holly Shit quirky handmade product feeling. You may clean up lighting and composition, but the generated image must still clearly look like a styled version of the provided tote-bag reference. Add a compact Chinese cover title: “这个包好怪但好快乐”.",
+  "source_prefix": "https://sd2oss-american.oss-us-west-1.aliyuncs.com/temp_images/2026/06/06/img-df"
+}

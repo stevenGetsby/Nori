@@ -1,0 +1,7 @@
+{
+  "ok": false,
+  "error_type": "BadRequestError",
+  "error": "Error code: 400 - {'error': {'message': '当前接口暂不支持，请使用 /v1/images/generations', 'type': 'invalid_request_error', 'param': '', 'code': 'unsupported_endpoint'}}",
+  "elapsed_seconds": 0.47,
+  "endpoint": "images.edit multipart"
+}

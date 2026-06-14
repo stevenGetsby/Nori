@@ -1,15 +1,15 @@
 """Smoke test for IntakeAgent + NoteMakerAgent + CoverDirectorAgent (纯 LLM 路径).
 
-加载 Holly skill_guides JSON + Holly 品牌素材目录：
+加载 Holly skill_guides JSON + Holly case 素材目录：
   1. IntakeAgent       — 用 vision LLM 给每张品牌素材图打语义标签
   2. NoteMakerAgent    — 用 tagged assets 写 note 草稿
   3. CoverDirectorAgent— 让 LLM 从 tagged assets 里自己挑封面参考图并生成封面
 
 用法:
-    PYTHONPATH=. python scripts/smoke_note_maker.py
-    PYTHONPATH=. python scripts/smoke_note_maker.py --no-cover
-    PYTHONPATH=. python scripts/smoke_note_maker.py --no-vision    # 跳过 vision 打标
-    PYTHONPATH=. python scripts/smoke_note_maker.py --skills <path> --assets-dir <dir>
+    python scripts/smoke_note_maker.py
+    python scripts/smoke_note_maker.py --no-cover
+    python scripts/smoke_note_maker.py --no-vision    # 跳过 vision 打标
+    python scripts/smoke_note_maker.py --skills <path> --assets-dir <dir>
 """
 from __future__ import annotations
 
@@ -18,12 +18,17 @@ import json
 import sys
 from pathlib import Path
 
-from nori.agent_models import UserAsset, UserInput
-from nori.gen_agents import CoverDirectorAgent, IntakeAgent, NoteMakerAgent
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from nori.agents.content_generation import CoverDirectorAgent, NoteMakerAgent
+from nori.agents.user_profiling import IntakeAgent, UserInput
+from nori.core import UserAsset
 
 
-DEFAULT_SKILLS = "nori/skill_base/data/xhs_note_analyzer/holly/20260515_174142_note_skill_guides.json"
-DEFAULT_ASSETS_DIR = "SHOWCASE/Holly"
+DEFAULT_SKILLS = "cases/Holly/runs/20260531_121214_holly_live/note_skill_guides.json"
+DEFAULT_ASSETS_DIR = "cases/Holly/assets/raw/brand_materials"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 
 

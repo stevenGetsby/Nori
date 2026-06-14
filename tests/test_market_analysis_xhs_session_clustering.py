@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from data_collect import HotNote
-from nori.market_analysis.xhs_note_analyzer import session_clustering as xhs_session_clustering
+from nori.agents.market_analysis.xhs_note_analyzer import session_clustering as xhs_session_clustering
 
 
 def _note(note_id: str, title: str, *, desc: str = "", liked: int = 100) -> HotNote:
