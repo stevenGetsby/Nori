@@ -1,7 +1,7 @@
 """Product-facing FastAPI route modules."""
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Callable
 
 from fastapi import APIRouter, FastAPI
 
@@ -10,11 +10,12 @@ from .content_production_admin import build_content_production_admin_router
 from .content_production_cases import build_content_production_cases_router
 from .content_production_runs import build_content_production_runs_router
 from .experiment_jobs import build_experiment_jobs_router
+from .service_contracts import RouteServiceRegistryProtocol
 from .sessions import build_sessions_router
 from .system import build_system_router
 from .workflows import build_workflows_router
 
-RouteBuilder = Callable[[Any], APIRouter]
+RouteBuilder = Callable[..., APIRouter]
 RouteModule = tuple[str, RouteBuilder]
 
 ROUTE_MODULES: tuple[RouteModule, ...] = (
@@ -31,10 +32,9 @@ ROUTE_MODULES: tuple[RouteModule, ...] = (
 ROUTE_BUILDERS: tuple[RouteBuilder, ...] = tuple(build_router for _name, build_router in ROUTE_MODULES)
 
 
-def register_route_modules(app: FastAPI, service: Any) -> None:
+def register_route_modules(app: FastAPI, route_services: RouteServiceRegistryProtocol) -> None:
     """Attach all route modules to the FastAPI application."""
 
-    route_services = getattr(service, "routes", service)
     for service_name, build_router in ROUTE_MODULES:
-        route_service = getattr(route_services, service_name, service)
+        route_service = getattr(route_services, service_name)
         app.include_router(build_router(route_service))

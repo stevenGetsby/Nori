@@ -245,7 +245,11 @@ def test_fastapi_routes_are_registered_from_routing_module():
     ]
     assert route_decorator_calls == []
     routing_source = (ROOT / "backend" / "routes" / "__init__.py").read_text(encoding="utf-8")
-    assert 'getattr(service, "routes", service)' in routing_source
+    contracts_source = (ROOT / "backend" / "routes" / "service_contracts.py").read_text(encoding="utf-8")
+    assert "RouteServiceRegistryProtocol" in routing_source
+    assert 'getattr(service, "routes", service)' not in routing_source
+    assert "Protocol" in contracts_source
+    assert "from ..services" not in contracts_source
     assert "ROUTE_MODULES" in routing_source
 
     client = TestClient(create_app())
@@ -254,6 +258,25 @@ def test_fastapi_routes_are_registered_from_routing_module():
     assert "/health" in paths
     assert "/sessions/{session_id}/assets" in paths
     assert "/workflows/content-production/runs" in paths
+
+
+def test_fastapi_route_modules_depend_on_route_contracts_not_backend_services():
+    route_dir = ROOT / "backend" / "routes"
+    for route_path in route_dir.glob("*.py"):
+        if route_path.name in {"__init__.py", "service_contracts.py", "shared.py"}:
+            continue
+        source = route_path.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        assert "service: Any" not in source, route_path.name
+        assert "service_contracts" in source, route_path.name
+        forbidden_imports = [
+            node.module
+            for node in ast.walk(tree)
+            if isinstance(node, ast.ImportFrom)
+            and node.module
+            and (node.module.startswith("..services") or node.module.startswith("backend.services"))
+        ]
+        assert forbidden_imports == [], route_path.name
 
 
 def test_backend_facade_composes_domain_services(tmp_path):

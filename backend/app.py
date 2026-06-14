@@ -43,7 +43,7 @@ def create_app(*, backend: NoriBackend | None = None) -> FastAPI:
             content=api_error("request validation failed", status_code=422, data={"errors": exc.errors()}),
         )
 
-    register_routes(app, service)
+    register_routes(app, service.routes)
 
     return app
 

@@ -12,9 +12,10 @@ from ..contracts import (
     api_ok,
 )
 from .shared import model_data
+from .service_contracts import ContentProductionAdminRouteServiceProtocol
 
 
-def build_content_production_admin_router(service: Any) -> APIRouter:
+def build_content_production_admin_router(service: ContentProductionAdminRouteServiceProtocol) -> APIRouter:
     router = APIRouter(tags=["content-production"])
 
     @router.get("/experiments/readiness", summary="Inspect backend experiment readiness")

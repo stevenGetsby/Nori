@@ -14,9 +14,10 @@ from ..contracts import (
     ContentProductionSelectionRequest,
     api_ok,
 )
+from .service_contracts import ContentProductionCaseRouteServiceProtocol
 
 
-def build_content_production_cases_router(service: Any) -> APIRouter:
+def build_content_production_cases_router(service: ContentProductionCaseRouteServiceProtocol) -> APIRouter:
     router = APIRouter(tags=["content-production-cases"])
 
     @router.get("/experiments/content-production/cases", summary="List content-production experiment cases")

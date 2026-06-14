@@ -6,9 +6,10 @@ from typing import Any
 from fastapi import APIRouter
 
 from ..contracts import ContentGenerationPlanRequest, api_ok
+from .service_contracts import ContentGenerationRouteServiceProtocol
 
 
-def build_content_generation_router(service: Any) -> APIRouter:
+def build_content_generation_router(service: ContentGenerationRouteServiceProtocol) -> APIRouter:
     router = APIRouter(tags=["content-generation"])
 
     @router.get("/content/generation/options", summary="List content generation option groups")

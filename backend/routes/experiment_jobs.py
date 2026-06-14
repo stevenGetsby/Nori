@@ -6,9 +6,10 @@ from typing import Any
 from fastapi import APIRouter
 
 from ..contracts import ExperimentJobCancelRequest, api_ok
+from .service_contracts import ExperimentJobRouteServiceProtocol
 
 
-def build_experiment_jobs_router(service: Any) -> APIRouter:
+def build_experiment_jobs_router(service: ExperimentJobRouteServiceProtocol) -> APIRouter:
     router = APIRouter(tags=["experiment-jobs"])
 
     @router.get("/experiments/jobs", summary="List background experiment jobs")

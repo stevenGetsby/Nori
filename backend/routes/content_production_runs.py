@@ -13,9 +13,10 @@ from ..contracts import (
     ContentProductionRunRequest,
     api_ok,
 )
+from .service_contracts import ContentProductionRunRouteServiceProtocol
 
 
-def build_content_production_runs_router(service: Any) -> APIRouter:
+def build_content_production_runs_router(service: ContentProductionRunRouteServiceProtocol) -> APIRouter:
     router = APIRouter(tags=["content-production-runs"])
 
     @router.post("/workflows/content-production/runs", status_code=201, summary="Run content-production with uploaded assets")

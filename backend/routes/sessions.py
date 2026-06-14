@@ -14,9 +14,10 @@ from ..contracts import (
     TurnCreateRequest,
     api_ok,
 )
+from .service_contracts import SessionRouteServiceProtocol
 
 
-def build_sessions_router(service: Any) -> APIRouter:
+def build_sessions_router(service: SessionRouteServiceProtocol) -> APIRouter:
     router = APIRouter(tags=["sessions"])
 
     @router.get("/sessions/{session_id}/assets", summary="List uploaded assets for one session")

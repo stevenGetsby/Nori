@@ -129,6 +129,9 @@ rerun with the current tunnel URL.
 - `services/reference_image_results.py` owns reference-image result payloads,
   event payloads, and next-action builders.
 - `routing.py` is the route composition root; it includes the focused routers in `routes/`.
+- `routes/service_contracts.py` owns structural protocols for the route-facing
+  service facets; route modules consume these contracts and do not import
+  concrete backend service implementations.
 - `routes/system.py` owns health and capability endpoints.
 - `routes/workflows.py` owns workflow catalog and workflow resolution endpoints.
 - `routes/content_generation.py` owns content-generation option/action planning endpoints.

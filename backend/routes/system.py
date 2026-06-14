@@ -6,9 +6,10 @@ from typing import Any
 from fastapi import APIRouter
 
 from ..contracts import api_ok
+from .service_contracts import SystemRouteServiceProtocol
 
 
-def build_system_router(service: Any) -> APIRouter:
+def build_system_router(service: SystemRouteServiceProtocol) -> APIRouter:
     router = APIRouter(tags=["system"])
 
     @router.get("/health", summary="Service health")

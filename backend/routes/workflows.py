@@ -6,9 +6,10 @@ from typing import Any
 from fastapi import APIRouter
 
 from ..contracts import WorkflowResolveRequest, api_ok
+from .service_contracts import WorkflowRouteServiceProtocol
 
 
-def build_workflows_router(service: Any) -> APIRouter:
+def build_workflows_router(service: WorkflowRouteServiceProtocol) -> APIRouter:
     router = APIRouter(tags=["workflows"])
 
     @router.get("/workflows", summary="List workflow catalog entries")
