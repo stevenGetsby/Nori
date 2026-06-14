@@ -168,8 +168,11 @@ rerun with the current tunnel URL.
   proof, evaluation, artifact, and reference evidence.
 - `experiments/reference_acceptance.py` owns reference-transfer snapshots,
   strict-reference proof checks, and provider reference-image acceptance checks.
-- `experiments/auto_reviews.py` owns automatic review-gate assembly, run-health
-  review scoring, and evaluation draft projection from review signals.
+- `experiments/run_health.py` owns rule-based run-health review scoring,
+  severity mapping, evidence projection, and repair suggestions.
+- `experiments/auto_reviews.py` owns automatic review-gate assembly and
+  evaluation draft projection from content, run-health, and visual-review
+  signals.
 - `experiments/reviews.py` owns evaluation draft entrypoints, evaluation
   summaries, persistence, and manifest refresh.
 - `jobs.py` owns the current process-local background job model, store,

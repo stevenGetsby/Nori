@@ -103,6 +103,7 @@ def test_backend_experiments_is_split_into_capability_modules():
         "reference_acceptance": [
             "content_production_summary_reference_transfer",
         ],
+        "run_health": ["run_health_review"],
         "visual_reviews": ["visual_reference_review"],
         "models": ["ContentRunRef", "ContentCaseRef"],
         "repositories": ["ContentProductionExperimentRepository"],

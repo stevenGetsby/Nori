@@ -19,6 +19,7 @@ from .reference_acceptance import content_production_summary_reference_transfer
 from .diagnostics import content_production_diagnostics, experiment_readiness
 from .models import ContentCaseRef, ContentRunRef
 from .repositories import ContentProductionExperimentRepository
+from .run_health import run_health_review
 from .reviews import (
     build_content_production_evaluation_draft,
     evaluation_summary,
@@ -113,6 +114,7 @@ __all__ = [
     'record_content_production_case_selection',
     'record_content_production_run_evaluation',
     'resolve_content_production_artifact_path',
+    'run_health_review',
     'summarize_content_production_run',
     'visual_reference_review',
 ]
