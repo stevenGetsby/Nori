@@ -405,6 +405,24 @@ def test_experiment_job_store_delegates_presenter_helpers():
     assert "from ..jobs import InProcessExperimentJobStore" in run_service_source
 
 
+def test_experiment_workbench_is_split_from_case_reports():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    cases_source = (ROOT / "backend" / "experiments" / "cases.py").read_text(encoding="utf-8")
+    workbench_source = (ROOT / "backend" / "experiments" / "workbench.py").read_text(encoding="utf-8")
+
+    assert "from .workbench import content_production_experiment_workbench" in package_source
+    assert "def content_production_experiment_workbench" not in cases_source
+    assert "def _workbench_active_run_id" not in cases_source
+    assert "def _workbench_case" not in cases_source
+    assert "def _empty_workbench_case" not in cases_source
+    assert "def _workbench_status" not in cases_source
+    assert "def content_production_experiment_workbench" in workbench_source
+    assert "content_production_diagnostics" in workbench_source
+    assert "inspect_content_production_run_artifacts" in workbench_source
+    assert "content_production_case_compare" in workbench_source
+    assert "content_production_experiment_overview" in workbench_source
+
+
 def test_reference_image_service_is_split_by_strategy_and_result_payloads():
     service_source = (ROOT / "backend" / "services" / "reference_images.py").read_text(encoding="utf-8")
     publishers_source = (ROOT / "backend" / "services" / "reference_image_publishers.py").read_text(encoding="utf-8")

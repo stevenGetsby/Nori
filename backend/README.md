@@ -136,7 +136,10 @@ rerun with the current tunnel URL.
 - `experiments/presenters.py` owns shared product-facing report projections
   such as run report rows and best-run scoring.
 - `experiments/artifacts.py` owns artifact catalogs, artifact resolution, reference traces, and zip exports.
-- `experiments/cases.py` owns case reports, workbench state, and comparison.
+- `experiments/cases.py` owns case overview, reports, selected-run resolution,
+  comparisons, and case listing.
+- `experiments/workbench.py` owns the product-console workbench snapshot that
+  combines diagnostics, overview, comparison, delivery, and active artifacts.
 - `experiments/selections.py` owns case selection state, selection history,
   and run promotion decisions.
 - `experiments/actions.py` owns case-level next-action planning, repair
