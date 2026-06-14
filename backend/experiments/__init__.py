@@ -16,8 +16,8 @@ from .common import (
 from .acceptance import (
     content_production_run_acceptance_report,
     content_production_run_proof,
-    content_production_summary_reference_transfer,
 )
+from .reference_acceptance import content_production_summary_reference_transfer
 from .diagnostics import content_production_diagnostics, experiment_readiness
 from .models import ContentCaseRef, ContentRunRef
 from .repositories import ContentProductionExperimentRepository

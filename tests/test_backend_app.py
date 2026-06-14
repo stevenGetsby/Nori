@@ -444,6 +444,30 @@ def test_image_reference_projections_are_split_from_artifact_catalogs():
     assert "from .reference_images import _enrich_image_reference_trace, image_reference_summary" in runner_source
 
 
+def test_reference_acceptance_checks_are_split_from_acceptance_reports():
+    package_source = (ROOT / "backend" / "experiments" / "__init__.py").read_text(encoding="utf-8")
+    acceptance_source = (ROOT / "backend" / "experiments" / "acceptance.py").read_text(encoding="utf-8")
+    reference_source = (ROOT / "backend" / "experiments" / "reference_acceptance.py").read_text(encoding="utf-8")
+    runs_source = (ROOT / "backend" / "experiments" / "runs.py").read_text(encoding="utf-8")
+    presenters_source = (ROOT / "backend" / "experiments" / "presenters.py").read_text(encoding="utf-8")
+
+    assert "from .reference_acceptance import content_production_summary_reference_transfer" in package_source
+    assert "def content_production_summary_reference_transfer" not in acceptance_source
+    assert "def _acceptance_reference_check" not in acceptance_source
+    assert "def _acceptance_reference_generation_check" not in acceptance_source
+    assert "def _reference_transfer_check" not in acceptance_source
+    assert "def _reference_generation_check_proof_check" not in acceptance_source
+    assert "def _image_reference_check" not in acceptance_source
+    assert "from .reference_acceptance import" in acceptance_source
+    assert "def content_production_summary_reference_transfer" in reference_source
+    assert "def reference_transfer_proof_check" in reference_source
+    assert "def reference_images_sent_proof_check" in reference_source
+    assert "def acceptance_reference_check" in reference_source
+    assert "def acceptance_reference_generation_check" in reference_source
+    assert "from .reference_acceptance import content_production_summary_reference_transfer" in runs_source
+    assert "from .reference_acceptance import content_production_summary_reference_transfer" in presenters_source
+
+
 def test_reference_image_service_is_split_by_strategy_and_result_payloads():
     service_source = (ROOT / "backend" / "services" / "reference_images.py").read_text(encoding="utf-8")
     publishers_source = (ROOT / "backend" / "services" / "reference_image_publishers.py").read_text(encoding="utf-8")

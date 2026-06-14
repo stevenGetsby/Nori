@@ -14,11 +14,8 @@ from .common import (
 )
 from .artifacts import artifact_catalog_for_run, artifact_urls_for_run, cover_urls_for_run
 from .reference_images import _enrich_image_reference_trace, image_reference_from_package
-from .acceptance import (
-    content_production_summary_reference_transfer,
-    content_production_run_acceptance_report,
-    content_production_run_proof,
-)
+from .acceptance import content_production_run_acceptance_report, content_production_run_proof
+from .reference_acceptance import content_production_summary_reference_transfer
 from .reviews import (
     _read_evaluations,
     evaluation_summary,
